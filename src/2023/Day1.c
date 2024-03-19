@@ -7,43 +7,20 @@
  ************************************************/
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "../util/linkedlist.h"
+#include "../util/inputFile.h"
 
-sNode *LLHead;
-sNode *LLTail;
+void replaceSubString(char *str, char *find, char *replace, char *output) {
+    bool substr = false;
 
-void getInputFile(char *fileName) {
-    FILE *inputFile = fopen(fileName, "r");     // Open file in read mode
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (inputFile == NULL) {    // If file dosent exist, exit
-        exit(EXIT_FAILURE);
-    }
-
-    while ((read = getline(&line, &len, inputFile)) != -1) {    // set "line" to the line in the file and test for end of file
-        line[strlen(line) - 1] = '\0';                          // Remove newline character from string
-        sNode *lineNode = createSNode(line);
-        insertSNodeAtTail(&LLHead, &LLTail, lineNode);
-    }
-
-    fclose(inputFile);
-    if (line) {
-        free(line);
-    }
+    str[strlen(str) - 1] = '\0';
 }
 
-int main(int argc, char *argv[]) {
-    getInputFile("assets/2023/Day1.txt");
-    // getInputFile("assets/test.txt");
-    printSNodeList(LLHead);
-
-    // Part 1
+void part1(linkedList_s ll) {
     int calibrationSum = 0;
-    sNode *current = LLHead;
+    node_s *current = ll.head;
     while(current != NULL) {
         char *str = current->str;
         int digit1 = 0;
@@ -68,10 +45,16 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Part 1 Calibration Sum = %d\n", calibrationSum);
+}
 
-    //Part 2
-    calibrationSum = 0;
-    current = LLHead;
+void part2(linkedList_s ll) {
+    int calibrationSum = 0;
+    node_s *current = ll.head;
+    while(current != NULL) {
+        char *str = current->str;
+
+        current = current->next;
+    }
     while(current != NULL) {
         char *str = current->str;
         int digit1 = 0;
@@ -96,6 +79,15 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Part 2 Calibration Sum = %d\n", calibrationSum);
+}
+
+int main(int argc, char *argv[]) {
+    linkedList_s ll = getInputFile("assets/2023/Day1.txt");
+    // linkedList_s ll = getInputFile("assets/test.txt");
+    // printSNodeList(LLHead);
+
+    part1(ll);
+    part2(ll);
 
     return 0;
 }

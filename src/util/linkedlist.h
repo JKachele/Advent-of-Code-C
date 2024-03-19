@@ -9,21 +9,27 @@
 #define LINKEDLIST_H
 #define BUFFER_SIZE 256
 
-struct stringNode {
+struct node_s {
     char str[BUFFER_SIZE];
-    struct stringNode *prev;
-    struct stringNode *next;
+    struct node_s *prev;
+    struct node_s *next;
 };
-typedef struct stringNode sNode;
+typedef struct node_s node_s;
 
-sNode *createSNode(char str[]);
-sNode *insertSNodeAtHead(sNode **head, sNode **tail, sNode *nodeToInsert);
-sNode *insertSNodeAtTail(sNode **head, sNode **tail, sNode *nodeToInsert);
-void insertSNodeAfterNode(sNode **tail, sNode *nodeToInsertAfter, sNode *nodeToInsert);
-void insertSNodeBeforeNode(sNode **head, sNode *nodeToInsertBefore, sNode *nodeToInsert);
-void removeSNode(sNode **head, sNode **tail, sNode *nodeToRemove);
-sNode *getSNodeAtIndex(sNode *head, int index);
-sNode *getSNodeWithValue(sNode *head, char str[]);
-void printSNodeList(sNode *head);
+struct linkedList_s {
+    node_s *head;
+    node_s *tail;
+};
+typedef struct linkedList_s linkedList_s;
+
+node_s *createSNode(char str[]);
+node_s *insertSNodeAtHead(node_s **head, node_s **tail, node_s *nodeToInsert);
+node_s *insertSNodeAtTail(node_s **head, node_s **tail, node_s *nodeToInsert);
+void insertSNodeAfterNode(node_s **tail, node_s *nodeToInsertAfter, node_s *nodeToInsert);
+void insertSNodeBeforeNode(node_s **head, node_s *nodeToInsertBefore, node_s *nodeToInsert);
+void removeSNode(node_s **head, node_s **tail, node_s *nodeToRemove);
+node_s *getSNodeAtIndex(node_s *head, int index);
+node_s *getSNodeWithValue(node_s *head, char str[]);
+void printSNodeList(node_s *head);
 
 #endif
