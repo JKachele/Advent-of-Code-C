@@ -12,10 +12,55 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
-void replaceSubString(char *str, char *find, char *replace, char *output) {
+void replaceSubString(char *str, char *find, char *replace) {
+    char output[BUFFER_SIZE];
     bool substr = false;
+    int start = 0;
 
-    str[strlen(str) - 1] = '\0';
+    // Set null terminator to the end of string length to speed up function
+    str[strlen(str)] = '\0';
+    find[strlen(find)] = '\0';
+    replace[strlen(replace)] = '\0';
+
+    // Check for substring
+    int j = 0;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == find[j]) {
+            if (!substr) {
+                start = i;
+                substr = true;
+            }
+            j++;
+            if (find[j] == '\0') {
+                break;
+            }
+        } else {
+            substr = false;
+            start = 0;
+            j = 0;
+        }
+    }
+
+    // If substring was found, replace, leaving the first and last chars; 
+    if (find[j] == '\0' && substr) {
+        int i;
+        // add the beginning of the string
+        for (i = 0; i <= start; i++) {
+            output[i] = str[i];
+        }
+        // add the replace string
+        for (j = 0; j < strlen(replace); j++) {
+            output[i] = replace[j];
+            i++;
+        }
+        //add the remaining string
+        for (j = start + strlen(find) - 1; j < strlen(str); j++) {
+            output[i] = str[j];
+            i++;
+        }
+        output[i] = '\0';
+    }
+    strncpy(str, output, BUFFER_SIZE);
 }
 
 void part1(linkedList_s ll) {
@@ -25,6 +70,7 @@ void part1(linkedList_s ll) {
         char *str = current->str;
         int digit1 = 0;
         int digit2 = 0;
+        // Search from front to back for number, stopping at first number found
         for (int i = 0; i < strlen(str); i++) {
             int charNum = str[i] - '0';
             if (charNum >= 0 && charNum <= 9) {
@@ -32,6 +78,7 @@ void part1(linkedList_s ll) {
                 break;
             }
         }
+        // Search from back to front for number, stopping at first number found
         for (int i = strlen(str) - 1; i >= 0; i--) {
             int charNum = str[i] - '0';
             if (charNum >= 0 && charNum <= 9) {
@@ -48,17 +95,21 @@ void part1(linkedList_s ll) {
 }
 
 void part2(linkedList_s ll) {
+    char *numString[10] = {"zero", "one", "two", "three", "four", "five",
+            "six", "seven", "eight", "nine"};
+    char *nums[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
     int calibrationSum = 0;
     node_s *current = ll.head;
     while(current != NULL) {
         char *str = current->str;
+        //replace all number strings with numbers
+        for (int i = 0; i < 10; i++) {
+            replaceSubString(str, numString[i], nums[i]);
+        }
 
-        current = current->next;
-    }
-    while(current != NULL) {
-        char *str = current->str;
         int digit1 = 0;
         int digit2 = 0;
+        // Search from front to back for number, stopping at first number found
         for (int i = 0; i < strlen(str); i++) {
             int charNum = str[i] - '0';
             if (charNum >= 0 && charNum <= 9) {
@@ -66,6 +117,7 @@ void part2(linkedList_s ll) {
                 break;
             }
         }
+        // Search from back to front for number, stopping at first number found
         for (int i = strlen(str) - 1; i >= 0; i--) {
             int charNum = str[i] - '0';
             if (charNum >= 0 && charNum <= 9) {
