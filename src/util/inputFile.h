@@ -1,5 +1,5 @@
 /*************************************************
- *File----------inputFile
+ *File----------inputFile.h
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Tuesday Mar 19, 2024 14:26:28 EDT

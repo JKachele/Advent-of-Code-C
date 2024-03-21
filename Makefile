@@ -8,15 +8,17 @@ CC = gcc
 CFLAGS = -g
 LDFLAGS = -g
 
-SRC = src/2023/Day1.c $(wildcard src/util/*.c)
+SRC = src/2023/Day$(DAY).c $(wildcard src/util/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
 
-.PHONY: all build dirs clean
+.PHONY: all build dirs clean run runTest
 
 all: dirs out release
 
-build: dirs out
+build: dirs out run
+
+testBuild: dirs test
 
 buildRelease: dirs release
 
@@ -34,6 +36,12 @@ release: $(OBJ)
 
 %.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
+
+test: dirs
+	$(CC) -o $(BIN)/test test.c $(LDFLAGS)
+
+runTest: test
+	$(BIN)/test
 
 clean:
 	rm -rf bin/

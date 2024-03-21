@@ -1,5 +1,5 @@
 /*************************************************
- *File----------linkedlist
+ *File----------linkedlist.h
  *Project-------Learn-C
  *Author--------Justin Kachele
  *Created-------Monday Mar 11, 2024 10:45:46 EDT

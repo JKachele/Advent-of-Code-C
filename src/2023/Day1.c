@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day1a
+ *File----------Day1.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Wednesday Feb 28, 2024 13:20:23 EST
@@ -17,50 +17,63 @@ void replaceSubString(char *str, char *find, char *replace) {
     bool substr = false;
     int start = 0;
 
-    // Set null terminator to the end of string length to speed up function
+    // Set null byte to the end of string length to speed up function
     str[strlen(str)] = '\0';
     find[strlen(find)] = '\0';
     replace[strlen(replace)] = '\0';
 
-    // Check for substring
-    int j = 0;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == find[j]) {
-            if (!substr) {
-                start = i;
-                substr = true;
+    do {
+        // Check for substring
+        int j = 0;
+        for (int i = 0; i < strlen(str); i++) {
+            if (str[i] == find[j]) {
+                if (!substr) {
+                    start = i;
+                    substr = true;
+                }
+                j++;
+                if (find[j] == '\0') {
+                    break;
+                }
+            } else if (str[i] == find[0]){
+                if (!substr) {
+                    start = i;
+                    substr = true;
+                }
+                j = 1;
+                if (find[j] == '\0') {
+                    break;
+                }
+            } else {
+                substr = false;
+                start = 0;
+                j = 0;
             }
-            j++;
-            if (find[j] == '\0') {
-                break;
+        }
+
+        // If substring was found, replace, leaving the first and last chars; 
+        if (find[j] == '\0' && substr) {
+            int i;
+            // add the beginning of the string
+            for (i = 0; i <= start; i++) {
+                output[i] = str[i];
             }
+            // add the replace string
+            for (j = 0; j < strlen(replace); j++) {
+                output[i] = replace[j];
+                i++;
+            }
+            //add the remaining string
+            for (j = start + strlen(find) - 1; j < strlen(str); j++) {
+                output[i] = str[j];
+                i++;
+            }
+            output[i] = '\0';
+            strncpy(str, output, 256);
         } else {
             substr = false;
-            start = 0;
-            j = 0;
         }
-    }
-
-    // If substring was found, replace, leaving the first and last chars; 
-    if (find[j] == '\0' && substr) {
-        int i;
-        // add the beginning of the string
-        for (i = 0; i <= start; i++) {
-            output[i] = str[i];
-        }
-        // add the replace string
-        for (j = 0; j < strlen(replace); j++) {
-            output[i] = replace[j];
-            i++;
-        }
-        //add the remaining string
-        for (j = start + strlen(find) - 1; j < strlen(str); j++) {
-            output[i] = str[j];
-            i++;
-        }
-        output[i] = '\0';
-    }
-    strncpy(str, output, BUFFER_SIZE);
+    } while (substr);
 }
 
 void part1(linkedList_s ll) {
@@ -95,9 +108,10 @@ void part1(linkedList_s ll) {
 }
 
 void part2(linkedList_s ll) {
-    char *numString[10] = {"zero", "one", "two", "three", "four", "five",
-            "six", "seven", "eight", "nine"};
-    char *nums[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    char numString[10][BUFFER_SIZE] = {"zero", "one", "two", "three", "four",
+        "five", "six", "seven", "eight", "nine"};
+    char nums[10][BUFFER_SIZE] = {"0", "1", "2", "3", "4",
+        "5", "6", "7", "8", "9"};
     int calibrationSum = 0;
     node_s *current = ll.head;
     while(current != NULL) {

@@ -1,5 +1,5 @@
 /*************************************************
- *File----------linkedlist
+ *File----------linkedlist.c
  *Project-------Learn-C
  *Author--------Justin Kachele
  *Created-------Monday Mar 11, 2024 10:46:02 EDT
@@ -115,8 +115,8 @@ node_s *getSNodeWithValue(node_s *head, char str[]) {
 void printSNodeList(node_s *head) {
     node_s *temp = head;
     while (temp != NULL) {
-        printf("%s, ", temp->str);
+        printf("[%s]\n", temp->str);
         temp = temp->next;
     }
-    printf("\n");
+    // printf("\n");
 }
