@@ -58,6 +58,7 @@ void part2(linkedList_s ll) {
     int powersum = 0;
     char *colors[3] = {"red", "green", "blue"};
     node_s *current = ll.head;
+    int i = 0;
     while(current != NULL) {
         char *str;
         strncpy(str, current->str, BUFFER_SIZE);
@@ -80,17 +81,23 @@ void part2(linkedList_s ll) {
             token = strtok(NULL, ",;");     // split by , or ;
         }
 
-        powersum += colorCount[0] * colorCount[1] * colorCount[2];
+        int power = colorCount[0] * colorCount[1] * colorCount[2];
+        powersum += power;
+
+        printf("%d; Red: %d, Green: %d, Blue: %d; Product: %d; Sum: %d\n",
+               i, colorCount[0], colorCount[1], colorCount[2], power, powersum);
 
         current = current->next;
+        i++;
     }
     printf("Part 2: Power Sum = %d\n", powersum);
 }
 
 int main(int argc, char *argv[]) {
-    linkedList_s ll = getInputFile("assets/2023/Day2.txt");
-    // linkedList_s ll = getInputFile("assets/test.txt");
-    // printSNodeList(ll.head);
+    // linkedList_s ll = getInputFile("assets/2023/Day2.txt");
+    linkedList_s ll = getInputFile("assets/test.txt");
+    printSNodeList(ll.head);
+    printf("Tail: %s", ll.tail->str);
 
     part1(ll);
     part2(ll);
