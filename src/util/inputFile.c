@@ -17,7 +17,7 @@ linkedList_s getInputFile(char *fileName) {
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    linkedList_s ll;
+    linkedList_s ll = createLinkedList();
 
     if (inputFile == NULL) {    // If file dosent exist, exit
         exit(EXIT_FAILURE);

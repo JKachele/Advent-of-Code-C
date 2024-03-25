@@ -7,15 +7,15 @@
  ************************************************/
 
 #include <stdio.h>
-#include <stdlib.h>
 
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    char str[256] = " 123 blue";
-    char *out;
-    long ret = strtol(str, &out, 10);
-    printf("Split into [%ld] and [%s]\n", ret, out);
+
+    char num = '6';
+
+    printf("Char: %c = %d\n", num, num - '0');
+
     return 0;
 }
 

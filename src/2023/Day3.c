@@ -7,13 +7,59 @@
  ************************************************/
 
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
 void part1(linkedList_s ll) {
     node_s *current = ll.head;
-    while(current != NULL) {
+    int maxX = getLongestNodeValue(ll);
+    int maxY = getLinkedListLength(ll);
+    char schematic[maxX][maxY];
+    for(int y = 0; current != NULL; y++) {
+        char str[BUFFER_SIZE];
+        strncpy(str, current->str, BUFFER_SIZE);
+        for (int x = 0; x < strlen(str); x++) {
+            schematic[x][y] = str[x];
+        }
         current = current->next;
+    }
+
+    int partNumSum = 0;
+    bool numberFound = false;
+    bool isPartNum = false;
+    int currentNum = 0;
+    for (int y = 0; y < maxY; y++) {
+        for (int x = 0; x < maxX; x++) {
+            // printf("[%c] ", schematic[x][y]);
+            if (schematic[x][y] >= '0' && schematic[x][y] <= '9') {
+                if (numberFound) {
+                    currentNum = (currentNum * 10) + (schematic[x][y] - '0');
+                } else {
+                    currentNum = schematic[x][y] = '0';
+                    numberFound = true;
+                }
+                // check for adjacent symbols
+                if (isPartNum) {
+                    continue;
+                }
+                for (int yMod = y - 1; yMod <= y + 1; yMod++) {
+                    for (int xMod = x - 1; xMod <= x + 1; xMod++) {
+                        if (yMod < 0 || yMod >= maxY ||
+                            xMod < 0 || xMod >= maxX) {
+                            continue;
+                        }
+                        char c = schematic[xMod][yMod];
+                        if ((c <= 0 || c >= '9') && c != '.') {
+                            isPartNum = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // printf("\n");
     }
     printf("Part 1: \n");
 }
@@ -27,8 +73,8 @@ void part2(linkedList_s ll) {
 }
 
 int main(int argc, char *argv[]) {
-    linkedList_s ll = getInputFile("assets/2023/Day3.txt");
-    // linkedList_s ll = getInputFile("assets/test.txt");
+    // linkedList_s ll = getInputFile("assets/2023/Day3.txt");
+    linkedList_s ll = getInputFile("assets/test.txt");
     printSNodeList(ll.head);
 
     part1(ll);

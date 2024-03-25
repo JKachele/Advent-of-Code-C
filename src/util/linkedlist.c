@@ -11,6 +11,13 @@
 #include <string.h>
 #include "linkedlist.h"
 
+linkedList_s createLinkedList() {
+    linkedList_s ll;
+    ll.head = NULL;
+    ll.tail = NULL;
+    return ll;
+}
+
 node_s *createSNode(char str[]) {
     node_s *result = malloc(sizeof(node_s));
     strcpy(result->str, str);
@@ -110,6 +117,41 @@ node_s *getSNodeWithValue(node_s *head, char str[]) {
         temp = temp->next;
     }
     return NULL;
+}
+
+int getSNodeIndex(node_s *node, linkedList_s ll) {
+    node_s *temp = ll.head;
+    int i = 0;
+    while (temp != NULL) {
+        if (temp == node) {
+            return i;
+        }
+        i++;
+        temp = temp->next;
+    }
+    return -1;
+}
+
+int getLinkedListLength(linkedList_s ll) {
+    node_s *temp = ll.head;
+    int i = 0;
+    while (temp != NULL) {
+        i++;
+        temp = temp->next;
+    }
+    return i;
+}
+
+int getLongestNodeValue(linkedList_s ll) {
+    node_s *temp = ll.head;
+    int i = 0;
+    while (temp != NULL) {
+        if (strlen(temp->str) > i) {
+            i = strlen(temp->str);
+        }
+        temp = temp->next;
+    }
+    return i;
 }
 
 void printSNodeList(node_s *head) {

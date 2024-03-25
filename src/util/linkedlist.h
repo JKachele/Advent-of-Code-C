@@ -22,6 +22,7 @@ struct linkedList_s {
 };
 typedef struct linkedList_s linkedList_s;
 
+linkedList_s createLinkedList();
 node_s *createSNode(char str[]);
 node_s *insertSNodeAtHead(node_s **head, node_s **tail, node_s *nodeToInsert);
 node_s *insertSNodeAtTail(node_s **head, node_s **tail, node_s *nodeToInsert);
@@ -30,6 +31,9 @@ void insertSNodeBeforeNode(node_s **head, node_s *nodeToInsertBefore, node_s *no
 void removeSNode(node_s **head, node_s **tail, node_s *nodeToRemove);
 node_s *getSNodeAtIndex(node_s *head, int index);
 node_s *getSNodeWithValue(node_s *head, char str[]);
+int getSNodeIndex(node_s *node, linkedList_s ll);
+int getLinkedListLength(linkedList_s ll);
+int getLongestNodeValue(linkedList_s ll);
 void printSNodeList(node_s *head);
 
 #endif
