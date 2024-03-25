@@ -20,7 +20,7 @@ void part1(linkedList_s ll) {
     int colorCount[3] = {12, 13, 14};
     node_s *current = ll.head;
     while(current != NULL) {
-        char *str;
+        char str[BUFFER_SIZE];
         strncpy(str, current->str, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
@@ -60,7 +60,7 @@ void part2(linkedList_s ll) {
     node_s *current = ll.head;
     int i = 0;
     while(current != NULL) {
-        char *str;
+        char str[BUFFER_SIZE];
         strncpy(str, current->str, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
@@ -94,8 +94,8 @@ void part2(linkedList_s ll) {
 }
 
 int main(int argc, char *argv[]) {
-    // linkedList_s ll = getInputFile("assets/2023/Day2.txt");
-    linkedList_s ll = getInputFile("assets/test.txt");
+    linkedList_s ll = getInputFile("assets/2023/Day2.txt");
+    // linkedList_s ll = getInputFile("assets/test.txt");
     printSNodeList(ll.head);
     printf("Tail: %s", ll.tail->str);
 
