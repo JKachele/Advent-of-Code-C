@@ -76,9 +76,9 @@ void replaceSubString(char *str, char *find, char *replace) {
     } while (substr);
 }
 
-void part1(linkedList_s ll) {
+void part1(llist *ll) {
     int calibrationSum = 0;
-    node_s *current = ll.head;
+    llNode *current = ll->head;
     while(current != NULL) {
         char *str = current->str;
         int digit1 = 0;
@@ -107,13 +107,13 @@ void part1(linkedList_s ll) {
     printf("Part 1 Calibration Sum = %d\n", calibrationSum);
 }
 
-void part2(linkedList_s ll) {
+void part2(llist *ll) {
     char numString[10][BUFFER_SIZE] = {"zero", "one", "two", "three", "four",
         "five", "six", "seven", "eight", "nine"};
     char nums[10][BUFFER_SIZE] = {"0", "1", "2", "3", "4",
         "5", "6", "7", "8", "9"};
     int calibrationSum = 0;
-    node_s *current = ll.head;
+    llNode *current = ll->head;
     while(current != NULL) {
         char *str = current->str;
         //replace all number strings with numbers
@@ -148,9 +148,9 @@ void part2(linkedList_s ll) {
 }
 
 int main(int argc, char *argv[]) {
-    linkedList_s ll = getInputFile("assets/2023/Day1.txt");
-    // linkedList_s ll = getInputFile("assets/test.txt");
-    // printSNodeList(LLHead);
+    llist *ll = getInputFile("assets/2023/Day1.txt");
+    // llist *ll = getInputFile("assets/test.txt");
+    // llist_print(ll);
 
     part1(ll);
     part2(ll);

@@ -7,14 +7,22 @@
  ************************************************/
 
 #include <stdio.h>
-
+#include "src/util/linkedlist.h"
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
+    llist *ll = llist_create();
+    llNode *node1 = llist_create_node("Hello 1");
+    llNode *node2 = llist_create_node("Hello 2");
+    llNode *node3 = llist_create_node("Hello 3");
+    llNode *node4 = llist_create_node("Hello 4");
 
-    char num = '6';
+    llist_add_node(ll, node1);
+    llist_add_node(ll, node2);
+    llist_add_node(ll, node3);
+    llist_add_node(ll, node4);
 
-    printf("Char: %c = %d\n", num, num - '0');
+    llist_print(ll);
 
     return 0;
 }

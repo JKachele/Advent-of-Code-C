@@ -12,10 +12,10 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
-void part1(linkedList_s ll) {
-    node_s *current = ll.head;
-    int maxX = getLongestNodeValue(ll);
-    int maxY = getLinkedListLength(ll);
+void part1(llist *ll) {
+    llNode *current = ll->head;
+    int maxX = llist_get_longest_node(ll);
+    int maxY = ll->length;
     char schematic[maxX][maxY];
     for(int y = 0; current != NULL; y++) {
         char str[BUFFER_SIZE];
@@ -64,8 +64,8 @@ void part1(linkedList_s ll) {
     printf("Part 1: \n");
 }
 
-void part2(linkedList_s ll) {
-    node_s *current = ll.head;
+void part2(llist *ll) {
+    llNode *current = ll->head;
     while(current != NULL) {
         current = current->next;
     }
@@ -73,9 +73,9 @@ void part2(linkedList_s ll) {
 }
 
 int main(int argc, char *argv[]) {
-    // linkedList_s ll = getInputFile("assets/2023/Day3.txt");
-    linkedList_s ll = getInputFile("assets/test.txt");
-    printSNodeList(ll.head);
+    // llist ll = getInputFile("assets/2023/Day3.txt");
+    llist *ll = getInputFile("assets/test.txt");
+    llist_print(ll);
 
     part1(ll);
     part2(ll);
