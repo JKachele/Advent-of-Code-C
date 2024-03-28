@@ -13,12 +13,12 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
-void part1(linkedList_s ll) {
+void part1(llist *ll) {
     int idSum = 0;
     int id = 1;
     char *colors[3] = {"red", "green", "blue"};
     int colorCount[3] = {12, 13, 14};
-    node_s *current = ll.head;
+    llNode *current = ll->head;
     while(current != NULL) {
         char str[BUFFER_SIZE];
         strncpy(str, current->str, BUFFER_SIZE);
@@ -54,10 +54,10 @@ void part1(linkedList_s ll) {
     printf("Part 1: Sum = %d\n", idSum);
 }
 
-void part2(linkedList_s ll) {
+void part2(llist *ll) {
     int powersum = 0;
     char *colors[3] = {"red", "green", "blue"};
-    node_s *current = ll.head;
+    llNode *current = ll->head;
     int i = 0;
     while(current != NULL) {
         char str[BUFFER_SIZE];
@@ -84,8 +84,8 @@ void part2(linkedList_s ll) {
         int power = colorCount[0] * colorCount[1] * colorCount[2];
         powersum += power;
 
-        printf("%d; Red: %d, Green: %d, Blue: %d; Product: %d; Sum: %d\n",
-               i, colorCount[0], colorCount[1], colorCount[2], power, powersum);
+        // printf("%d; Red: %d, Green: %d, Blue: %d; Product: %d; Sum: %d\n",
+               // i, colorCount[0], colorCount[1], colorCount[2], power, powersum);
 
         current = current->next;
         i++;
@@ -94,10 +94,10 @@ void part2(linkedList_s ll) {
 }
 
 int main(int argc, char *argv[]) {
-    linkedList_s ll = getInputFile("assets/2023/Day2.txt");
-    // linkedList_s ll = getInputFile("assets/test.txt");
-    printSNodeList(ll.head);
-    printf("Tail: %s", ll.tail->str);
+    llist *ll = getInputFile("assets/2023/Day2.txt");
+    // llist ll = getInputFile("assets/test.txt");
+    // llist_print(ll);
+    printf("Tail: %s\n", ll->tail->str);
 
     part1(ll);
     part2(ll);

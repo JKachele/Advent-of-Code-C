@@ -10,7 +10,7 @@
 
 #include "linkedlist.h"
 
-linkedList_s getInputFile(char *fileName);
+llist *getInputFile(char *fileName);
 
 #endif
 

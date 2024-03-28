@@ -11,72 +11,89 @@
 #include <string.h>
 #include "linkedlist.h"
 
-node_s *createSNode(char str[]) {
-    node_s *result = malloc(sizeof(node_s));
+llist *llist_create() {
+    llist *ll;
+    ll->head = NULL;
+    ll->tail = NULL;
+    ll->length = 0;
+    return ll;
+}
+
+llNode *llist_create_node(char str[]) {
+    llNode *result = malloc(sizeof(llNode));
     strcpy(result->str, str);
     result->prev = NULL;
     result->next = NULL;
     return result;
 }
 
-node_s *insertSNodeAtHead(node_s **head, node_s **tail, node_s *nodeToInsert) {
-    nodeToInsert->next = *head;
-    if (*head == NULL) {
-        *tail = nodeToInsert;
-    } else {
-        (*head)->prev = nodeToInsert;
-    }
-    *head = nodeToInsert;
-    nodeToInsert->prev = NULL;
-    return nodeToInsert;
-}
+// llNode *insertSNodeAtHead(llNode **head, llNode **tail, llNode *nodeToInsert) {
+//     nodeToInsert->next = *head;
+//     if (*head == NULL) {
+//         *tail = nodeToInsert;
+//     } else {
+//         (*head)->prev = nodeToInsert;
+//     }
+//     *head = nodeToInsert;
+//     nodeToInsert->prev = NULL;
+//     return nodeToInsert;
+// }
 
-node_s *insertSNodeAtTail(node_s **head, node_s **tail, node_s *nodeToInsert) {
-    nodeToInsert->prev = *tail;
-    if (*tail == NULL) {
-        *head = nodeToInsert;
+llNode *llist_add_node(llist *ll, llNode *nodeToInsert) {
+    nodeToInsert->prev = ll->tail;
+    if (ll->tail == NULL) {
+        ll->head = nodeToInsert;
     } else {
-        (*tail)->next = nodeToInsert;
+        (ll->tail)->next = nodeToInsert;
     }
-    *tail = nodeToInsert;
+    ll->tail = nodeToInsert;
     nodeToInsert->next = NULL;
+    ll->length++;
     return nodeToInsert;
 }
 
-void insertSNodeAfterNode(node_s **tail, node_s *nodeToInsertAfter, node_s *nodeToInsert) {
+llNode *llist_create_add_node(llist *ll, char str[]) {
+    llNode *node = llist_create_node(str);
+    return llist_add_node(ll, node);
+}
+
+
+void llist_insert_after(llist *ll, llNode *nodeToInsertAfter, llNode *nodeToInsert) {
     nodeToInsert->next = nodeToInsertAfter->next;
     if (nodeToInsert->next == NULL) {
-        *tail = nodeToInsert;
+        ll->tail = nodeToInsert;
     } else {
         nodeToInsert->next->prev = nodeToInsert;
     }
     nodeToInsert->prev = nodeToInsertAfter;
     nodeToInsertAfter->next = nodeToInsert;
+    ll->length++;
 }
 
-void insertSNodeBeforeNode(node_s **head, node_s *nodeToInsertBefore, node_s *nodeToInsert) {
+void llist_insert_before(llist *ll, llNode *nodeToInsertBefore, llNode *nodeToInsert) {
     nodeToInsert->prev = nodeToInsertBefore->prev;
     if (nodeToInsert->prev == NULL) {
-        *head = nodeToInsert;
+        ll->head = nodeToInsert;
     } else {
         nodeToInsert->prev->next = nodeToInsert;
     }
     nodeToInsert->next = nodeToInsertBefore;
     nodeToInsertBefore->prev = nodeToInsert;
+    ll->length++;
 }
 
-void removeSNode(node_s **head, node_s **tail, node_s *nodeToRemove) {
-    if (*head == nodeToRemove) {
-        *head = nodeToRemove->next;
-        if (*head != NULL) {
-            (*head)->prev = NULL;
+void llist_remove_node(llist *ll, llNode *nodeToRemove) {
+    if (ll->head == nodeToRemove) {
+        ll->head = nodeToRemove->next;
+        if (ll->head != NULL) {
+            (ll->head)->prev = NULL;
         }
         free(nodeToRemove);
         return;
-    } else if (*tail == nodeToRemove) {
-        *tail = nodeToRemove->prev;
-        if (*tail != NULL) {
-            (*tail)->next = NULL;
+    } else if (ll->tail == nodeToRemove) {
+        ll->tail = nodeToRemove->prev;
+        if (ll->tail != NULL) {
+            (ll->tail)->next = NULL;
         }
         free(nodeToRemove);
         return;
@@ -89,11 +106,12 @@ void removeSNode(node_s **head, node_s **tail, node_s *nodeToRemove) {
         nodeToRemove->prev = NULL;
     }
     free(nodeToRemove);
+    ll->length--;
     return;
 }
 
-node_s *getSNodeAtIndex(node_s *head, int index) {
-    node_s *temp = head;
+llNode *llist_get_node(llist *ll, int index) {
+    llNode *temp = ll->head;
     int i = 0;
     while (temp != NULL) {
         if (i == index) return temp;
@@ -103,17 +121,42 @@ node_s *getSNodeAtIndex(node_s *head, int index) {
     return NULL;
 }
 
-node_s *getSNodeWithValue(node_s *head, char str[]) {
-    node_s *temp = head;
+// llNode *getSNodeWithValue(llNode *head, char str[]) {
+//     llNode *temp = head;
+//     while (temp != NULL) {
+//         if (strcmp(temp->str, str) == 0) return temp;
+//         temp = temp->next;
+//     }
+//     return NULL;
+// }
+
+int llist_get_index(llNode *node, llist *ll) {
+    llNode *temp = ll->head;
+    int i = 0;
     while (temp != NULL) {
-        if (strcmp(temp->str, str) == 0) return temp;
+        if (temp == node) {
+            return i;
+        }
+        i++;
         temp = temp->next;
     }
-    return NULL;
+    return -1;
 }
 
-void printSNodeList(node_s *head) {
-    node_s *temp = head;
+int llist_get_longest_node(llist *ll) {
+    llNode *temp = ll->head;
+    int i = 0;
+    while (temp != NULL) {
+        if (strlen(temp->str) > i) {
+            i = strlen(temp->str);
+        }
+        temp = temp->next;
+    }
+    return i;
+}
+
+void llist_print(llist *ll) {
+    llNode *temp = ll->head;
     while (temp != NULL) {
         printf("[%s]\n", temp->str);
         temp = temp->next;

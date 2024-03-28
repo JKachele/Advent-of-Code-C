@@ -9,6 +9,7 @@ CFLAGS = -g
 LDFLAGS = -g
 
 SRC = src/2023/Day$(DAY).c $(wildcard src/util/*.c)
+TEST = test.c $(wildcard src/util/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
 
@@ -38,7 +39,7 @@ release: $(OBJ)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 test: dirs
-	$(CC) -o $(BIN)/test test.c $(LDFLAGS)
+	$(CC) -o $(BIN)/test $(TEST) $(LDFLAGS)
 
 runTest: test
 	$(BIN)/test
