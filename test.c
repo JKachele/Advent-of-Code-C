@@ -7,31 +7,18 @@
  ************************************************/
 
 #include <stdio.h>
-
-void printArray(int array[10]) {
-    for (int i = 0; i < 10; i++) {
-        printf("[%d] ", array[i]);
-    }
-    printf("\n");
-}
+#include <string.h>
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    int array[10][10];
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
-            array[y][x] = (y * 10) + x;
-        }
+
+    char test[] = " 1 2 3 4 5   1 2 3 4 ";
+
+    char *num = strtok(test, " ");
+    while (num != NULL) {
+        printf("**%s**\n", num);
+        num = strtok(NULL, " ");
     }
-
-    // for (int y = 0; y < 10; y++) {
-    //     for (int x = 0; x < 10; x++) {
-    //         printf("[%d] ", array[x][y]);
-    //     }
-    //     printf("\n");
-    // }
-
-    printArray(array[3]);
 
     return 0;
 }
