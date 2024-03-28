@@ -7,22 +7,31 @@
  ************************************************/
 
 #include <stdio.h>
-#include "src/util/linkedlist.h"
+
+void printArray(int array[10]) {
+    for (int i = 0; i < 10; i++) {
+        printf("[%d] ", array[i]);
+    }
+    printf("\n");
+}
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    llist *ll = llist_create();
-    llNode *node1 = llist_create_node("Hello 1");
-    llNode *node2 = llist_create_node("Hello 2");
-    llNode *node3 = llist_create_node("Hello 3");
-    llNode *node4 = llist_create_node("Hello 4");
+    int array[10][10];
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            array[y][x] = (y * 10) + x;
+        }
+    }
 
-    llist_add_node(ll, node1);
-    llist_add_node(ll, node2);
-    llist_add_node(ll, node3);
-    llist_add_node(ll, node4);
+    // for (int y = 0; y < 10; y++) {
+    //     for (int x = 0; x < 10; x++) {
+    //         printf("[%d] ", array[x][y]);
+    //     }
+    //     printf("\n");
+    // }
 
-    llist_print(ll);
+    printArray(array[3]);
 
     return 0;
 }
