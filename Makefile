@@ -28,6 +28,7 @@ dirs:
 
 run: all
 	$(BIN)/out
+	rm $(OBJ)
 
 out: $(OBJ)
 	$(CC) -o $(BIN)/out $^ $(LDFLAGS)
