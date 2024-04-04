@@ -24,9 +24,10 @@ llist *getInputFile(char *fileName) {
         exit(EXIT_FAILURE);
     }
 
-    while ((read = getline(&line, &len, inputFile)) != -1) {    // set "line" to the line in the file and test for end of file
-        line[strlen(line) - 1] = '\0';                          // Remove newline character from string
-        llist_create_add_node(ll, line);
+    // set "line" to the line in the file and test for end of file
+    while ((read = getline(&line, &len, inputFile)) != -1) {
+        line[strlen(line) - 1] = '\0';  // Remove newline character from string
+        llist_add(ll, line);
     }
 
     fclose(inputFile);
@@ -36,3 +37,10 @@ llist *getInputFile(char *fileName) {
     return ll;
 }
 
+void printInput(void *data) {
+    char *str = (char*)data;
+    if (data == NULL) {
+        return;
+    }
+    printf("%s", str);
+}

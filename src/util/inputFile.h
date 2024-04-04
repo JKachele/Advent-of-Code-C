@@ -11,6 +11,7 @@
 #include "linkedlist.h"
 
 llist *getInputFile(char *fileName);
+void printInput(void *data);
 
 #endif
 

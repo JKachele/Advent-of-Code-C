@@ -80,7 +80,7 @@ void part1(llist *ll) {
     int calibrationSum = 0;
     llNode *current = ll->head;
     while(current != NULL) {
-        char *str = current->str;
+        char *str = current->data;
         int digit1 = 0;
         int digit2 = 0;
         // Search from front to back for number, stopping at first number found
@@ -115,7 +115,7 @@ void part2(llist *ll) {
     int calibrationSum = 0;
     llNode *current = ll->head;
     while(current != NULL) {
-        char *str = current->str;
+        char *str = current->data;
         //replace all number strings with numbers
         for (int i = 0; i < 10; i++) {
             replaceSubString(str, numString[i], nums[i]);
@@ -150,7 +150,7 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
     llist *ll = getInputFile("assets/2023/Day1.txt");
     // llist *ll = getInputFile("assets/test.txt");
-    // llist_print(ll);
+    llist_print(ll, printInput);
 
     part1(ll);
     part2(ll);
