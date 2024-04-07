@@ -19,7 +19,7 @@ void part1(llist *ll) {
     int totalPoints = 0;
     while(current != NULL) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
         strtok(str, ":");   // Remove First Part of string
@@ -75,7 +75,7 @@ void part2(llist *ll) {
     int cardNum = 0;
     while(current != NULL) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
         strtok(str, ":");   // Remove First Part of string
@@ -129,7 +129,7 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
     llist *ll = getInputFile("assets/2023/Day4.txt");
     // llist *ll = getInputFile("assets/test.txt");
-    // llist_print(ll);
+    // llist_print(ll, printInput);
 
     part1(ll);
     part2(ll);

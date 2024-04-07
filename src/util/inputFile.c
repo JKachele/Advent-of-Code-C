@@ -27,7 +27,9 @@ llist *getInputFile(char *fileName) {
     // set "line" to the line in the file and test for end of file
     while ((read = getline(&line, &len, inputFile)) != -1) {
         line[strlen(line) - 1] = '\0';  // Remove newline character from string
-        llist_add(ll, line);
+        char *nodeData = malloc(BUFFER_SIZE * sizeof(char));
+        strncpy(nodeData, line, BUFFER_SIZE);
+        llist_add(ll, nodeData, BUFFER_SIZE * sizeof(char));
     }
 
     fclose(inputFile);

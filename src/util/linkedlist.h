@@ -7,7 +7,7 @@
  ************************************************/
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
-#define BUFFER_SIZE 256
+#include <stdlib.h>
 
 typedef struct llNode {
     void *data;
@@ -22,9 +22,9 @@ typedef struct llist {
 } llist;
 
 llist *llist_create();
-llNode *llist_create_node(void* data);
+llNode *llist_create_node(void* data, size_t size);
 llNode *llist_add_node(llist *ll, llNode *nodeToInsert);
-llNode *llist_add(llist *ll, void *data);
+llNode *llist_add(llist *ll, void *data, size_t size);
 void llist_insert_after(llist *ll, llNode *nodeToInsertAfter, llNode *nodeToInsert);
 void llist_insert_before(llist *ll, llNode *nodeToInsertBefore, llNode *nodeToInsert);
 void llist_remove_node(llist *ll, llNode *nodeToRemove);

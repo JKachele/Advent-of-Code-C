@@ -21,7 +21,7 @@ void part1(llist *ll) {
     llNode *current = ll->head;
     while(current != NULL) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
         bool invalid = false;
@@ -61,7 +61,7 @@ void part2(llist *ll) {
     int i = 0;
     while(current != NULL) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         if (str[0] == '\0') break;
 
         char *token = strtok(str, ":");   // Remove First Part of string
@@ -96,8 +96,8 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
     llist *ll = getInputFile("assets/2023/Day2.txt");
     // llist ll = getInputFile("assets/test.txt");
-    // llist_print(ll);
-    printf("Tail: %s\n", ll->tail->str);
+    // llist_print(ll, printInput);
+    printf("Tail: %s\n", (char*)ll->tail->data);
 
     part1(ll);
     part2(ll);
