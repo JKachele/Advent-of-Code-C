@@ -31,7 +31,7 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
     llist *ll = getInputFile("assets/2023/Day5.txt");
     // llist *ll = getInputFile("assets/test.txt");
-    llist_print(ll);
+    llist_print(ll, printInput);
 
     part1(ll);
     part2(ll);
