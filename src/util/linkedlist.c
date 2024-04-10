@@ -19,8 +19,8 @@ llist *llist_create() {
     return ll;
 }
 
-llNode *llist_create_node(void* data, size_t size) {
-    llNode *node = (llNode*)malloc(sizeof(llNode) + size);
+llNode *llist_create_node(void* data) {
+    llNode *node = (llNode*)malloc(sizeof(llNode));
     node->data = data;
     node->prev = NULL;
     node->next = NULL;
@@ -40,8 +40,8 @@ llNode *llist_add_node(llist *ll, llNode *nodeToInsert) {
     return nodeToInsert;
 }
 
-llNode *llist_add(llist *ll, void *data, size_t size) {
-    llNode *node = llist_create_node(data, size);
+llNode *llist_add(llist *ll, void *data) {
+    llNode *node = llist_create_node(data);
     return llist_add_node(ll, node);
 }
 

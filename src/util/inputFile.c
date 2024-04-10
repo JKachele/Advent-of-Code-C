@@ -29,7 +29,7 @@ llist *getInputFile(char *fileName) {
         line[strlen(line) - 1] = '\0';  // Remove newline character from string
         char *nodeData = malloc(BUFFER_SIZE * sizeof(char));
         strncpy(nodeData, line, BUFFER_SIZE);
-        llist_add(ll, nodeData, BUFFER_SIZE * sizeof(char));
+        llist_add(ll, nodeData);
     }
 
     fclose(inputFile);
