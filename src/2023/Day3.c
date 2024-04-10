@@ -15,11 +15,10 @@
 int MAX_X;
 int MAX_Y;
 
-struct vector2 {
+typedef struct vector2 {
     int x;
     int y;
-};
-typedef struct vector2 vector2;
+} vector2;
 
 bool isNum(char i) {
     return (i >= '0' && i <= '9');
@@ -30,6 +29,19 @@ vector2 initVector2(int x, int y) {
     vect.x = x;
     vect.y = y;
     return vect;
+}
+
+int llist_get_longest_node(llist *ll) {
+    llNode *current = ll->head;
+    int longest = -1;
+    while (current != NULL) {
+        int length = strlen((char*)current->data);
+        if ( length > longest) {
+            longest = length;
+        }
+        current = current->next;
+    }
+    return longest;
 }
 
 int findNumber(char schem[MAX_X], int x) {
@@ -58,7 +70,7 @@ void part1(llist *ll) {
     char schematic[MAX_Y][MAX_X];
     for(int y = 0; current != NULL; y++) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         for (int x = 0; x < strlen(str); x++) {
             schematic[y][x] = str[x];
         }
@@ -127,7 +139,7 @@ void part2(llist *ll) {
     int gearRatioSum = 0;
     for(int y = 0; current != NULL; y++) {
         char str[BUFFER_SIZE];
-        strncpy(str, current->str, BUFFER_SIZE);
+        strncpy(str, (char*)current->data, BUFFER_SIZE);
         for (int x = 0; x < strlen(str); x++) {
             schematic[y][x] = str[x];
         }
@@ -219,7 +231,7 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
     llist *ll = getInputFile("assets/2023/Day3.txt");
     // llist *ll = getInputFile("assets/test.txt");
-    // llist_print(ll);
+    // llist_print(ll, printInput);
     MAX_X = llist_get_longest_node(ll);
     MAX_Y = ll->length;
 
