@@ -7,18 +7,12 @@
  ************************************************/
 
 #include <stdio.h>
-#include <string.h>
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-
-    char test[] = " 1 2 3 4 5   1 2 3 4 ";
-
-    char *num = strtok(test, " ");
-    while (num != NULL) {
-        printf("**%s**\n", num);
-        num = strtok(NULL, " ");
-    }
+    printf("Size of int = %lu\n", sizeof(int));
+    printf("Size of long = %lu\n", sizeof(long));
+    printf("Size of char = %lu\n", sizeof(char));
 
     return 0;
 }
