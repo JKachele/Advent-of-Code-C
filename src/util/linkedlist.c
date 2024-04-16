@@ -27,6 +27,22 @@ llNode *llist_create_node(void* data) {
     return node;
 }
 
+void llist_free_node(llNode *node) {
+    free(node->data);
+    free(node);
+}
+
+void llist_free(llist *ll) {
+    llNode *current = ll->head;
+    llNode *next;
+    while (current != NULL) {
+        next = current->next;
+        llist_free_node(current);
+        current = next;
+    }
+    free(ll);
+}
+
 llNode *llist_add_node(llist *ll, llNode *nodeToInsert) {
     nodeToInsert->prev = ll->tail;
     if (ll->tail == NULL) {
@@ -76,14 +92,14 @@ void llist_remove_node(llist *ll, llNode *nodeToRemove) {
         if (ll->head != NULL) {
             (ll->head)->prev = NULL;
         }
-        free(nodeToRemove);
+        llist_free_node(nodeToRemove);
         return;
     } else if (ll->tail == nodeToRemove) {
         ll->tail = nodeToRemove->prev;
         if (ll->tail != NULL) {
             (ll->tail)->next = NULL;
         }
-        free(nodeToRemove);
+        llist_free_node(nodeToRemove);
         return;
     }else {
         nodeToRemove->prev->next = nodeToRemove->next;
@@ -93,7 +109,7 @@ void llist_remove_node(llist *ll, llNode *nodeToRemove) {
         nodeToRemove->next = NULL;
         nodeToRemove->prev = NULL;
     }
-    free(nodeToRemove);
+    llist_free_node(nodeToRemove);
     ll->length--;
     return;
 }
