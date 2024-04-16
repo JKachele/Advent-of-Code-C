@@ -11,6 +11,11 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
+typedef struct range {
+    long start;
+    long end;
+} range;
+
 void printLong(void* data) {
     if (data == NULL) {return;}
     long *num = (long*)data;
@@ -152,8 +157,14 @@ void part2(llist *ll) {
     }
     long seeds[seedLL->length];
     llToArray(seedLL, seeds);
-    int numSeeds = seedLL->length;
-    printLongArray(seeds, numSeeds);
+    int numSeedRanges = seedLL->length / 2;
+
+    range seedRanges[numSeedRanges];
+    for (int i = 0; i < numSeedRanges; i++) {
+        range newRange = {seeds[i*2],
+            seeds[i*2] + (seeds[i*2+1] - 1)};
+        seedRanges[i] = newRange;
+    }
 
     // printf("Part 2: Lowest Location = %ld\n", minLocation);
 }
