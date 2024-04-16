@@ -143,8 +143,8 @@ void llist_print(llist *ll, void (*print)(void*)) {
     while (current != NULL) {
         printf("[");
         print(current->data);
-        printf("]\n");
+        printf("], ");
         current = current->next;
     }
-    // printf("\n");
+    printf("\n");
 }

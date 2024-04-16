@@ -16,6 +16,12 @@ typedef struct range {
     long end;
 } range;
 
+typedef struct transformation {
+    long dest;
+    long src;
+    long len;
+} transformation;
+
 void printLong(void* data) {
     if (data == NULL) {return;}
     long *num = (long*)data;
@@ -45,6 +51,18 @@ void printLongArray(long arr[], long len) {
     printf("\n");
 }
 
+void printRange(void *data) {
+    if (data == NULL) { return; }
+    range *curRange = (range*)data;
+    printf("%ld, %ld", curRange->start, curRange->end);
+}
+
+void printTrans(void *data) {
+    if (data == NULL) { return; }
+    transformation *trans = (transformation*)data;
+    printf("%ld, %ld, %ld", trans->dest, trans->src, trans->len);
+}
+
 llNode *processSection(llNode *start, long in[], long out[], int numSeeds) {
     llNode *current = start;
     // while the line is not empty
@@ -71,6 +89,21 @@ llNode *processSection(llNode *start, long in[], long out[], int numSeeds) {
     // printLongArray(out, numSeeds);
 
     return current;
+}
+
+void addRangeNode(llist *ll, long start, long end) {
+    range *newRange = malloc(sizeof(range));
+    newRange->start = start;
+    newRange->end = end; 
+    llist_add(ll, newRange);
+}
+
+void addTransformNode(llist *ll, long dest, long src, long len) {
+    transformation *newTransform = malloc(sizeof(transformation));
+    newTransform->dest = dest;
+    newTransform->src = src;
+    newTransform->len = len;
+    llist_add(ll, newTransform);
 }
 
 void part1(llist *ll) {
@@ -143,6 +176,7 @@ void part1(llist *ll) {
 void part2(llist *ll) {
     llNode *current = ll->head;
 
+    // Get Seeds
     char seedStr[BUFFER_SIZE];
     strncpy(seedStr, (char*)current->data, BUFFER_SIZE);
     llist *seedLL = llist_create();
@@ -155,15 +189,38 @@ void part2(llist *ll) {
         llist_add(seedLL, seedPtr);
         token = strtok(NULL, " ");
     }
-    long seeds[seedLL->length];
-    llToArray(seedLL, seeds);
-    int numSeedRanges = seedLL->length / 2;
+    current = current->next;
 
-    range seedRanges[numSeedRanges];
-    for (int i = 0; i < numSeedRanges; i++) {
-        range newRange = {seeds[i*2],
-            seeds[i*2] + (seeds[i*2+1] - 1)};
-        seedRanges[i] = newRange;
+    // Convert seeds list to ranges list
+    llist *ranges = llist_create();
+    llNode *curSeed = seedLL->head;
+    while (curSeed != NULL) {
+        long start = *(long*)curSeed->data;
+        curSeed = curSeed->next;
+        long length = *(long*)curSeed->data;
+        long end = start + length - 1;
+        addRangeNode(ranges, start, end);
+        curSeed = curSeed->next;
+    }
+    // llist_print(ranges, printRange);
+
+    // Get array of Transformation lists
+    llist *transformations[7];
+    for (int i = 0; i < 7; i++) {
+        llist *curTrans = llist_create();
+        current = current->next->next;
+        while (current != NULL && ((char*)current->data)[0] != '\0') {
+            char str[BUFFER_SIZE];
+            strncpy(str, (char*)current->data, BUFFER_SIZE);
+            long dest, src, range;
+            dest = strtol(strtok(str, " "), NULL, 10);
+            src = strtol(strtok(NULL, " "), NULL, 10);
+            range = strtol(strtok(NULL, " "), NULL, 10);
+            addTransformNode(curTrans, dest, src, range);
+            current = current->next;
+        }
+        // llist_print(curTrans, printTrans);
+        transformations[i] = curTrans;
     }
 
     // printf("Part 2: Lowest Location = %ld\n", minLocation);
