@@ -23,6 +23,8 @@ typedef struct llist {
 
 llist *llist_create();
 llNode *llist_create_node(void* data);
+void llist_free_node(llNode *node);
+void llist_free(llist *ll);
 llNode *llist_add_node(llist *ll, llNode *nodeToInsert);
 llNode *llist_add(llist *ll, void *data);
 void llist_insert_after(llist *ll, llNode *nodeToInsertAfter, llNode *nodeToInsert);
