@@ -8,8 +8,12 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+#include "../util/util.h"
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
+
+#define NUMBER_STEPS 7
 
 typedef struct range {
     long start;
@@ -205,8 +209,8 @@ void part2(llist *ll) {
     // llist_print(ranges, printRange);
 
     // Get array of Transformation lists
-    llist *transformations[7];
-    for (int i = 0; i < 7; i++) {
+    llist *transformations[NUMBER_STEPS];
+    for (int i = 0; i < NUMBER_STEPS; i++) {
         llist *curTrans = llist_create();
         current = current->next->next;
         while (current != NULL && ((char*)current->data)[0] != '\0') {
@@ -221,6 +225,51 @@ void part2(llist *ll) {
         }
         // llist_print(curTrans, printTrans);
         transformations[i] = curTrans;
+    }
+
+    // Using range splitting to solve the problem
+    for (int i = 0; i < NUMBER_STEPS; i++) {
+        llist *newRanges = llist_create();
+        llist *block = transformations[i];
+        llNode *currentRange = ranges->head;
+        while (ranges->length > 0) {
+            long start = ((range*)currentRange->data)->start;
+            long end = ((range*)currentRange->data)->end;
+            currentRange = currentRange->next;
+            llist_remove_node(ranges, currentRange->prev);
+            llNode *currentTrans = block->head;
+            bool overlapFound = false;
+            while (currentTrans != NULL) {
+                long dest = ((transformation*)currentTrans->data)->dest;
+                long src = ((transformation*)currentTrans->data)->src;
+                long len = ((transformation*)currentTrans->data)->len;
+                long srcEnd = src + len - 1;
+                
+                long overlapStart = max(start, src);
+                long overlapEnd = min(end, srcEnd);
+
+                // If overlap exists
+                if (overlapStart < overlapEnd) {
+                    overlapFound = true;
+                    long newStart = overlapStart - src + dest;
+                    long newEnd = overlapEnd - src + dest;
+                    addRangeNode(newRanges, newStart, newEnd);
+                    if (start < overlapStart) {
+                        addRangeNode(newRanges, start, overlapStart);
+                    }
+                    if (overlapEnd < end) {
+                        addRangeNode(newRanges, overlapEnd, end);
+                    }
+                    break;
+                }
+                currentTrans = currentTrans->next;
+            }
+            if (!overlapFound) {
+                addRangeNode(newRanges, start, end);
+            }
+        }
+        llist_free(ranges);
+        ranges = newRanges;
     }
 
     // printf("Part 2: Lowest Location = %ld\n", minLocation);
