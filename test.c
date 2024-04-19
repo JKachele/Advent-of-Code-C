@@ -9,6 +9,11 @@
 #include <stdio.h>
 #include "src/util/util.h"
 
+typedef struct {
+    int i;
+    int j;
+} stuff;
+
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
     printf("Size of int = %lu\n", sizeof(int));
@@ -19,6 +24,7 @@ int main(int argc, char *argv[]) {
     printf("Max of 1 and 1: %d\n", max(1,1));
     printf("Min of 1 and 2: %d\n", min(1,2));
     printf("Min of 1 and 1: %d\n", min(1,1));
+    stuff bla = {1, 2};
 
     return 0;
 }

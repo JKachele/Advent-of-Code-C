@@ -92,15 +92,11 @@ void llist_remove_node(llist *ll, llNode *nodeToRemove) {
         if (ll->head != NULL) {
             (ll->head)->prev = NULL;
         }
-        llist_free_node(nodeToRemove);
-        return;
     } else if (ll->tail == nodeToRemove) {
         ll->tail = nodeToRemove->prev;
         if (ll->tail != NULL) {
             (ll->tail)->next = NULL;
         }
-        llist_free_node(nodeToRemove);
-        return;
     }else {
         nodeToRemove->prev->next = nodeToRemove->next;
         if (nodeToRemove->next != NULL) {

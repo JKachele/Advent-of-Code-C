@@ -6,6 +6,7 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -206,7 +207,7 @@ void part2(llist *ll) {
         addRangeNode(ranges, start, end);
         curSeed = curSeed->next;
     }
-    // llist_print(ranges, printRange);
+    llist_print(ranges, printRange);
 
     // Get array of Transformation lists
     llist *transformations[NUMBER_STEPS];
@@ -223,7 +224,7 @@ void part2(llist *ll) {
             addTransformNode(curTrans, dest, src, range);
             current = current->next;
         }
-        // llist_print(curTrans, printTrans);
+        llist_print(curTrans, printTrans);
         transformations[i] = curTrans;
     }
 
@@ -235,8 +236,9 @@ void part2(llist *ll) {
         while (ranges->length > 0) {
             long start = ((range*)currentRange->data)->start;
             long end = ((range*)currentRange->data)->end;
-            currentRange = currentRange->next;
-            llist_remove_node(ranges, currentRange->prev);
+            llNode *nextRange = currentRange->next;
+            llist_remove_node(ranges, currentRange);
+            currentRange = nextRange;
             llNode *currentTrans = block->head;
             bool overlapFound = false;
             while (currentTrans != NULL) {
@@ -271,13 +273,24 @@ void part2(llist *ll) {
         llist_free(ranges);
         ranges = newRanges;
     }
-
-    // printf("Part 2: Lowest Location = %ld\n", minLocation);
+    llist_print(ranges, printRange);
+    
+    // Find lowest range start
+    long minLocation = LONG_MAX;
+    llNode *curRange = ranges->head;
+    while (curRange != NULL) {
+        long location = ((range*)curRange->data)->start;
+        if (minLocation > location) {
+            minLocation = location;
+        }
+        curRange = curRange->next;
+    }
+    printf("Part 2: Lowest Location = %ld\n", minLocation);
 }
 
 int main(int argc, char *argv[]) {
-    // llist *ll = getInputFile("assets/2023/Day5.txt");
-    llist *ll = getInputFile("assets/test.txt");
+    llist *ll = getInputFile("assets/2023/Day5.txt");
+    // llist *ll = getInputFile("assets/test.txt");
     // llist_print(ll, printInput);
 
     part1(ll);
