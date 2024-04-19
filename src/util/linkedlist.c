@@ -87,7 +87,10 @@ void llist_insert_before(llist *ll, llNode *nodeToInsertBefore, llNode *nodeToIn
 }
 
 void llist_remove_node(llist *ll, llNode *nodeToRemove) {
-    if (ll->head == nodeToRemove) {
+    if (ll->length == 1) {
+        ll->head = NULL;
+        ll->tail = NULL;
+    } else if (ll->head == nodeToRemove) {
         ll->head = nodeToRemove->next;
         if (ll->head != NULL) {
             (ll->head)->prev = NULL;
@@ -97,7 +100,7 @@ void llist_remove_node(llist *ll, llNode *nodeToRemove) {
         if (ll->tail != NULL) {
             (ll->tail)->next = NULL;
         }
-    }else {
+    } else {
         nodeToRemove->prev->next = nodeToRemove->next;
         if (nodeToRemove->next != NULL) {
             nodeToRemove->next->prev = nodeToRemove->prev;

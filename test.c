@@ -7,24 +7,31 @@
  ************************************************/
 
 #include <stdio.h>
-#include "src/util/util.h"
+#include "src/util/linkedlist.h"
 
-typedef struct {
-    int i;
-    int j;
-} stuff;
+void printInt(void* data) {
+    if (data == NULL) {return;}
+    int *num = (int*)data;
+    printf("%d", *num);
+}
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    printf("Size of int = %lu\n", sizeof(int));
-    printf("Size of long = %lu\n", sizeof(long));
-    printf("Size of char = %lu\n", sizeof(char));
-
-    printf("Max of 1 and 2: %d\n", max(1,2));
-    printf("Max of 1 and 1: %d\n", max(1,1));
-    printf("Min of 1 and 2: %d\n", min(1,2));
-    printf("Min of 1 and 1: %d\n", min(1,1));
-    stuff bla = {1, 2};
+    llist *ll = llist_create();
+    int *int1 = malloc(sizeof(int));
+    int *int2 = malloc(sizeof(int));
+    int *int3 = malloc(sizeof(int));
+    *int1 = 1;
+    *int2 = 2;
+    *int3 = 3;
+    llist_add(ll, int1);
+    llist_add(ll, int2);
+    llist_add(ll, int3);
+    printf("length = %d\n", ll->length);
+    llist_print(ll, printInt);
+    llist_remove_node(ll, ll->head);
+    printf("length = %d\n", ll->length);
+    llist_print(ll, printInt);
 
     return 0;
 }

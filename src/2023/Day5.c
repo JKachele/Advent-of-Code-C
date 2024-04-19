@@ -203,11 +203,11 @@ void part2(llist *ll) {
         long start = *(long*)curSeed->data;
         curSeed = curSeed->next;
         long length = *(long*)curSeed->data;
-        long end = start + length - 1;
+        long end = start + length;
         addRangeNode(ranges, start, end);
         curSeed = curSeed->next;
     }
-    llist_print(ranges, printRange);
+    // llist_print(ranges, printRange);
 
     // Get array of Transformation lists
     llist *transformations[NUMBER_STEPS];
@@ -217,14 +217,15 @@ void part2(llist *ll) {
         while (current != NULL && ((char*)current->data)[0] != '\0') {
             char str[BUFFER_SIZE];
             strncpy(str, (char*)current->data, BUFFER_SIZE);
-            long dest, src, range;
+            long dest, src, range, srcEnd;
             dest = strtol(strtok(str, " "), NULL, 10);
             src = strtol(strtok(NULL, " "), NULL, 10);
             range = strtol(strtok(NULL, " "), NULL, 10);
-            addTransformNode(curTrans, dest, src, range);
+            srcEnd = src + range;
+            addTransformNode(curTrans, dest, src, srcEnd);
             current = current->next;
         }
-        llist_print(curTrans, printTrans);
+        // llist_print(curTrans, printTrans);
         transformations[i] = curTrans;
     }
 
@@ -232,20 +233,17 @@ void part2(llist *ll) {
     for (int i = 0; i < NUMBER_STEPS; i++) {
         llist *newRanges = llist_create();
         llist *block = transformations[i];
-        llNode *currentRange = ranges->head;
         while (ranges->length > 0) {
+            llNode *currentRange = ranges->head;
             long start = ((range*)currentRange->data)->start;
             long end = ((range*)currentRange->data)->end;
-            llNode *nextRange = currentRange->next;
             llist_remove_node(ranges, currentRange);
-            currentRange = nextRange;
             llNode *currentTrans = block->head;
             bool overlapFound = false;
             while (currentTrans != NULL) {
                 long dest = ((transformation*)currentTrans->data)->dest;
                 long src = ((transformation*)currentTrans->data)->src;
-                long len = ((transformation*)currentTrans->data)->len;
-                long srcEnd = src + len - 1;
+                long srcEnd = ((transformation*)currentTrans->data)->len;
                 
                 long overlapStart = max(start, src);
                 long overlapEnd = min(end, srcEnd);
@@ -257,10 +255,10 @@ void part2(llist *ll) {
                     long newEnd = overlapEnd - src + dest;
                     addRangeNode(newRanges, newStart, newEnd);
                     if (start < overlapStart) {
-                        addRangeNode(newRanges, start, overlapStart);
+                        addRangeNode(ranges, start, overlapStart);
                     }
                     if (overlapEnd < end) {
-                        addRangeNode(newRanges, overlapEnd, end);
+                        addRangeNode(ranges, overlapEnd, end);
                     }
                     break;
                 }
@@ -272,8 +270,10 @@ void part2(llist *ll) {
         }
         llist_free(ranges);
         ranges = newRanges;
+        // printf("--------------------------------------\n");
+        // llist_print(block, printTrans);
+        // llist_print(ranges, printRange);
     }
-    llist_print(ranges, printRange);
     
     // Find lowest range start
     long minLocation = LONG_MAX;
