@@ -12,6 +12,16 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
+void removeSpaces(char *str) {
+    int count = 0;
+    for (int i = 0; str[i]; i++) {
+        if (str[i] != ' ') {
+            str[count++] = str[i];
+        }
+    }
+    str[count] = '\0';
+}
+
 void part1(llist *ll) {
     char timeStr[BUFFER_SIZE], distStr[BUFFER_SIZE];
     strncpy(timeStr, (char*)ll->head->data, BUFFER_SIZE);
@@ -63,11 +73,29 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-    llNode *current = ll->head;
-    while(current != NULL) {
-        current = current->next;
+    char timeInput[BUFFER_SIZE], distInput[BUFFER_SIZE];
+    strncpy(timeInput, (char*)ll->head->data, BUFFER_SIZE);
+    strncpy(distInput, (char*)ll->tail->data, BUFFER_SIZE);
+
+    strtok(timeInput, " ");
+    char *timeStr = strtok(NULL, "");
+    removeSpaces(timeStr);
+    int time = strtol(timeStr, NULL, 10);
+
+    strtok(distInput, " ");
+    char *distStr = strtok(NULL, "");
+    removeSpaces(distStr);
+    int record = strtol(distStr, NULL, 10);
+
+    int recordCount = 0;
+    for (int i = 0; i < time; i++) {
+        int distance = i * (time - i);
+        if (distance > record) {
+            recordCount++;
+        }
     }
-    printf("Part 2: \n");
+
+    printf("Part 2: Record Count = %d\n", recordCount);
 }
 
 int main(int argc, char *argv[]) {
@@ -80,4 +108,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
