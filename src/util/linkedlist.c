@@ -61,7 +61,6 @@ llNode *llist_add(llist *ll, void *data) {
     return llist_add_node(ll, node);
 }
 
-
 void llist_insert_after(llist *ll, llNode *nodeToInsertAfter, llNode *nodeToInsert) {
     nodeToInsert->next = nodeToInsertAfter->next;
     if (nodeToInsert->next == NULL) {
