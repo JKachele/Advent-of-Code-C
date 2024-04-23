@@ -80,16 +80,17 @@ void part2(llist *ll) {
     strtok(timeInput, " ");
     char *timeStr = strtok(NULL, "");
     removeSpaces(timeStr);
-    int time = strtol(timeStr, NULL, 10);
+    long time = strtol(timeStr, NULL, 10);
 
     strtok(distInput, " ");
     char *distStr = strtok(NULL, "");
     removeSpaces(distStr);
-    int record = strtol(distStr, NULL, 10);
+    long record = strtol(distStr, NULL, 10);
+    // printf("Time: %ld\tDistance: %ld\n", time, record);
 
     int recordCount = 0;
-    for (int i = 0; i < time; i++) {
-        int distance = i * (time - i);
+    for (long i = 0; i < time; i++) {
+        long distance = i * (time - i);
         if (distance > record) {
             recordCount++;
         }
