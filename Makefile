@@ -15,9 +15,9 @@ BIN = bin
 
 .PHONY: all build dirs clean run runTest
 
-all: dirs out release
+all: dirs out
 
-build: dirs out run
+build: dirs out
 
 testBuild: dirs test
 
