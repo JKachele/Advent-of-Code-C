@@ -17,12 +17,23 @@ typedef struct {
     int right;
 } node;
 
+typedef struct {
+    char *index;
+    char *left;
+    char *right;
+} charNode;
+
 const int AtlasSize = 26*26*26;
 
 node *nodeInit() {
     node *n = malloc(sizeof(node));
     n->right = 0;
     n->left = 0;
+    return n;
+}
+
+charNode *charNodeInit() {
+    charNode *n = malloc(sizeof(charNode));
     return n;
 }
 
@@ -79,6 +90,43 @@ void part1(llist *ll) {
     // printf("Part 1: Steps = %d\n", steps);
 }
 
+void part1Test(llist *ll) {
+    llNode *current = ll->head;
+    char *dirs = (char*)current->data;
+    current = current->next->next;
+    int atlasLength = ll->length - 2;
+    charNode *atlas[atlasLength];
+    int i = 0;
+    int startIndex = 0;
+    int endIndex = 0;
+    while(current != NULL) {
+        char *nodeStr = (char*)current->data;
+        char indexStr[4] = {'\0'};
+        char leftStr[4] = {'\0'};
+        char rightStr[4] = {'\0'};
+        // Node Format: XXX = (XXX, XXX)
+        // Indexes:     0      7    12
+        strncpy(indexStr, nodeStr,    3);
+        strncpy(leftStr,  nodeStr+7,  3);
+        strncpy(rightStr, nodeStr+12, 3);
+        atlas[i] = charNodeInit();
+        atlas[i]->index = indexStr;
+        atlas[i]->left = leftStr;
+        atlas[i]->right = rightStr;
+        if (strcmp(indexStr, "AAA") == 0) {
+            startIndex = i;
+        } else if (strcmp(indexStr, "ZZZ") == 0) {
+            endIndex = i;
+        }
+        current = current->next;
+    }
+
+    for (i = 0; i < atlasLength; i++) {
+        printf("%s, %s, %s\n", atlas[i]->index, atlas[i]->left, atlas[i]->right);
+    }
+
+}
+
 void part2(llist *ll) {
     llNode *current = ll->head;
     while(current != NULL) {
@@ -92,7 +140,8 @@ int main(int argc, char *argv[]) {
     // llist *ll = getInputFile("assets/test.txt");
     // llist_print(ll, printInput);
 
-    part1(ll);
+    // part1(ll);
+    part1Test(ll);
     part2(ll);
 
     return 0;
