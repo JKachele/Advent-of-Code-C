@@ -18,6 +18,8 @@
     __typeof__(b) _b = (b); \
     _a < _b ? _a : _b; })
 
+int msleep(long msec);
+
 
 #endif
 

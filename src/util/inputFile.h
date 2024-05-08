@@ -9,7 +9,7 @@
 #define INPUTFILE_H
 
 #include "linkedlist.h"
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 1024
 
 llist *getInputFile(char *fileName);
 void printInput(void *data);

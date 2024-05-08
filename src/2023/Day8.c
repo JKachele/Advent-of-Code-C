@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
@@ -32,16 +33,35 @@ node *nodeInit() {
     return n;
 }
 
-charNode *charNodeInit() {
-    charNode *n = malloc(sizeof(charNode));
-    return n;
-}
-
 int charIndex(char *indexStr) {
     int index1 = indexStr[0] - 65;
     int index2 = indexStr[1] - 65;
     int index3 = indexStr[2] - 65;
     return (index1 * 26 * 26) + (index2 * 26) + index3;
+}
+
+charNode *charNodeInit() {
+    charNode *n = malloc(sizeof(charNode));
+    // n->index = malloc(4);
+    // n->left = malloc(4);
+    // n->right = malloc(4);
+    return n;
+}
+
+int nodeIndex(charNode *atlas[], int atlasLen, char *indexStr) {
+    int index = 0;
+    for (int i = 0; i < atlasLen; i++) {
+        if (strcmp(atlas[i]->index, indexStr) == 0) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+void printNode(charNode *node) {
+    printf("%s, %s, %s\n",
+           node->index, node->left, node->right);
 }
 
 void part1(llist *ll) {
@@ -101,14 +121,17 @@ void part1Test(llist *ll) {
     int endIndex = 0;
     while(current != NULL) {
         char *nodeStr = (char*)current->data;
-        char indexStr[4] = {'\0'};
-        char leftStr[4] = {'\0'};
-        char rightStr[4] = {'\0'};
+        char *indexStr = malloc(4);
+        char *leftStr = malloc(4);
+        char *rightStr = malloc(4);
         // Node Format: XXX = (XXX, XXX)
         // Indexes:     0      7    12
         strncpy(indexStr, nodeStr,    3);
         strncpy(leftStr,  nodeStr+7,  3);
         strncpy(rightStr, nodeStr+12, 3);
+        indexStr[3] = '\0';
+        leftStr[3] = '\0';
+        rightStr[3] = '\0';
         atlas[i] = charNodeInit();
         atlas[i]->index = indexStr;
         atlas[i]->left = leftStr;
@@ -119,11 +142,37 @@ void part1Test(llist *ll) {
             endIndex = i;
         }
         current = current->next;
+        i++;
     }
 
-    for (i = 0; i < atlasLength; i++) {
-        printf("%s, %s, %s\n", atlas[i]->index, atlas[i]->left, atlas[i]->right);
+    // for (i = 0; i < atlasLength; i++) {
+    //     printNode(atlas[i]);
+    // }
+    // printf("Start at %d: ", startIndex);
+    // printNode(atlas[startIndex]);
+    // printf("End at %d: ", endIndex);
+    // printNode(atlas[endIndex]);
+
+    i = startIndex;
+    int steps = 0;
+    while (i != endIndex) {
+        charNode *curNode = atlas[i];
+        char dir = dirs[steps % (strlen(dirs))];
+        if (steps % (strlen(dirs)) == 0) {
+            printf("Repeat!\n");
+        }
+        // printf("Step %d Index %d: %c -> ", steps, i, dir);
+        // printNode(curNode);
+        char *next;
+        if (dir == 'R') {
+            next = curNode->right;
+        } else {
+            next = curNode->left;
+        }
+        i = nodeIndex(atlas, atlasLength, next);
+        steps++;
     }
+    printf("Part 1: Steps = %d\n", steps);
 
 }
 

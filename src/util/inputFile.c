@@ -15,7 +15,7 @@
 
 llist *getInputFile(char *fileName) {
     FILE *inputFile = fopen(fileName, "r");     // Open file in read mode
-    char *line = NULL;
+    char *line = malloc(BUFFER_SIZE);
     size_t len = 0;
     ssize_t read;
     llist *ll = llist_create();

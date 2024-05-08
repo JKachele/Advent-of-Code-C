@@ -10,10 +10,6 @@
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    int a, b, c, d = 15;
-
-    printf("%d, %d, %d, %d\n", a, b, c, d);
-
     return 0;
 }
 
