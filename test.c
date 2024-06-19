@@ -8,21 +8,18 @@
 
 #include <stdio.h>
 
-long gcd(long x, long y) {
-    if (x == 0) {
-        return y;
-    } else {
-        return gcd(y % x, x);
-    }
-}
-
-long lcm(long x, long y) {
-    return ((x * y) / gcd(x, y));
-}
+typedef struct {
+    int x;
+    int y;
+} i_vector2;
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    printf("Least common multiple of 23 and 76 is %ld\n", lcm(23, 76));
+    i_vector2 test = {123, 456};
+    i_vector2 test2 = test;
+    printf("Vector1: (%d, %d), Vector2: (%d, %d)\n", test.x, test.y, test2.x, test2.y);
+    test2.x = 789;
+    printf("Vector1: (%d, %d), Vector2: (%d, %d)\n", test.x, test.y, test2.x, test2.y);
     return 0;
 }
 
