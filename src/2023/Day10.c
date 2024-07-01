@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <uchar.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
@@ -56,6 +57,22 @@ vector2 getStartDir(int rows, int cols, char tiles[cols][rows], vector2 startPos
         }
     }
     return nextPos;
+}
+
+char16_t getMoveDir(vector2 start, vector2 end) {
+    if (start.y == end.y) {
+        if (start.x < end.x) {
+            return u'';
+        } else {
+            return u'';
+        }
+    } else {
+        if (start.y < end.y) {
+            return u'';
+        } else {
+            return u'';
+        }
+    }
 }
 
 void part1(llist *ll) {
@@ -183,22 +200,17 @@ void part2(llist *ll) {
         return;
     }
 
-    int tilePath[cols][rows];
+    // 1=up, 2=right, 3=down, 4=left
+    char16_t map[cols][rows];
     for (int y = 0; y < cols; y++) {
         for (int x = 0; x < rows; x++) {
-            // printf("%c", tiles[y][x]);
-            tilePath[y][x] = 0;
+            map[y][x] = ' ';
         }
-        // printf("\n");
     }
-    // printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
 
-    int length = 1;
     vector2 curPos = getStartDir(rows, cols, tiles, startPos);
     vector2 prevPos = startPos;
-    // printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
     while (!vectorEquals(curPos, startPos)) {
-        length++;
         switch (tiles[curPos.y][curPos.x]) {
             case '-':
                 if (curPos.x - 1 == prevPos.x) {
@@ -260,15 +272,13 @@ void part2(llist *ll) {
         }
         // printf("Next Node at (%d, %d)\n", curPos.x, curPos.y);
     }
-    printf("Length: %d\n", length);
-    int farthestPoint = length / 2;
 
     printf("Part 2: \n");
 }
 
 int main(int argc, char *argv[]) {
-    llist *ll = getInputFile("assets/2023/Day10.txt");
-    // llist *ll = getInputFile("assets/test.txt");
+    // llist *ll = getInputFile("assets/2023/Day10.txt");
+    llist *ll = getInputFile("assets/test.txt");
     // llist_print(ll, printInput);
 
     part1(ll);
