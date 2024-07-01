@@ -21,24 +21,8 @@ bool vectorEquals(vector2 vect1, vector2 vect2) {
     return (vect1.x == vect2.x) && (vect1.y == vect2.y);
 }
 
-vector2 getStartDir(int rows, int cols, char tiles[rows][cols], vector2 startPos) {
+vector2 getStartDir(int rows, int cols, char tiles[cols][rows], vector2 startPos) {
     vector2 nextPos = {-1, -1};
-    if (startPos.x > 0) {
-        char pipe = tiles[startPos.y][startPos.x-1];
-        if (pipe == '-' || pipe == 'L' || pipe == 'F') {
-            nextPos.x = startPos.x - 1;
-            nextPos.y = startPos.y;
-            return nextPos;
-        }
-    }
-    if (startPos.y > 0) {
-        char pipe = tiles[startPos.y-1][startPos.x];
-        if (pipe == '|' || pipe == '7' || pipe == 'F') {
-            nextPos.x = startPos.x;
-            nextPos.y = startPos.y - 1;
-            return nextPos;
-        }
-    }
     if (startPos.x < rows - 1) {
         char pipe = tiles[startPos.y][startPos.x+1];
         if (pipe == '-' || pipe == '7' || pipe == 'J') {
@@ -52,6 +36,22 @@ vector2 getStartDir(int rows, int cols, char tiles[rows][cols], vector2 startPos
         if (pipe == '|' || pipe == 'L' || pipe == 'J') {
             nextPos.x = startPos.x;
             nextPos.y = startPos.y + 1;
+            return nextPos;
+        }
+    }
+    if (startPos.x > 0) {
+        char pipe = tiles[startPos.y][startPos.x-1];
+        if (pipe == '-' || pipe == 'L' || pipe == 'F') {
+            nextPos.x = startPos.x - 1;
+            nextPos.y = startPos.y;
+            return nextPos;
+        }
+    }
+    if (startPos.y > 0) {
+        char pipe = tiles[startPos.y-1][startPos.x];
+        if (pipe == '|' || pipe == '7' || pipe == 'F') {
+            nextPos.x = startPos.x;
+            nextPos.y = startPos.y - 1;
             return nextPos;
         }
     }
@@ -80,19 +80,20 @@ void part1(llist *ll) {
         return;
     }
 
-    for (int y = 0; y < cols; y++) {
-        for (int x = 0; x < rows; x++) {
-            printf("[%c]", tiles[y][x]);
-        }
-        printf("\n");
-    }
-    printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
+    // for (int y = 0; y < cols; y++) {
+    //     for (int x = 0; x < rows; x++) {
+    //         printf("%c", tiles[y][x]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
 
+    int length = 1;
     vector2 curPos = getStartDir(rows, cols, tiles, startPos);
     vector2 prevPos = startPos;
-    printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
-    return;
+    // printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
     while (!vectorEquals(curPos, startPos)) {
+        length++;
         switch (tiles[curPos.y][curPos.x]) {
             case '-':
                 if (curPos.x - 1 == prevPos.x) {
@@ -113,32 +114,161 @@ void part1(llist *ll) {
                 }
                 break;
             case 'L':
+                if (curPos.y - 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x++;
+                } else {
+                    prevPos = curPos;
+                    curPos.y--;
+                }
                 break;
             case 'J':
+                if (curPos.y - 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x--;
+                } else {
+                    prevPos = curPos;
+                    curPos.y--;
+                }
                 break;
             case '7':
+                if (curPos.y + 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x--;
+                } else {
+                    prevPos = curPos;
+                    curPos.y++;
+                }
                 break;
             case 'F':
+                if (curPos.y + 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x++;
+                } else {
+                    prevPos = curPos;
+                    curPos.y++;
+                }
                 break;
             default:
-                break;
+                printf("ERROR: Off Path. Last position: (%d, %d)\n", prevPos.x, prevPos.y);
+                return;
         }
+        // printf("Next Node at (%d, %d)\n", curPos.x, curPos.y);
     }
+    printf("Length: %d\n", length);
+    int farthestPoint = length / 2;
 
-    printf("Part 1: \n");
+    printf("Part 1: Farthest point is %d steps from the start\n", farthestPoint);
 }
 
 void part2(llist *ll) {
     llNode *current = ll->head;
-    while(current != NULL) {
+    int rows = strlen((char*)current->data);
+    int cols = ll->length;
+    char tiles[cols][rows];
+    vector2 startPos = {-1, -1};
+    for (int y = 0; y < cols; y++) {
+        char *str = (char*)current->data;
+        for (int x = 0; x < rows; x++) {
+            tiles[y][x] = str[x];
+            if (str[x] == 'S') {
+                startPos.x = x;
+                startPos.y = y;
+            }
+        }
         current = current->next;
     }
+    if (startPos.x == -1 || startPos.y == -1) {
+        printf("ERROR: NO START POSITION FOUND\n");
+        return;
+    }
+
+    int tilePath[cols][rows];
+    for (int y = 0; y < cols; y++) {
+        for (int x = 0; x < rows; x++) {
+            // printf("%c", tiles[y][x]);
+            tilePath[y][x] = 0;
+        }
+        // printf("\n");
+    }
+    // printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
+
+    int length = 1;
+    vector2 curPos = getStartDir(rows, cols, tiles, startPos);
+    vector2 prevPos = startPos;
+    // printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
+    while (!vectorEquals(curPos, startPos)) {
+        length++;
+        switch (tiles[curPos.y][curPos.x]) {
+            case '-':
+                if (curPos.x - 1 == prevPos.x) {
+                    prevPos = curPos;
+                    curPos.x++;
+                } else {
+                    prevPos = curPos;
+                    curPos.x--;
+                }
+                break;
+            case '|':
+                if (curPos.y - 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.y++;
+                } else {
+                    prevPos = curPos;
+                    curPos.y--;
+                }
+                break;
+            case 'L':
+                if (curPos.y - 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x++;
+                } else {
+                    prevPos = curPos;
+                    curPos.y--;
+                }
+                break;
+            case 'J':
+                if (curPos.y - 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x--;
+                } else {
+                    prevPos = curPos;
+                    curPos.y--;
+                }
+                break;
+            case '7':
+                if (curPos.y + 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x--;
+                } else {
+                    prevPos = curPos;
+                    curPos.y++;
+                }
+                break;
+            case 'F':
+                if (curPos.y + 1 == prevPos.y) {
+                    prevPos = curPos;
+                    curPos.x++;
+                } else {
+                    prevPos = curPos;
+                    curPos.y++;
+                }
+                break;
+            default:
+                printf("ERROR: Off Path. Last position: (%d, %d)\n", prevPos.x, prevPos.y);
+                return;
+        }
+        // printf("Next Node at (%d, %d)\n", curPos.x, curPos.y);
+    }
+    printf("Length: %d\n", length);
+    int farthestPoint = length / 2;
+
     printf("Part 2: \n");
 }
 
 int main(int argc, char *argv[]) {
-    // llist *ll = getInputFile("assets/2023/Day10.txt");
-    llist *ll = getInputFile("assets/test.txt");
+    llist *ll = getInputFile("assets/2023/Day10.txt");
+    // llist *ll = getInputFile("assets/test.txt");
     // llist_print(ll, printInput);
 
     part1(ll);
