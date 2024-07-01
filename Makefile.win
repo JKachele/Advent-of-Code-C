@@ -1,0 +1,52 @@
+######################################################################
+# @author      : Justin Kachele (justin@kachele.com)
+# @file        : Makefile
+# @created     : Monday Feb 26, 2024 13:43:29 EST
+######################################################################
+SHELL := powershell.exe
+.SHELLFLAGS := -NoProfile -Command
+
+CC = C:\Users\e454984\mingw64\bin\gcc.exe
+CFLAGS = -g
+LDFLAGS = -g
+
+SRC = src/2023/Day10.c $(wildcard src/util/*.c)
+TEST = test.c $(wildcard src/util/*.c)
+OBJ = $(SRC:.c=.o)
+BIN = bin
+
+.PHONY: all build dirs clean run runTest
+
+all: out
+
+build: out
+
+testBuild: test
+
+buildRelease: dirs release
+
+$(BIN):
+	mkdir $(BIN)
+
+run: all
+	$(BIN)/out
+
+out: $(OBJ) | $(BIN)
+	$(CC) -o $(BIN)/out $^ $(LDFLAGS)
+	Get-ChildItem * -Include *.o -Recurse | Remove-Item
+
+release: $(OBJ) | $(BIN)
+	$(CC) -o $(BIN)/release $^ -s
+
+%.o: %.c
+	$(CC) -o $@ -c $< $(CFLAGS)
+
+test: | $(BIN)
+	$(CC) -o $(BIN)/test $(TEST) $(LDFLAGS)
+
+runTest: test | $(BIN)
+	$(BIN)/test
+
+clean:
+	Get-ChildItem * -Include *.o -Recurse | Remove-Item
+

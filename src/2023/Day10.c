@@ -80,16 +80,17 @@ void part1(llist *ll) {
         return;
     }
 
-    // for (int y = 0; y < cols; y++) {
-    //     for (int x = 0; x < rows; x++) {
-    //         printf("[%c]", tiles[y][x]);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
+    for (int y = 0; y < cols; y++) {
+        for (int x = 0; x < rows; x++) {
+            printf("[%c]", tiles[y][x]);
+        }
+        printf("\n");
+    }
+    printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
 
     vector2 curPos = getStartDir(rows, cols, tiles, startPos);
     vector2 prevPos = startPos;
+    printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
     return;
     while (!vectorEquals(curPos, startPos)) {
         switch (tiles[curPos.y][curPos.x]) {
