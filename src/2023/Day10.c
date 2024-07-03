@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <uchar.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
@@ -22,57 +21,72 @@ bool vectorEquals(vector2 vect1, vector2 vect2) {
     return (vect1.x == vect2.x) && (vect1.y == vect2.y);
 }
 
-vector2 getStartDir(int rows, int cols, char tiles[cols][rows], vector2 startPos) {
+vector2 getStartDirPipe(int rows, int cols, char tiles[cols][rows],
+                        vector2 startPos, char* startPipe) {
     vector2 nextPos = {-1, -1};
-    if (startPos.x < rows - 1) {
-        char pipe = tiles[startPos.y][startPos.x+1];
-        if (pipe == '-' || pipe == '7' || pipe == 'J') {
-            nextPos.x = startPos.x + 1;
-            nextPos.y = startPos.y;
-            return nextPos;
-        }
-    }
-    if (startPos.y < cols - 1) {
-        char pipe = tiles[startPos.y+1][startPos.x];
-        if (pipe == '|' || pipe == 'L' || pipe == 'J') {
-            nextPos.x = startPos.x;
-            nextPos.y = startPos.y + 1;
-            return nextPos;
-        }
-    }
-    if (startPos.x > 0) {
-        char pipe = tiles[startPos.y][startPos.x-1];
-        if (pipe == '-' || pipe == 'L' || pipe == 'F') {
-            nextPos.x = startPos.x - 1;
-            nextPos.y = startPos.y;
-            return nextPos;
-        }
-    }
+    bool up, down, right, left;
+    up = down = right = left = false;
+    // Up
     if (startPos.y > 0) {
         char pipe = tiles[startPos.y-1][startPos.x];
         if (pipe == '|' || pipe == '7' || pipe == 'F') {
             nextPos.x = startPos.x;
             nextPos.y = startPos.y - 1;
-            return nextPos;
+            up = true;
         }
     }
-    return nextPos;
-}
+    // Down
+    if (startPos.y < cols - 1) {
+        char pipe = tiles[startPos.y+1][startPos.x];
+        if (pipe == '|' || pipe == 'L' || pipe == 'J') {
+            nextPos.x = startPos.x;
+            nextPos.y = startPos.y + 1;
+            down = true;
+        }
+    }
+    // Right
+    if (startPos.x < rows - 1) {
+        char pipe = tiles[startPos.y][startPos.x+1];
+        if (pipe == '-' || pipe == '7' || pipe == 'J') {
+            nextPos.x = startPos.x + 1;
+            nextPos.y = startPos.y;
+            right = true;
+        }
+    }
+    // Left
+    if (startPos.x > 0) {
+        char pipe = tiles[startPos.y][startPos.x-1];
+        if (pipe == '-' || pipe == 'L' || pipe == 'F') {
+            nextPos.x = startPos.x - 1;
+            nextPos.y = startPos.y;
+            left = true;
+        }
+    }
+    
+    if (startPipe == NULL) {
+        return nextPos;
+    }
 
-char16_t getMoveDir(vector2 start, vector2 end) {
-    if (start.y == end.y) {
-        if (start.x < end.x) {
-            return u'';
-        } else {
-            return u'';
+    // Get pipe type
+    if (up) {
+        if (down) {
+            *startPipe = '|';
+        } else if (right) {
+            *startPipe = 'L';
+        } else if (left) {
+            *startPipe = 'J';
         }
-    } else {
-        if (start.y < end.y) {
-            return u'';
-        } else {
-            return u'';
+    } else if (down) {
+        if (right) {
+            *startPipe = 'F';
+        } else if (left) {
+            *startPipe = '7';
         }
+    } else if (right && left) {
+        *startPipe = '-';
     }
+
+    return nextPos;
 }
 
 void part1(llist *ll) {
@@ -106,7 +120,8 @@ void part1(llist *ll) {
     // printf("Starting at (%d, %d)\n", startPos.x, startPos.y);
 
     int length = 1;
-    vector2 curPos = getStartDir(rows, cols, tiles, startPos);
+    // vector2 curPos = getStartDir(rows, cols, tiles, startPos);
+    vector2 curPos = getStartDirPipe(rows, cols, tiles, startPos, NULL);
     vector2 prevPos = startPos;
     // printf("Continuing at (%d, %d)\n", curPos.x, curPos.y);
     while (!vectorEquals(curPos, startPos)) {
@@ -200,17 +215,18 @@ void part2(llist *ll) {
         return;
     }
 
-    // 1=up, 2=right, 3=down, 4=left
-    char16_t map[cols][rows];
+    char map[cols][rows];
     for (int y = 0; y < cols; y++) {
         for (int x = 0; x < rows; x++) {
             map[y][x] = ' ';
         }
     }
 
-    vector2 curPos = getStartDir(rows, cols, tiles, startPos);
+    vector2 curPos = getStartDirPipe(rows, cols, tiles, startPos,
+                                     &map[startPos.y][startPos.x]);
     vector2 prevPos = startPos;
     while (!vectorEquals(curPos, startPos)) {
+        map[curPos.y][curPos.x] = tiles[curPos.y][curPos.x];
         switch (tiles[curPos.y][curPos.x]) {
             case '-':
                 if (curPos.x - 1 == prevPos.x) {
@@ -273,12 +289,40 @@ void part2(llist *ll) {
         // printf("Next Node at (%d, %d)\n", curPos.x, curPos.y);
     }
 
-    printf("Part 2: \n");
+    // Check each tile if in loop
+    int tilesInside = 0;
+    for (int y = 0; y < cols; y++) {
+        for (int x = 0; x < rows; x++) {
+            if (map[y][x] != ' ') continue;
+            // look to right of tile, if odd number of crossings, tile in loop
+            // crossings are '|' 'F' and '7' (ignore 'j' and 'L')
+            int crossings = 0;
+            for (int i = x; i < rows; i++) {
+                char c = map[y][i];
+                if (c == '|' || c == 'F' || c == '7') {
+                    crossings++;
+                }
+            }
+            if (crossings % 2 == 1) {
+                tilesInside++;
+                map[y][x] = '0';
+            }
+        }
+    }
+
+    for (int y = 0; y < cols; y++) {
+        for (int x = 0; x < rows; x++) {
+            printf("%c", map[y][x]);
+        }
+        printf("\n");
+    }
+
+    printf("Part 2: Tiles inside loop: %d\n", tilesInside);
 }
 
 int main(int argc, char *argv[]) {
-    // llist *ll = getInputFile("assets/2023/Day10.txt");
-    llist *ll = getInputFile("assets/test.txt");
+    llist *ll = getInputFile("assets/2023/Day10.txt");
+    // llist *ll = getInputFile("assets/test.txt");
     // llist_print(ll, printInput);
 
     part1(ll);
