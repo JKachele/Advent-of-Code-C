@@ -8,19 +8,18 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    int x = 5;
-    bool test[x];
-    memset(test, 0, x);
-    for (int i = 0; i < x; i++) {
-        printf("%d\n", test[i]);
+    int arr[10] = {0};
+    int arrIndex = 0;
+    for (int i = 0; i < 9; i++) {
+        arr[arrIndex++] = i;
     }
-    char array2D[10][10];
-    printf("Size: %lu\n", sizeof(array2D));
+    for (int i = 0; i < 10; i++) {
+        printf("%d\n", arr[i]);
+    }
     return 0;
 }
 

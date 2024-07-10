@@ -12,25 +12,45 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
+#define EXPANSION 1000000
+
 typedef struct {
     int x;
     int y;
 } vector2;
 
+typedef struct {
+    int x;
+    int y;
+    int emptyX; // Empty columns to the left
+    int emptyY; // Empty rows above
+} galaxy;
+
 int manhattanDist(vector2 a, vector2 b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
+}
+
+long galaxyDist(galaxy a, galaxy b) {
+    vector2 aVec = {.x = a.x, .y = a.y};
+    vector2 bVec = {.x = b.x, .y = b.y};
+    int dist = manhattanDist(aVec, bVec);
+    vector2 aEmpty = {.x = a.emptyX, .y = a.emptyY};
+    vector2 bEmpty = {.x = b.emptyX, .y = b.emptyY};
+    int numEmptyCrossings = manhattanDist(aEmpty, bEmpty);
+    return dist + (numEmptyCrossings * (EXPANSION - 1));
+    // -1 to account for original empty row
 }
 
 void part1(llist *ll) {
     // Get image into 2D Array
     llNode *current = ll->head;
-    int rows = strlen((char*)current->data);
-    int cols = ll->length;
-    char image[cols][rows];
+    int cols = strlen((char*)current->data);
+    int rows = ll->length;
+    char image[rows][cols];
     int numGalaxies = 0;
-    for (int y = 0; y < cols; y++) {
+    for (int y = 0; y < rows; y++) {
         char *str = (char*)current->data;
-        for (int x = 0; x < rows; x++) {
+        for (int x = 0; x < cols; x++) {
             image[y][x] = str[x];
             if (str[x] == '#') numGalaxies++;
         }
@@ -44,9 +64,9 @@ void part1(llist *ll) {
     memset(emptyCols, 0, cols); // Initialize array to 0(false)
     int numEmptyRows = 0;
     int numEmptyCols = 0;
-    for (int y = 0; y < cols; y++) { // Count Rows (There are "Cols" # of rows)
+    for (int y = 0; y < rows; y++) { // Count Rows
         bool isEmpty = true;
-        for (int x = 0; x < rows; x++) {
+        for (int x = 0; x < cols; x++) {
             if (image[y][x] != '.') {
                 isEmpty = false;
                 break;
@@ -55,9 +75,9 @@ void part1(llist *ll) {
         emptyRows[y] = isEmpty;
         if (isEmpty) numEmptyRows++;
     }
-    for (int x = 0; x < rows; x++) { // Count Cols (There are "Rows" # of cols)
+    for (int x = 0; x < cols; x++) { // Count Cols
         bool isEmpty = true;
-        for (int y = 0; y < cols; y++) {
+        for (int y = 0; y < rows; y++) {
             if (image[y][x] != '.') {
                 isEmpty = false;
                 break;
@@ -69,21 +89,20 @@ void part1(llist *ll) {
     printf("Empty Rows: %d, Empty Cols: %d\n", numEmptyRows, numEmptyCols);
 
     // Expand Universe
-    int rowsExp = rows + numEmptyCols;
-    int colsExp = cols + numEmptyRows;
-    char imageExp[colsExp][rowsExp];
+    int rowsExp = rows + numEmptyRows;
+    int colsExp = cols + numEmptyCols;
+    char imageExp[rowsExp][colsExp];
     memset(imageExp, '.', sizeof(imageExp));
     vector2 galaxies[numGalaxies];
     int galaxyIndex = 0;
     int yExp = 0; // Y value of expanded array
-    for (int y = 0; y < cols; y++) {
+    for (int y = 0; y < rows; y++) {
         int xExp = 0; // Xvalue of expanded array
-        for (int x = 0; x < rows; x++) {
+        for (int x = 0; x < cols; x++) {
             imageExp[yExp][xExp] = image[y][x];
             if (image[y][x] == '#') {
                 vector2 galaxy = {.x = xExp, .y = yExp};
-                galaxies[galaxyIndex] = galaxy;
-                galaxyIndex++;
+                galaxies[galaxyIndex++] = galaxy;
             }
             if (emptyRows[y]) imageExp[yExp + 1][xExp] = '.';
             if (emptyCols[x]) {
@@ -96,8 +115,8 @@ void part1(llist *ll) {
         yExp++;
     }
 
-    for (int y = 0; y < colsExp; y++) {
-        for (int x = 0; x < rowsExp; x++) {
+    for (int y = 0; y < rowsExp; y++) {
+        for (int x = 0; x < colsExp; x++) {
             printf("%c", imageExp[y][x]);
         }
         printf("\n");
@@ -120,11 +139,79 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+    // Get image into 2D Array
     llNode *current = ll->head;
-    while(current != NULL) {
+    int cols = strlen((char*)current->data);
+    int rows = ll->length;
+    char image[rows][cols];
+    int numGalaxies = 0;
+    for (int y = 0; y < rows; y++) {
+        char *str = (char*)current->data;
+        for (int x = 0; x < cols; x++) {
+            image[y][x] = str[x];
+            if (str[x] == '#') numGalaxies++;
+        }
         current = current->next;
     }
-    printf("Part 2: \n");
+
+    // Count empty rows and columns
+    bool emptyRows[rows];
+    bool emptyCols[cols];
+    memset(emptyRows, 0, rows); // Initialize array to 0(false)
+    memset(emptyCols, 0, cols); // Initialize array to 0(false)
+    galaxy galaxies[numGalaxies];
+    int galaxyIndex = 0;
+    for (int y = 0; y < rows; y++) { // Count Rows
+        bool isEmpty = true;
+        for (int x = 0; x < cols; x++) {
+            if (image[y][x] != '.') {
+                isEmpty = false;
+                break;
+            }
+        }
+        emptyRows[y] = isEmpty;
+    }
+    for (int x = 0; x < cols; x++) { // Count Cols
+        bool isEmpty = true;
+        for (int y = 0; y < rows; y++) {
+            if (image[y][x] != '.') {
+                isEmpty = false;
+                break;
+            }
+        }
+        emptyCols[x] = isEmpty;
+    }
+
+    // Get galaxy locations
+    int emptyRowNum = 0;
+    for (int y = 0; y < rows; y++) {
+        if (emptyRows[y]) {
+            emptyRowNum++;
+            continue;
+        }
+        int emptyColNum = 0;
+        for (int x = 0; x < cols; x++) {
+            if (emptyCols[x]) {
+                emptyColNum++;
+                continue;
+            }
+            if (image[y][x] == '#') {
+                galaxy galaxy = {.x = x, .y = y,
+                    .emptyX = emptyColNum, .emptyY = emptyRowNum};
+                galaxies[galaxyIndex++] = galaxy;
+            }
+        }
+    }
+
+    // Get distances
+    long distanceSum = 0;
+    for (int i = 0; i < numGalaxies; i++) {
+        for (int j = i + 1; j < numGalaxies; j++) {
+            distanceSum += galaxyDist(galaxies[i], galaxies[j]);
+        }
+    }
+
+    printf("Part 2: Distance Sum: %ld\n", distanceSum);
 }
 
 int main(int argc, char *argv[]) {
