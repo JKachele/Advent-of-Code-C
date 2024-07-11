@@ -54,3 +54,6 @@ dkms.conf
 
 # vscode
 .vscode/
+
+assets/
+!assets/test.txt
