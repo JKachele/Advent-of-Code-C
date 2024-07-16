@@ -141,8 +141,18 @@ void llist_print(llist *ll, void (*print)(void*)) {
     while (current != NULL) {
         printf("[");
         print(current->data);
-        printf("], ");
+        printf("] ");
         current = current->next;
     }
     printf("\n");
+}
+
+void printInt(void *data) {
+    int i = *(int*)data;
+    printf("%d", i);
+}
+
+void printStr(void *data) {
+    char *str = (char*)data;
+    printf("%s", str);
 }

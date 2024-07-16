@@ -7,6 +7,7 @@
  ************************************************/
 
 #include <stdio.h>
+#include <string.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
@@ -15,7 +16,20 @@ void part1(llist *ll) {
     int arrangementSum = 0;
     while(current != NULL) {
         char *str = (char*)current->data;
-        printf("%s\n", str);
+
+        char *cfg = strtok(str, " ");
+        char *cfgNums = strtok(NULL, " ");
+        printf("[%s] [%s]\n", cfg, cfgNums);
+
+        llist *nums = llist_create();
+        char* numStr = strtok(cfgNums, ",");
+        while (numStr != NULL) {
+            int *num = malloc(sizeof(int));
+            *num = strtol(numStr, NULL, 10);
+            llist_add(nums, num);
+            numStr = strtok(NULL, ",");
+        }
+        // llist_print(nums, printInt);
 
         current = current->next;
     }

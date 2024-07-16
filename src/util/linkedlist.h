@@ -34,4 +34,7 @@ llNode *llist_get_node(llist *ll, int index);
 int llist_get_index(llNode *node, llist *ll);
 void llist_print(llist *ll, void (*print)(void*));
 
+void printInt(void *data);
+void printStr(void *data);
+
 #endif
