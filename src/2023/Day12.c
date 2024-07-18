@@ -11,6 +11,16 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
+int count(char *cfg, llist *nums) {
+    if (cfg[0] == '\0') {
+        return (nums->head == NULL) ? 1 : 0;
+    }
+    if (nums->head == NULL) {
+    }
+
+    return 0;
+}
+
 void part1(llist *ll) {
     llNode *current = ll->head;
     int arrangementSum = 0;

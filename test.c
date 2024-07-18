@@ -12,14 +12,9 @@
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    int arr[10] = {0};
-    int arrIndex = 0;
-    for (int i = 0; i < 9; i++) {
-        arr[arrIndex++] = i;
-    }
-    for (int i = 0; i < 10; i++) {
-        printf("%d\n", arr[i]);
-    }
+    char* str = "Hello!";
+    printf("%s\n", str);
+    printf("%s\n", str+1);
     return 0;
 }
 
