@@ -7,7 +7,9 @@
  ************************************************/
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct llNode {
     void *data;
@@ -32,8 +34,10 @@ void llist_insert_before(llist *ll, llNode *nodeToInsertBefore, llNode *nodeToIn
 void llist_remove_node(llist *ll, llNode *nodeToRemove);
 llNode *llist_get_node(llist *ll, int index);
 int llist_get_index(llNode *node, llist *ll);
+bool llist_equals(llist *ll1, llist *ll2, bool (*equals)(void*, void*));
 void llist_print(llist *ll, void (*print)(void*));
 
+bool intEquals(void *data1, void *data2);
 void printInt(void *data);
 void printStr(void *data);
 

@@ -6,15 +6,19 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
-#include <stdbool.h>
 #include <stdio.h>
-
+#include "src/util/linkedlist.h"
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    char* str = "Hello!";
-    printf("%s\n", str);
-    printf("%s\n", str+1);
+    llist *ll = llist_create();
+    for (int i = 0; i < 5; i++) {
+        int *ip = malloc(sizeof(int));
+        *ip = i;
+        llist_add(ll, ip);
+    }
+    llist_print(ll, printInt);
+    llist_free(ll);
     return 0;
 }
 

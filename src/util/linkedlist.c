@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "linkedlist.h"
 
@@ -136,6 +137,23 @@ int llist_get_index(llNode *node, llist *ll) {
     return -1;
 }
 
+bool llist_equals(llist *ll1, llist *ll2, bool (*equals)(void*, void*)) {
+    if (ll1->length != ll2->length) return false;
+    if (ll1->head == NULL) return ll2->head == NULL;
+    if (ll2->head == NULL) return ll1->head == NULL;
+    llNode *cur1 = ll1->head;
+    llNode *cur2 = ll2->head;
+    while (cur1 != NULL && cur2 != NULL) {
+        if (!equals(cur1->data, cur2->data)) {
+            return false;
+        }
+        cur1 = cur1->next;
+        cur2 = cur2->next;
+    }
+    // Make sure both nodes are NULL
+    return cur1 == cur2;
+}
+
 void llist_print(llist *ll, void (*print)(void*)) {
     llNode *current = ll->head;
     while (current != NULL) {
@@ -145,6 +163,12 @@ void llist_print(llist *ll, void (*print)(void*)) {
         current = current->next;
     }
     printf("\n");
+}
+
+bool intEquals(void *data1, void *data2) {
+    int i1 = *(int*)data1;
+    int i2 = *(int*)data2;
+    return i1 == i2;
 }
 
 void printInt(void *data) {
