@@ -42,12 +42,14 @@ bool isValidCondition(char *cfg, llist *records) {
     int record = *(int*) records->head->data;
     // Enough Springs left for first record
     bool con1 = strlen(cfg) >= record;
-    // springs in the first "record" must not be functional
+    // Springs in the first "record" must not be functional
     bool con2 = true;
     for (int i = 0; i < record; i++) {
         if (cfg[i] == '.') con2 = false;
     }
-    bool con3 = false;
+    // Either first record is equal to cfg length (All springs are broken) or
+    // the spring after the first group is functional
+    bool con3 = (strlen(cfg) == record) || (cfg[record] != '#');
     return con1 && con2 && con3;
 }
 
@@ -105,10 +107,13 @@ int count(char *cfg, llist *records) {
     // if '#' or '?'
     if (cfg[0] == '#' || cfg[0] == '?') {
         if (isValidCondition(cfg, records)) {
+            int record = *(int*)records->head->data;
+            llist_remove_node(records, records->head);
+            count(cfg + record + 1, records);
         }
     }
 
-    return 0;
+    return numCombinations;
 }
 
 void part1(llist *ll) {
@@ -130,7 +135,8 @@ void part1(llist *ll) {
             recordstr = strtok(NULL, ",");
         }
         // llist_print(records, printInt);
-        arrangementSum += countBF(cfg, records);
+        // arrangementSum += countBF(cfg, records);
+        arrangementSum += count(cfg, records);
 
         current = current->next;
     }
