@@ -14,35 +14,35 @@
 
 
 llist *getInputFile(char *fileName) {
-    FILE *inputFile = fopen(fileName, "r");     // Open file in read mode
-    char *line = malloc(BUFFER_SIZE);
-    size_t len = 0;
-    ssize_t read;
-    llist *ll = llist_create();
+        FILE *inputFile = fopen(fileName, "r");     // Open file in read mode
+        char *line = malloc(BUFFER_SIZE);
+        size_t len = 0;
+        ssize_t read;
+        llist *ll = llist_create();
 
-    if (inputFile == NULL) {    // If file dosent exist, exit
-        exit(EXIT_FAILURE);
-    }
+        if (inputFile == NULL) {    // If file dosent exist, exit
+                exit(EXIT_FAILURE);
+        }
 
-    // set "line" to the line in the file and test for end of file
-    while (fgets(line, BUFFER_SIZE, inputFile)!= NULL) {
-        line[strlen(line) - 1] = '\0';  // Remove newline character from string
-        char *nodeData = malloc(BUFFER_SIZE * sizeof(char));
-        strncpy(nodeData, line, BUFFER_SIZE);
-        llist_add(ll, nodeData);
-    }
+        // set "line" to the line in the file and test for end of file
+        while (fgets(line, BUFFER_SIZE, inputFile)!= NULL) {
+                line[strlen(line) - 1] = '\0';  // Remove newline character from string
+                char *nodeData = malloc(BUFFER_SIZE * sizeof(char));
+                strncpy(nodeData, line, BUFFER_SIZE);
+                llist_add(ll, nodeData);
+        }
 
-    fclose(inputFile);
-    if (line) {
-        free(line);
-    }
-    return ll;
+        fclose(inputFile);
+        if (line) {
+                free(line);
+        }
+        return ll;
 }
 
 void printInput(void *data) {
-    char *str = (char*)data;
-    if (data == NULL) {
-        return;
-    }
-    printf("%s", str);
+        char *str = (char*)data;
+        if (data == NULL) {
+                return;
+        }
+        printf("%s", str);
 }

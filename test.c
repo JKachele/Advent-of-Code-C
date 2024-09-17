@@ -9,17 +9,17 @@
 #include <stdio.h>
 
 void print(int test[]) {
-    printf("%d\n", test[0]);
+        printf("%d\n", test[0]);
 }
 
 int main(int argc, char *argv[]) {
-    printf("Hello, World!\n");
+        printf("Hello, World!\n");
 
-    int test[5];
-    for (int i = 0; i < 5; i++)
-        test[i] = i;
-    print(test);
-    print(test + 1);
-    return 0;
+        int test[5];
+        for (int i = 0; i < 5; i++)
+                test[i] = i;
+        print(test);
+        print(test + 1);
+        return 0;
 }
 

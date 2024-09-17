@@ -12,15 +12,15 @@
 #include <stdbool.h>
 
 typedef struct llNode {
-    void *data;
-    struct llNode *prev;
-    struct llNode *next;
+        void *data;
+        struct llNode *prev;
+        struct llNode *next;
 } llNode;
 
 typedef struct llist {
-    llNode *head;
-    llNode *tail;
-    int length;
+        llNode *head;
+        llNode *tail;
+        int length;
 } llist;
 
 llist *llist_create();
