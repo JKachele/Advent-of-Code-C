@@ -83,19 +83,17 @@ int countBF(char *cfg, int records[], int numRecords) {
         return numValid;
 }
 
-bool isValidCondition(char *cfg, int records[], int numRecords) {
-        int record = records[0];
-        // Enough Springs left for first record
-        bool con1 = strlen(cfg) >= record;
-        // Springs in the first "record" must not be functional
-        bool con2 = true;
+// Checks if the given cfg and record is possible
+bool isValidCondition(char *cfg, int record) {
+        // Enough Springs left for record
+        if (strlen(cfg) < record) return false;
+        // None of the first record of springs can be functional
         for (int i = 0; i < record; i++) {
-                if (cfg[i] == '.') con2 = false;
+                if (cfg[i] == '.') return false;
         }
         // Either first record is equal to cfg length (All springs are broken)
         // or the spring after the first group is functional
-        bool con3 = (strlen(cfg) == record) || (cfg[record] != '#');
-        return con1 && con2 && con3;
+        return (strlen(cfg) == record) || (cfg[record] != '#');
 }
 
 // Dynamic programming and memoization
@@ -115,7 +113,7 @@ int count(char *cfg, int records[], int numRecords) {
         }
         // if '#' or '?'
         if (cfg[0] == '#' || cfg[0] == '?') {
-                if (isValidCondition(cfg, records, numRecords)) {
+                if (isValidCondition(cfg, records[0])) {
                         numCombinations += count(cfg + records[0] + 1,
                                                  records + 1, numRecords - 1);
                 }
@@ -157,15 +155,51 @@ void part1(llist *ll) {
 
 void part2(llist *ll) {
         llNode *current = ll->head;
+        int arrangementSum = 0;
+
+        const int NUM_UNFOLD = 5;
+
         while(current != NULL) {
+                char *str = (char*)current->data;
+
+                char *cfg = strtok(str, " ");
+                char *cfgrecords = strtok(NULL, " ");
+
+                // Unfold cfg
+                char cfgUnfold[(strlen(cfg) * NUM_UNFOLD) + NUM_UNFOLD];
+                strncpy(cfgUnfold, cfg, strlen(cfg));
+                int offset = strlen(cfg) + 1;
+                for (int i = 1; i < NUM_UNFOLD; i++) {
+                        cfgUnfold[(offset * i) - 1] = '?';
+                        strncpy(cfgUnfold + (offset * i), cfg, strlen(cfg));
+                }
+
+                int numRecords = 1;
+                for (int i = 0; i < strlen(cfgrecords); i++) {
+                        if (cfgrecords[i] == ',') numRecords++;
+                }
+                numRecords = numRecords * NUM_UNFOLD;
+                // printf("[%s] [%s] %d\n", cfg, cfgrecords, numRecords);
+
+                int records[numRecords];
+                char* recordstr = strtok(cfgrecords, ",");
+                for (int i = 0; i < numRecords; i++) {
+                        records[i] = strtol(recordstr, NULL, 10);
+                        recordstr = strtok(NULL, ",");
+                }
+
+                // arrangementSum += countBF(cfg, records, numRecords);
+                arrangementSum += count(cfg, records, numRecords);
+
                 current = current->next;
         }
-        printf("\nPart 2: \n");
+
+        printf("\nPart 2: Arrangement Sum: %d\n", arrangementSum);
 }
 
 int main(int argc, char *argv[]) {
-        llist *ll = getInputFile("assets/2023/Day12.txt");
-        // llist *ll = getInputFile("assets/test.txt");
+        // llist *ll = getInputFile("assets/2023/Day12.txt");
+        llist *ll = getInputFile("assets/test.txt");
         // llist_print(ll, printInput);
 
         part1(ll);

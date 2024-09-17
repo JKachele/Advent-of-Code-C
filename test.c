@@ -7,19 +7,23 @@
  ************************************************/
 
 #include <stdio.h>
-
-void print(int test[]) {
-        printf("%d\n", test[0]);
-}
+#include <string.h>
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        int test[5];
-        for (int i = 0; i < 5; i++)
-                test[i] = i;
-        print(test);
-        print(test + 1);
+        char *cfg = "Hello!";
+
+        char cfgUnfold[(strlen(cfg) * 5) + 5];
+        strncpy(cfgUnfold, cfg, strlen(cfg));
+        int offset = strlen(cfg) + 1;
+        for (int i = 1; i < 5; i++) {
+                cfgUnfold[(offset * i) - 1] = '?';
+                strncpy(cfgUnfold + (offset * i), cfg, strlen(cfg));
+        }
+
+        printf("%s\n", cfgUnfold);
+
         return 0;
 }
 
