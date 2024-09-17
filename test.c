@@ -7,18 +7,19 @@
  ************************************************/
 
 #include <stdio.h>
-#include "src/util/linkedlist.h"
+
+void print(int test[]) {
+    printf("%d\n", test[0]);
+}
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
-    llist *ll = llist_create();
-    for (int i = 0; i < 5; i++) {
-        int *ip = malloc(sizeof(int));
-        *ip = i;
-        llist_add(ll, ip);
-    }
-    llist_print(ll, printInt);
-    llist_free(ll);
+
+    int test[5];
+    for (int i = 0; i < 5; i++)
+        test[i] = i;
+    print(test);
+    print(test + 1);
     return 0;
 }
 
