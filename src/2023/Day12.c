@@ -126,7 +126,9 @@ void part1(llist *ll) {
         llNode *current = ll->head;
         int arrangementSum = 0;
         while(current != NULL) {
-                char *str = (char*)current->data;
+                char *strIn = (char*)current->data;
+                char *str = malloc(strlen(strIn) + 1);
+                strncpy(str, strIn, strlen(strIn));
 
                 char *cfg = strtok(str, " ");
                 char *cfgrecords = strtok(NULL, " ");
@@ -160,7 +162,10 @@ void part2(llist *ll) {
         const int NUM_UNFOLD = 5;
 
         while(current != NULL) {
-                char *str = (char*)current->data;
+                char *strIn = (char*)current->data;
+                char *str = malloc(strlen(strIn) + 1);
+                snprintf(str, strlen(strIn), "%s", strIn);
+                printf("%s - ", str);
 
                 char *cfg = strtok(str, " ");
                 char *cfgrecords = strtok(NULL, " ");
@@ -170,26 +175,35 @@ void part2(llist *ll) {
                 strncpy(cfgUnfold, cfg, strlen(cfg));
                 int offset = strlen(cfg) + 1;
                 for (int i = 1; i < NUM_UNFOLD; i++) {
-                        cfgUnfold[(offset * i) - 1] = '?';
+                        cfgUnfold[(offset * i) - 1] = '-';
                         strncpy(cfgUnfold + (offset * i), cfg, strlen(cfg));
                 }
+                cfgUnfold[offset * NUM_UNFOLD] = '\0';
+                printf("[%s] [%s]\n", cfg, cfgUnfold);
 
-                int numRecords = 1;
+                int numRecordsFold = 1;
                 for (int i = 0; i < strlen(cfgrecords); i++) {
-                        if (cfgrecords[i] == ',') numRecords++;
+                        if (cfgrecords[i] == ',') numRecordsFold++;
                 }
-                numRecords = numRecords * NUM_UNFOLD;
-                // printf("[%s] [%s] %d\n", cfg, cfgrecords, numRecords);
+                int numRecords = numRecordsFold * NUM_UNFOLD;
 
                 int records[numRecords];
                 char* recordstr = strtok(cfgrecords, ",");
-                for (int i = 0; i < numRecords; i++) {
-                        records[i] = strtol(recordstr, NULL, 10);
+                for (int i = 0; i < numRecordsFold; i++) {
+                        int record = strtol(recordstr, NULL, 10);
+                        for (int j = 1; j <= NUM_UNFOLD; j++)
+                                records[i*j] = record;
                         recordstr = strtok(NULL, ",");
                 }
 
+                // printf("[%s] [%d", cfgUnfold, records[0]);
+                // for (int i = 1; i < numRecords; i++) {
+                //         printf(", %d", records[i]);
+                // }
+                // printf("]\n");
+
                 // arrangementSum += countBF(cfg, records, numRecords);
-                arrangementSum += count(cfg, records, numRecords);
+                // arrangementSum += count(cfg, records, numRecords);
 
                 current = current->next;
         }
