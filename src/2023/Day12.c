@@ -12,6 +12,15 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 
+void print(char *str) {
+        char c = *str;
+        while (c != '\0') {
+                printf("%c", c);
+                c = *(str++);
+        }
+        printf("|\n");
+}
+
 bool countsValid(llist *counts, int records[], int numRecords) {
         if (counts->length != numRecords) return false;
         llNode *countNode = counts->head;
@@ -128,7 +137,7 @@ void part1(llist *ll) {
         while(current != NULL) {
                 char *strIn = (char*)current->data;
                 char *str = malloc(strlen(strIn) + 1);
-                strncpy(str, strIn, strlen(strIn));
+                strncpy(str, strIn, strlen(strIn) + 1);
 
                 char *cfg = strtok(str, " ");
                 char *cfgrecords = strtok(NULL, " ");
@@ -152,7 +161,7 @@ void part1(llist *ll) {
                 current = current->next;
         }
 
-        printf("\nPart 1: Arrangement Sum: %d\n", arrangementSum);
+        printf("Part 1: Arrangement Sum: %d\n", arrangementSum);
 }
 
 void part2(llist *ll) {
@@ -164,22 +173,23 @@ void part2(llist *ll) {
         while(current != NULL) {
                 char *strIn = (char*)current->data;
                 char *str = malloc(strlen(strIn) + 1);
-                snprintf(str, strlen(strIn), "%s", strIn);
-                printf("%s - ", str);
+                strncpy(str, strIn, strlen(strIn) + 1);
+                // printf("%s - ", str);
 
-                char *cfg = strtok(str, " ");
+                char *cfgFold = strtok(str, " ");
                 char *cfgrecords = strtok(NULL, " ");
 
                 // Unfold cfg
-                char cfgUnfold[(strlen(cfg) * NUM_UNFOLD) + NUM_UNFOLD];
-                strncpy(cfgUnfold, cfg, strlen(cfg));
-                int offset = strlen(cfg) + 1;
+                int unfoldSize = (strlen(cfgFold) * NUM_UNFOLD) + NUM_UNFOLD;
+                char cfg[unfoldSize];
+                strncpy(cfg, cfgFold, strlen(cfgFold));
+                int offset = strlen(cfgFold) + 1;
                 for (int i = 1; i < NUM_UNFOLD; i++) {
-                        cfgUnfold[(offset * i) - 1] = '-';
-                        strncpy(cfgUnfold + (offset * i), cfg, strlen(cfg));
+                        cfg[(offset * i) - 1] = '?';
+                        strncpy(cfg + (offset * i), cfgFold, strlen(cfgFold));
                 }
-                cfgUnfold[offset * NUM_UNFOLD] = '\0';
-                printf("[%s] [%s]\n", cfg, cfgUnfold);
+                cfg[unfoldSize - 1] = '\0';
+                // printf("[%s] [%s]\n", cfgFold, cfg);
 
                 int numRecordsFold = 1;
                 for (int i = 0; i < strlen(cfgrecords); i++) {
@@ -191,16 +201,18 @@ void part2(llist *ll) {
                 char* recordstr = strtok(cfgrecords, ",");
                 for (int i = 0; i < numRecordsFold; i++) {
                         int record = strtol(recordstr, NULL, 10);
-                        for (int j = 1; j <= NUM_UNFOLD; j++)
-                                records[i*j] = record;
+                        for (int j = 0; j < NUM_UNFOLD; j ++)
+                                records[i + (j * numRecordsFold)] = record;
                         recordstr = strtok(NULL, ",");
                 }
 
-                // printf("[%s] [%d", cfgUnfold, records[0]);
-                // for (int i = 1; i < numRecords; i++) {
-                //         printf(", %d", records[i]);
-                // }
-                // printf("]\n");
+                printf("%s\n\t[%s]\n\t[%d", strIn, cfg, records[0]);
+                for (int i = 1; i < numRecords; i++) {
+                        printf(", %d", records[i]);
+                }
+                int arrangemens = countBF(cfg, records, numRecords);
+                arrangementSum += arrangemens;
+                printf("]\n%d\n", arrangemens);
 
                 // arrangementSum += countBF(cfg, records, numRecords);
                 // arrangementSum += count(cfg, records, numRecords);
@@ -208,7 +220,7 @@ void part2(llist *ll) {
                 current = current->next;
         }
 
-        printf("\nPart 2: Arrangement Sum: %d\n", arrangementSum);
+        printf("Part 2: Arrangement Sum: %d\n", arrangementSum);
 }
 
 int main(int argc, char *argv[]) {
