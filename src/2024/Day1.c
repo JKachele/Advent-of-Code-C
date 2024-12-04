@@ -66,8 +66,6 @@ void part1(llist *ll) {
 
         int list1[numIDs];
         int list2[numIDs];
-        int list1a[numIDs];
-        int list2a[numIDs];
 
         // Get 2 arrays from input
         int pos = 0;
@@ -76,9 +74,7 @@ void part1(llist *ll) {
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 
                 list1[pos] = strtol(strtok(str, " "), (char**)NULL, 10);
-                list1a[pos] = list1[pos];
                 list2[pos] = strtol(strtok(NULL, " "), (char**)NULL, 10);
-                list2a[pos] = list2[pos];
 
                 current = current->next;
                 pos++;
@@ -98,10 +94,60 @@ void part1(llist *ll) {
 
 void part2(llist *ll) {
         llNode *current = ll->head;
+        int numIDs = ll->length;
+
+        int list1[numIDs];
+        int list2[numIDs];
+
+        // Get 2 arrays from input
+        int pos = 0;
         while(current != NULL) {
+                char str[BUFFER_SIZE];
+                strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                list1[pos] = strtol(strtok(str, " "), (char**)NULL, 10);
+                list2[pos] = strtol(strtok(NULL, " "), (char**)NULL, 10);
+
                 current = current->next;
+                pos++;
         }
-        printf("\nPart 2: \n");
+
+        // Sort arrays - Quicksort
+        quicksort(list1, 0, numIDs - 1);
+        quicksort(list2, 0, numIDs - 1);
+
+        // for (int i = 0; i < numIDs; i++) {
+        //         printf("%d - [%d, %d]\n", i, list1[i], list2[i]);
+        // }
+
+        long simScore = 0;
+        int pos1 = 0;
+        int pos2 = 0;
+        while (pos1 < numIDs && pos2 < numIDs) {
+                int count1 = 1;
+                int count2 = 0;
+                // Find number of occuranced of entry in list1
+                int cur = list1[pos1];
+                pos1++;
+                while (list1[pos1] == cur && pos1 < numIDs) {
+                        pos1++;
+                        count1++;
+                }
+
+                //Find number of occurances of entry in list2
+                while (list2[pos2] <= cur && pos2 < numIDs) {
+                        if (list2[pos2] == cur) {
+                                count2++;
+                        }
+                        pos2++;
+                }
+
+                int similarity = cur * count1 * count2;
+                // printf("%d: %d, %d - %d\n", cur, count1, count2, similarity);
+                simScore += similarity;
+        }
+
+        printf("\nPart 2: Similarity Score: %ld\n", simScore);
 }
 
 int main(int argc, char *argv[]) {
