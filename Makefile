@@ -8,7 +8,7 @@ CC = gcc
 CFLAGS = -g
 LDFLAGS = -g
 
-SRC = src/2023/Day$(DAY).c $(wildcard src/util/*.c)
+SRC = src/2024/Day$(DAY).c $(wildcard src/util/*.c)
 TEST = test.c $(wildcard src/util/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
