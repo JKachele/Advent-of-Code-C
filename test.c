@@ -9,7 +9,24 @@
 #include <stdio.h>
 #include <regex.h>
 #include <stdlib.h>
+#include <string.h>
 
+char* regexp(char *str, int *endPtr, regex_t regex) {
+        regmatch_t rm[1];
+        if (regexec(&regex, str, 1, rm, 0) != 0) {
+                // printf("No Regex Found\n");
+                return NULL;
+        }
+
+        // printf("Regex Found!\n");
+        *endPtr = (int)rm[0].rm_eo;
+
+        char* match = malloc(sizeof(char) * 20);
+        int matchLen = (int)(rm[0].rm_eo - rm[0].rm_so);
+
+        strncpy(match, str + rm[0].rm_so, matchLen);
+        return match;
+}
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
@@ -26,15 +43,28 @@ int main(int argc, char *argv[]) {
                 return EXIT_FAILURE;
         }
 
-        regmatch_t rm[1];
-        if (regexec(&testRegex, str, 1, rm, 0) == 0) {
-                printf("Regex Found!\n");
-                printf("<<%s>>\n", str);
-                printf("String: <<%.*s>>\n", (int)(rm[0].rm_eo - rm[0].rm_so), str + rm[0].rm_so);
-        } else {
-                printf("No Regex Found\n");
-                return 0;
+        int *endPtr = malloc(sizeof *endPtr);
+        char *match = regexp(str, endPtr, testRegex);
+        printf("<<%s>>\n", str);
+        printf("match: %s, Remaining: %s\n", match, str + *endPtr);
+
+        if (strcmp(match, "mul(2,4)") == 0) {
+                printf("Match!\n");
         }
+
+        // char* match = malloc(sizeof(char) * 20);
+        // regmatch_t rm[1];
+        // if (regexec(&testRegex, str, 1, rm, 0) == 0) {
+        //         printf("Regex Found!\n");
+        //         printf("<<%s>>\n", str);
+        //         printf("String: <<%.*s>>\n", (int)(rm[0].rm_eo - rm[0].rm_so), str + rm[0].rm_so);
+        //         int matchLen = (int)(rm[0].rm_eo - rm[0].rm_so);
+        //         strncpy(match, str + rm[0].rm_so, matchLen);
+        //         printf("Match: <<%s>>\n", match);
+        // } else {
+        //         printf("No Regex Found\n");
+        //         return 0;
+        // }
 
         return 0;
 }
