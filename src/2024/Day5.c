@@ -40,6 +40,22 @@ bool isValidUpdate(int update[], int numPages, rule rules[], int numRules) {
         return true;
 }
 
+void swapPages(int update[], int numPages, rule rules[], int numRules) {
+        for (int i = 0; i < numPages; i++) {
+                if (update[i] == -1)
+                        break;
+                for (int j = i + 1; j < numPages; j++) {
+                        if (update[j] == -1)
+                                break;
+                        if (!isValidPage(rules, numRules, update[i], update[j])) {
+                                int temp = update[i];
+                                update[i] = update[j];
+                                update[j] = temp;
+                        }
+                }
+        }
+}
+
 int getMiddle(int update[], int numPages) {
         for (int i = 0; i < numPages; i++) {
                 if (update[i] == -1)
@@ -101,12 +117,57 @@ void part1(llist *ll) {
 
 void part2(llist *ll) {
         llNode *current = ll->head;
+
+        // Get rules
+        rule rules[ll->length];
+        int numRules = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+                if (str[0] == '\0') {
+                        current = current->next;
+                        break;
+                }
+                int before = strtol(strtok(str, "|"), (char**)NULL, 10);
+                int after = strtol(strtok(NULL, ""), (char**)NULL, 10);
+                rules[numRules] = (rule){before, after};
                 current = current->next;
+                numRules++;
         }
-        printf("\nPart 2: \n");
+
+        int numUpdates = ll->length - (numRules + 1);
+        const int maxPages = 32;
+        int updates[numUpdates][maxPages];
+        int updateNum = 0;
+        while (current != NULL) {
+                char str[BUFFER_SIZE];
+                strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                int pageNum = 0;
+                char *pageStr = strtok(str, ",");
+                while (pageStr != NULL) {
+                        int page = strtol(pageStr, (char**)NULL, 10);
+                        updates[updateNum][pageNum] = page;
+                        pageStr = strtok(NULL, ",");
+                        pageNum++;
+                }
+                updates[updateNum][pageNum] = -1;
+
+                current = current->next;
+                updateNum++;
+        }
+
+        int middleNums = 0;
+        for (int i = 0; i < numUpdates; i++) {
+                if (isValidUpdate(updates[i], maxPages, rules, numRules))
+                        continue;
+                while (!isValidUpdate(updates[i], maxPages, rules, numRules)) {
+                        swapPages(updates[i], maxPages, rules, numRules);
+                }
+                middleNums += getMiddle(updates[i], maxPages);
+        }
+
+        printf("\nPart 2: Sorted Middle Number Sum: %d\n", middleNums);
 }
 
 int main(int argc, char *argv[]) {
