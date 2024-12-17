@@ -18,6 +18,11 @@
     __typeof__(b) _b = (b); \
     _a < _b ? _a : _b; })
 
+typedef struct {
+        int x;
+        int y;
+} vector2;
+
 int msleep(long msec);
 
 
