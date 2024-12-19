@@ -46,3 +46,15 @@ void printInput(void *data) {
     }
     printf("%s", str);
 }
+
+int getLongestLine(llist *ll) {
+        llNode *current = ll->head;
+        int longest = 0;
+        while (current != NULL) {
+                int len = strlen((char*)current->data);
+                if (len > longest)
+                        longest = len;
+                current = current->next;
+        }
+        return longest;
+}

@@ -13,6 +13,7 @@
 
 llist *getInputFile(char *fileName);
 void printInput(void *data);
+int getLongestLine(llist *ll);
 
 #endif
 
