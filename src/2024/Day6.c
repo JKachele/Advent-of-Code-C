@@ -170,7 +170,7 @@ vector2 incrementRecordMap(char map[MAX_Y][MAX_X], vector2 pos,
                         return (vector2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '>';
-                        return incrementMap(map, pos);
+                        return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
                         return (vector2){-1, -1};
@@ -187,7 +187,7 @@ vector2 incrementRecordMap(char map[MAX_Y][MAX_X], vector2 pos,
                         return (vector2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = 'V';
-                        return incrementMap(map, pos);
+                        return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
                         return (vector2){-1, -1};
@@ -204,7 +204,7 @@ vector2 incrementRecordMap(char map[MAX_Y][MAX_X], vector2 pos,
                         return (vector2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '<';
-                        return incrementMap(map, pos);
+                        return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
                         return (vector2){-1, -1};
@@ -221,7 +221,7 @@ vector2 incrementRecordMap(char map[MAX_Y][MAX_X], vector2 pos,
                         return (vector2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '^';
-                        return incrementMap(map, pos);
+                        return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
                         return (vector2){-1, -1};
@@ -305,6 +305,7 @@ void part2(llist *ll) {
                 curPos = incrementMap(map, curPos);
         }
         map[startPos.y][startPos.x] = '^';
+        // printMap(map);
 
         vector2 visited[MAX_X * MAX_Y];
         int numVisited = 0;
@@ -316,6 +317,7 @@ void part2(llist *ll) {
                         }
                 }
         }
+        printf("numVisited: %d\n", numVisited);
 
         cell cells[MAX_Y][MAX_X];
         clearCells(cells);
