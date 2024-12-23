@@ -32,6 +32,16 @@ int getNode(vector2 a, vector2 b, vector2 *nodeA, vector2 *nodeB) {
         return 0;
 }
 
+int gcd(int a, int b) {
+        int temp;
+        while (b != 0) {
+                temp = a % b;
+                a = b;
+                b = temp;
+        }
+        return a;
+}
+
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
@@ -43,6 +53,8 @@ int main(int argc, char *argv[]) {
         getNode((vector2){5, 5}, (vector2){8, 4}, &nodeA, &nodeB);
         printf("[%d, %d]\n", nodeA.x, nodeA.y);
         printf("[%d, %d]\n", nodeB.x, nodeB.y);
+
+        printf("GCD of 252 and 105 is %d\n", gcd(252, 105));
 
         return 0;
 }
