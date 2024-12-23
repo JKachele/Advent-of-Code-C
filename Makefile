@@ -47,4 +47,5 @@ runTest: test
 
 clean:
 	rm -rf bin/
+	rm $(OBJ)
 
