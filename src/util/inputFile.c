@@ -40,10 +40,9 @@ llist *getInputFile(char *fileName) {
 }
 
 void printInput(void *data) {
-        char *str = (char*)data;
-        if (data == NULL) {
+        if (data == NULL)
                 return;
-        }
+        char *str = (char*)data;
         printf("%s", str);
 }
 

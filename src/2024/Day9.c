@@ -9,9 +9,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include "../util/linkedlist.h"
 // #include "../util/util.h"
 
 #define BUFFER_SIZE 32768
+
+typedef struct {
+        int size;
+        int id;
+        bool seen;
+} block;
+
+void printBlock(void *data) {
+        if (data == NULL)
+                return;
+        block *b = (block*)data;
+        printf("%d:%d", b->size, b->id);
+}
+
+void printMem(llist *map) {
+        llNode *cur = map->head;
+        while (cur != NULL) {
+                block *b = (block*)cur->data;
+                for (int j = 0; j < b->size; j++) {
+                        if (b->id >= 0)
+                                printf("%d", b->id);
+                        else
+                                printf(".");
+                }
+                cur = cur->next;
+        }
+        printf("\n");
+}
 
 // Using different File input because of input file format (One long line)
 char *getInput(char *fileName) {
@@ -111,13 +141,100 @@ void part1(char *input) {
 void part2(char *input) {
         char str[BUFFER_SIZE];
         strncpy(str, input, BUFFER_SIZE);
+        int len = strlen(str);
+        block diskmap[len];
+        llist *map = llist_create();
 
-        printf("Part 2: \n");
+        int memorySize = 0;
+        for (int i = 0; i < len; i++) {
+                block *curBlock = malloc(sizeof(block));
+                int size = str[i] - '0';
+                curBlock->size = size;
+                curBlock->seen = false;
+                if (i % 2 == 0)
+                        curBlock->id = i / 2;
+                else
+                        curBlock->id = -1;
+                llist_add(map, curBlock);
+        }
+        llist_print(map, printBlock);
+        printMem(map);
+
+        // Compress Memory
+        llNode *end = map->tail;
+        while (end != NULL) {
+                llNode *start = map->head;
+                
+                // Get last used block
+                while (end != NULL && (((block*)end->data)->seen
+                                || ((block*)end->data)->id == -1)) {
+                        end = end->prev;
+                }
+                if (end == NULL)
+                        continue;
+
+                // Get first empty block with enough space
+                int endSize = ((block*)end->data)->size;
+                while (start != NULL && (((block*)start->data)->id != -1
+                                || ((block*)start->data)->size < endSize)) {
+                        start = start->next;
+                }
+                // printMem(map);
+
+                // If no space available, continue with next block in
+                if (start == NULL || llist_get_index(start, map) >= 
+                                        llist_get_index(end, map)) {
+                        ((block*)end->data)->seen = true;
+                        end = end->prev;
+                        continue;
+                }
+
+                // Move block to free space
+                block *free = (block*)start->data;
+                block *file = (block*)end->data;
+                if (free->size == file->size) {
+                        // Simply switch block IDs
+                        free->id = file->id;
+                        file->id = -1;
+                        free->seen = true;
+                        continue;
+                }
+
+                // If free block is larger, need to create new block
+                block *new = malloc(sizeof(block));
+                new->id = file->id;
+                new->size = file->size;
+                new->seen = true;
+                file->id = -1;
+                free->size -= new->size;
+                llNode* newNode = llist_create_node(new);
+                llist_insert_before(map, start, newNode);
+        }
+        llist_print(map, printBlock);
+        printMem(map);
+
+        // File Checksum
+        long checksum = 0;
+        llNode *cur = map->head;
+        int index = 0;
+        while (cur != NULL) {
+                block *b = (block*)cur->data;
+                if (b->id != -1) {
+                        for (int i = index; i < index + b->size; i++) {
+                                checksum += b->id * i;
+                        }
+                }
+                index += b->size;
+                cur = cur->next;
+        }
+
+        printf("Part 2: File Checksum: %ld\n\n", checksum);
 }
 
 int main(int argc, char *argv[]) {
         char *input = getInput("assets/2024/Day9.txt");
         // char *input = getInput("assets/test.txt");
+        // char *input = "1313165";
         // printf("%s\n", input);
 
         part1(input);
