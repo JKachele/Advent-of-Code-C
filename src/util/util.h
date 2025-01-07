@@ -8,6 +8,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <stdint.h>
+
 #define max(a,b) \
     ({ __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
@@ -24,6 +26,9 @@ typedef struct {
 } vector2;
 
 int msleep(long msec);
+void printInt(void *data);
+void printLong(void *data);
+int64_t ipow(int64_t base, uint8_t exp);
 
 
 #endif
