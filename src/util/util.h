@@ -21,8 +21,8 @@
     _a < _b ? _a : _b; })
 
 typedef struct {
-        int x;
-        int y;
+        long int x;
+        long int y;
 } vector2;
 
 int msleep(long msec);
