@@ -6,13 +6,15 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdbool.h>
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        printf("%d\n", -4 % 3);
+        long l = LONG_MAX;
+        printf("%ld\n", l);
 
         return 0;
 }
