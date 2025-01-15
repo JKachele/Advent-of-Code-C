@@ -30,7 +30,7 @@ void printAntenna(void *data) {
         if (data == NULL)
                 return;
         antenna *a = (antenna*)data;
-        printf("%c:(%d, %d)", a->freq, a->location.x, a->location.y);
+        printf("%c:(%ld, %ld)", a->freq, a->location.x, a->location.y);
 }
 
 // Euclid's Algorithm
@@ -292,8 +292,11 @@ void part2(llist *ll) {
 }
 
 int main(int argc, char *argv[]) {
-        llist *ll = getInputFile("assets/2024/Day8.txt");
-        // llist *ll = getInputFile("assets/test.txt");
+        llist *ll;
+        if (argc > 1 && strcmp(argv[1], "TEST") == 0)
+                ll = getInputFile("assets/test.txt");
+        else
+                ll = getInputFile("assets/2024/Day8.txt");
         // llist_print(ll, printInput);
 
         part1(ll);

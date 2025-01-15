@@ -175,8 +175,11 @@ void part2(char *input) {
 }
 
 int main(int argc, char *argv[]) {
-        char *input = "17639 47 3858 0 470624 9467423 5 188";
-        // char *input = "125 17"; // Expected: 1) 55312 2) 65601038650482
+        char *input;
+        if (argc > 1 && strcmp(argv[1], "TEST") == 0)
+                input = "125 17"; // Expected: 1) 55312 2) 65601038650482
+        else
+                input = "17639 47 3858 0 470624 9467423 5 188";
         
         part1(input);
         part2(input);

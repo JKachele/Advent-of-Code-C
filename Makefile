@@ -30,6 +30,10 @@ run: all
 	$(BIN)/out
 	rm $(OBJ)
 
+runWithTest: all
+	$(BIN)/out TEST
+	rm $(OBJ)
+
 out: $(OBJ)
 	$(CC) -o $(BIN)/out $^ $(LDFLAGS)
 

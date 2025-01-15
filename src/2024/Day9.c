@@ -232,9 +232,12 @@ void part2(char *input) {
 }
 
 int main(int argc, char *argv[]) {
-        char *input = getInput("assets/2024/Day9.txt");
-        // char *input = getInput("assets/test.txt");
-        // char *input = "1313165";
+        char *input;
+        if (argc > 1 && strcmp(argv[1], "TEST") == 0)
+                input = getInput("assets/test.txt");
+                // char *input = "1313165";
+        else
+                input = getInput("assets/2024/Day9.txt");
         // printf("%s\n", input);
 
         part1(input);

@@ -256,8 +256,11 @@ void part2(llist *ll) {
 }
 
 int main(int argc, char *argv[]) {
-        llist *ll = getInputFile("assets/2024/Day12.txt");
-        // llist *ll = getInputFile("assets/test.txt");
+        llist *ll;
+        if (argc > 1 && strcmp(argv[1], "TEST") == 0)
+                ll = getInputFile("assets/test.txt");
+        else
+                ll = getInputFile("assets/2024/Day12.txt");
         // llist_print(ll, printInput);
 
         part1(ll);
