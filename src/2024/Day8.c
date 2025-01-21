@@ -23,14 +23,14 @@ typedef struct {
 
 typedef struct {
         char freq;
-        vector2 location;
+        ivec2 location;
 } antenna;
 
 void printAntenna(void *data) {
         if (data == NULL)
                 return;
         antenna *a = (antenna*)data;
-        printf("%c:(%ld, %ld)", a->freq, a->location.x, a->location.y);
+        printf("%c:(%d, %d)", a->freq, a->location.x, a->location.y);
 }
 
 // Euclid's Algorithm
@@ -44,41 +44,41 @@ int gcd(int a, int b) {
         return a;
 }
 
-bool isValidPos(vector2 p) {
+bool isValidPos(ivec2 p) {
         return (p.x >= 0 && p.y >= 0 && p.x < MAX_X && p.y < MAX_Y);
 }
 
 // Finds the 2 nodes (nodeA, nodeB) from the 2 antenna Locations (a, b)
-int getNode(vector2 a, vector2 b, vector2 *nodeA, vector2 *nodeB) {
+int getNode(ivec2 a, ivec2 b, ivec2 *nodeA, ivec2 *nodeB) {
         int diffX = b.x - a.x;
         int diffY = b.y - a.y;
 
-        *nodeA = (vector2){a.x - diffX, a.y - diffY};
-        *nodeB = (vector2){b.x + diffX, b.y + diffY};
+        *nodeA = (ivec2){a.x - diffX, a.y - diffY};
+        *nodeB = (ivec2){b.x + diffX, b.y + diffY};
 
         if (nodeA->x < 0 || nodeA->x >= MAX_X
                         || nodeA->y < 0 || nodeA->y >= MAX_Y) {
-                *nodeA = (vector2){-1, -1};
+                *nodeA = (ivec2){-1, -1};
         }
         if (nodeB->x < 0 || nodeB->x >= MAX_X
                         || nodeB->y < 0 || nodeB->y >= MAX_Y) {
-                *nodeB = (vector2){-1, -1};
+                *nodeB = (ivec2){-1, -1};
         }
 
         return 0;
 }
 
 int getFreqNodes(cell grid[MAX_Y][MAX_X], llist *antennas) {
-        vector2 nodeA = {-1, -1};
-        vector2 nodeB = {-1, -1};
+        ivec2 nodeA = {-1, -1};
+        ivec2 nodeB = {-1, -1};
         for (int i = 0; i < antennas->length; i++) {
                 llNode *llNodeA = llist_get_node(antennas, i);
                 antenna *antennaA = (antenna*)(llNodeA->data);
-                vector2 a = antennaA->location;
+                ivec2 a = antennaA->location;
                 for (int j = i + 1; j < antennas->length; j++) {
                         llNode *llNodeB = llist_get_node(antennas, j);
                         antenna *antennaB = (antenna*)(llNodeB->data);
-                        vector2 b = antennaB->location;
+                        ivec2 b = antennaB->location;
                         getNode(a, b, &nodeA, &nodeB);
                         if (nodeA.x != -1) {
                                 grid[nodeA.y][nodeA.x].node = true;
@@ -91,8 +91,8 @@ int getFreqNodes(cell grid[MAX_Y][MAX_X], llist *antennas) {
         return 0;
 }
 
-int getNodes2(cell grid[MAX_Y][MAX_X], vector2 a, vector2 b) {
-        vector2 slope = {b.x - a.x, b.y - a.y};
+int getNodes2(cell grid[MAX_Y][MAX_X], ivec2 a, ivec2 b) {
+        ivec2 slope = {b.x - a.x, b.y - a.y};
 
         // Verify no nodes between antennas
         int slopeGCD = gcd(slope.x, slope.y);
@@ -103,7 +103,7 @@ int getNodes2(cell grid[MAX_Y][MAX_X], vector2 a, vector2 b) {
         }
 
         // Subtract Slope
-        vector2 curPos = a;
+        ivec2 curPos = a;
         while (isValidPos(curPos)) {
                 grid[curPos.y][curPos.x].node = true;
                 curPos.x -= slope.x;
@@ -124,11 +124,11 @@ int getFreqNodes2(cell grid[MAX_Y][MAX_X], llist *antennas) {
         for (int i = 0; i < antennas->length; i++) {
                 llNode *llNodeA = llist_get_node(antennas, i);
                 antenna *antennaA = (antenna*)(llNodeA->data);
-                vector2 a = antennaA->location;
+                ivec2 a = antennaA->location;
                 for (int j = i + 1; j < antennas->length; j++) {
                         llNode *llNodeB = llist_get_node(antennas, j);
                         antenna *antennaB = (antenna*)(llNodeB->data);
-                        vector2 b = antennaB->location;
+                        ivec2 b = antennaB->location;
 
                         getNodes2(grid, a, b);
                 }
@@ -167,7 +167,7 @@ void part1(llist *ll) {
 
                         antenna *curAntenna = malloc(sizeof(antenna));
                         curAntenna->freq = str[x];
-                        curAntenna->location = (vector2){x, lineNum};
+                        curAntenna->location = (ivec2){x, lineNum};
                         llist_add(antennas, curAntenna);
                 }
                 current = current->next;
@@ -242,7 +242,7 @@ void part2(llist *ll) {
 
                         antenna *curAntenna = malloc(sizeof(antenna));
                         curAntenna->freq = str[x];
-                        curAntenna->location = (vector2){x, lineNum};
+                        curAntenna->location = (ivec2){x, lineNum};
                         llist_add(antennas, curAntenna);
                 }
                 current = current->next;

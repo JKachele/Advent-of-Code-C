@@ -8,27 +8,6 @@
 
 #include "util.h"
 #include <stdio.h>
-#include <time.h>
-#include <errno.h>
-
-int msleep(long msec) {
-        struct timespec ts;
-        int res;
-
-        if (msec < 0) {
-                errno = EINVAL;
-                return -1;
-        }
-
-        ts.tv_sec = msec / 1000;
-        ts.tv_nsec = (msec % 1000) * 1000000;
-
-        do {
-                res = nanosleep(&ts, &ts);
-        } while (res && errno == EINTR);
-
-        return res;
-}
 
 void printInt(void *data) {
         if (data == NULL)
@@ -42,6 +21,20 @@ void printLong(void *data) {
                 return;
         long *num = (long*)data;
         printf("%ld", *num);
+}
+
+ivec2 addIVec2(ivec2 a, ivec2 b) {
+        ivec2 sum;
+        sum.x = a.x + b.x;
+        sum.y = a.y + b.y;
+        return sum;
+}
+
+lvec2 addLVec2(lvec2 a, lvec2 b) {
+        lvec2 sum;
+        sum.x = a.x + b.x;
+        sum.y = a.y + b.y;
+        return sum;
 }
 
 // Credit to github.com/orlp 

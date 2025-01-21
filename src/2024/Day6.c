@@ -40,7 +40,7 @@ void clearCells(cell cells[MAX_Y][MAX_X]) {
         }
 }
 
-int validPos(char map[MAX_Y][MAX_X], vector2 pos) {
+int validPos(char map[MAX_Y][MAX_X], ivec2 pos) {
         if (pos.x < 0 || pos.y < 0)
                 return -1;
         if (pos.x >= MAX_X || pos.y >= MAX_Y)
@@ -50,75 +50,75 @@ int validPos(char map[MAX_Y][MAX_X], vector2 pos) {
         return 0;
 }
 
-vector2 incrementMap(char map[MAX_Y][MAX_X], vector2 pos) {
+ivec2 incrementMap(char map[MAX_Y][MAX_X], ivec2 pos) {
         int valid;
-        vector2 newPos;
+        ivec2 newPos;
         switch (map[pos.y][pos.x]) {
         case '^':
-                newPos = (vector2){pos.x, pos.y - 1};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x, pos.y - 1};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '^';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '>';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case '>':
-                newPos = (vector2){pos.x + 1, pos.y};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x + 1, pos.y};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '>';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = 'V';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case 'V':
-                newPos = (vector2){pos.x, pos.y + 1};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x, pos.y + 1};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = 'V';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '<';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case '<':
-                newPos = (vector2){pos.x - 1, pos.y};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x - 1, pos.y};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '<';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '^';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         default:
                 fprintf(stderr, "Error Invalid Position Char \'%c",
                                 map[pos.y][pos.x]);
-                return (vector2){-1, -1};
+                return (ivec2){-1, -1};
         }
 }
 
 // dir: 0:Up, 1:Right, 2:Down, 3:Left
-int addCell(cell cells[MAX_Y][MAX_X], vector2 pos, int dir) {
+int addCell(cell cells[MAX_Y][MAX_X], ivec2 pos, int dir) {
         switch (dir) {
         case 0:
                 if (cells[pos.y][pos.x].up) {
@@ -153,83 +153,83 @@ int addCell(cell cells[MAX_Y][MAX_X], vector2 pos, int dir) {
         }
 }
 
-vector2 incrementRecordMap(char map[MAX_Y][MAX_X], vector2 pos,
+ivec2 incrementRecordMap(char map[MAX_Y][MAX_X], ivec2 pos,
                 cell cells[MAX_Y][MAX_X]) {
         int valid;
-        vector2 newPos;
+        ivec2 newPos;
         switch (map[pos.y][pos.x]) {
         case '^':
-                newPos = (vector2){pos.x, pos.y - 1};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x, pos.y - 1};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 0) == 1) {
-                                return (vector2){-2, -2};
+                                return (ivec2){-2, -2};
                         }
                         map[newPos.y][newPos.x] = '^';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '>';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case '>':
-                newPos = (vector2){pos.x + 1, pos.y};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x + 1, pos.y};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 1) == 1) {
-                                return (vector2){-2, -2};
+                                return (ivec2){-2, -2};
                         }
                         map[newPos.y][newPos.x] = '>';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = 'V';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case 'V':
-                newPos = (vector2){pos.x, pos.y + 1};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x, pos.y + 1};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 2) == 1) {
-                                return (vector2){-2, -2};
+                                return (ivec2){-2, -2};
                         }
                         map[newPos.y][newPos.x] = 'V';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '<';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         case '<':
-                newPos = (vector2){pos.x - 1, pos.y};
-                valid = validPos(map, (vector2){newPos.x, newPos.y});
+                newPos = (ivec2){pos.x - 1, pos.y};
+                valid = validPos(map, (ivec2){newPos.x, newPos.y});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 3) == 1) {
-                                return (vector2){-2, -2};
+                                return (ivec2){-2, -2};
                         }
                         map[newPos.y][newPos.x] = '<';
-                        return (vector2){newPos.x, newPos.y};
+                        return (ivec2){newPos.x, newPos.y};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '^';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (vector2){-1, -1};
+                        return (ivec2){-1, -1};
                 }
         default:
                 fprintf(stderr, "Error Invalid Position Char \'%c",
                                 map[pos.y][pos.x]);
-                return (vector2){-1, -1};
+                return (ivec2){-1, -1};
         }
 }
 
@@ -237,7 +237,7 @@ void part1(llist *ll) {
         llNode *current = ll->head;
         MAX_Y = ll->length;
         MAX_X = strlen((char*)current->data);
-        vector2 curPos = {0, 0};
+        ivec2 curPos = {0, 0};
 
         char map[MAX_Y][MAX_X];
         int curLine = 0;
@@ -249,7 +249,7 @@ void part1(llist *ll) {
                 // Look for janator position
                 for (int i = 0; i < MAX_X; i++) {
                         if (map[curLine][i] == '^')
-                                curPos = (vector2){i, curLine};
+                                curPos = (ivec2){i, curLine};
                 }
 
                 current = current->next;
@@ -280,7 +280,7 @@ void part2(llist *ll) {
         llNode *current = ll->head;
         MAX_Y = ll->length;
         MAX_X = strlen((char*)current->data);
-        vector2 curPos = {0, 0};
+        ivec2 curPos = {0, 0};
 
         char map[MAX_Y][MAX_X];
         int curLine = 0;
@@ -292,13 +292,13 @@ void part2(llist *ll) {
                 // Look for janator position
                 for (int i = 0; i < MAX_X; i++) {
                         if (map[curLine][i] == '^')
-                                curPos = (vector2){i, curLine};
+                                curPos = (ivec2){i, curLine};
                 }
 
                 current = current->next;
                 curLine++;
         }
-        vector2 startPos = curPos;
+        ivec2 startPos = curPos;
 
         // Get original Path
         while (curPos.x >= 0) {
@@ -307,12 +307,12 @@ void part2(llist *ll) {
         map[startPos.y][startPos.x] = '^';
         // printMap(map);
 
-        vector2 visited[MAX_X * MAX_Y];
+        ivec2 visited[MAX_X * MAX_Y];
         int numVisited = 0;
         for (int y = 0; y < MAX_Y; y++) {
                 for (int x = 0; x < MAX_X; x++) {
                         if (map[y][x] == 'X') {
-                                visited[numVisited] = (vector2){x, y};
+                                visited[numVisited] = (ivec2){x, y};
                                 numVisited++;
                         }
                 }
@@ -324,7 +324,7 @@ void part2(llist *ll) {
 
         int numNewObs = 0;
         for (int i = 0; i < numVisited; i++) {
-                vector2 new = visited[i];
+                ivec2 new = visited[i];
                 map[new.y][new.x] = '#';
                 while (curPos.x >= 0) {
                         curPos = incrementRecordMap(map, curPos, cells);

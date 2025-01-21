@@ -107,8 +107,13 @@ void llist_remove_node(llist *ll, llNode *nodeToRemove) {
                 nodeToRemove->next = NULL;
                 nodeToRemove->prev = NULL;
         }
-        llist_free_node(nodeToRemove);
         ll->length--;
+        return;
+}
+
+void llist_remove_free_node(llist *ll, llNode *nodeToRemove) {
+        llist_remove_node(ll, nodeToRemove);
+        llist_free_node(nodeToRemove);
         return;
 }
 

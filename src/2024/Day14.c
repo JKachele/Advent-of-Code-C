@@ -24,7 +24,7 @@ void clearFile(char *fileName) {
         fclose(outFile);
 }
 
-void mapToFile(char* fileName, vector2 guards[], int numGuards, int step) {
+void mapToFile(char* fileName, ivec2 guards[], int numGuards, int step) {
         if (step == 0)
                 clearFile(fileName);
 
@@ -35,7 +35,7 @@ void mapToFile(char* fileName, vector2 guards[], int numGuards, int step) {
 
         int grid[SIZE_Y][SIZE_X] = {0};
         for (int i = 0; i < numGuards; i++){
-                // printf("%ld, %ld\n", guards[i].x, guards[i].y);
+                // printf("%d, %d\n", guards[i].x, guards[i].y);
                 grid[guards[i].y][guards[i].x]++;
         }
 
@@ -53,11 +53,11 @@ void mapToFile(char* fileName, vector2 guards[], int numGuards, int step) {
         fclose(outFile);
 }
 
-void stepGuards(vector2 guards[], vector2 guardVel[], int n, int steps) {
+void stepGuards(ivec2 guards[], ivec2 guardVel[], int n, int steps) {
         for(int i = 0; i < n; i++) {
-                vector2 p = guards[i];
-                vector2 v = guardVel[i];
-                vector2 newP;
+                ivec2 p = guards[i];
+                ivec2 v = guardVel[i];
+                ivec2 newP;
                 newP.x = (p.x + (steps * v.x)) % SIZE_X;
                 newP.y = (p.y + (steps * v.y)) % SIZE_Y;
                 if (newP.x < 0)
@@ -71,7 +71,7 @@ void stepGuards(vector2 guards[], vector2 guardVel[], int n, int steps) {
 
 // 1 2
 // 3 4  (0 for no quadrant, -1 for error)
-int quadrant(vector2 p) {
+int quadrant(ivec2 p) {
         int qSizeX = (SIZE_X - 1) / 2;
         int qSizeY = (SIZE_Y - 1) / 2;
 
@@ -91,7 +91,7 @@ int quadrant(vector2 p) {
         return -1;
 }
 
-long getSafteyFactor(vector2 guards[], int numGuards) {
+long getSafteyFactor(ivec2 guards[], int numGuards) {
         int quad1Count = 0;
         int quad2Count = 0;
         int quad3Count = 0;
@@ -115,7 +115,7 @@ long getSafteyFactor(vector2 guards[], int numGuards) {
                         quad4Count ++;
                         break;
                 default:
-                        printf("Error with guard starting at (%ld, %ld)",
+                        printf("Error with guard starting at (%d, %d)",
                                         guards[i].x, guards[i].y);
                         break;
                 }
@@ -125,7 +125,7 @@ long getSafteyFactor(vector2 guards[], int numGuards) {
         return safetyFactor;
 }
 
-int getMaxOverlap(vector2 guards[], int numGuards) {
+int getMaxOverlap(ivec2 guards[], int numGuards) {
         int grid[SIZE_Y][SIZE_X] = {0};
         int maxOverlap = 0;
         for (int i = 0; i < numGuards; i++){
@@ -144,8 +144,8 @@ void part1(llist *ll) {
 
         llNode *current = ll->head;
         while(current != NULL) {
-                vector2 p;
-                vector2 v;
+                ivec2 p;
+                ivec2 v;
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 
@@ -160,7 +160,7 @@ void part1(llist *ll) {
                 char *vy = strtok(NULL, "");
                 v.y = strtol(vy, (char**)NULL, 10);
 
-                vector2 newP;
+                ivec2 newP;
                 newP.x = (p.x + (NUM_STEPS * v.x)) % SIZE_X;
                 newP.y = (p.y + (NUM_STEPS * v.y)) % SIZE_Y;
                 if (newP.x < 0)
@@ -185,12 +185,12 @@ void part1(llist *ll) {
                         quad4Count ++;
                         break;
                 default:
-                        printf("Error with guard starting at (%ld, %ld)",
+                        printf("Error with guard starting at (%d, %d)",
                                         p.x, p.y);
                         break;
                 }
 
-                // printf("P: (%ld, %ld), V: (%ld, %ld) newP: (%ld, %ld) Quad: %d\n",
+                // printf("P: (%d, %d), V: (%d, %d) newP: (%d, %d) Quad: %d\n",
                 //                 p.x, p.y, v.x, v.y, newP.x, newP.y, quad);
 
                 current = current->next;
@@ -204,14 +204,14 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        vector2 guards[ll->length];
-        vector2 guardVel[ll->length];
+        ivec2 guards[ll->length];
+        ivec2 guardVel[ll->length];
 
         llNode *current = ll->head;
         int guardNum = 0;
         while(current != NULL) {
-                vector2 p;
-                vector2 v;
+                ivec2 p;
+                ivec2 v;
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 
@@ -253,14 +253,14 @@ void part2(llist *ll) {
 
 // Find Part 2 answer programatically
 void part2a(llist *ll) {
-        vector2 guards[ll->length];
-        vector2 guardVel[ll->length];
+        ivec2 guards[ll->length];
+        ivec2 guardVel[ll->length];
 
         llNode *current = ll->head;
         int guardNum = 0;
         while(current != NULL) {
-                vector2 p;
-                vector2 v;
+                ivec2 p;
+                ivec2 v;
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 

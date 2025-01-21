@@ -30,6 +30,7 @@ llNode *llist_add(llist *ll, void *data);
 void llist_insert_after(llist *ll, llNode *nodeToInsertAfter, llNode *nodeToInsert);
 void llist_insert_before(llist *ll, llNode *nodeToInsertBefore, llNode *nodeToInsert);
 void llist_remove_node(llist *ll, llNode *nodeToRemove);
+void llist_remove_free_node(llist *ll, llNode *nodeToRemove);
 llNode *llist_get_node(llist *ll, int index);
 int llist_get_index(llNode *node, llist *ll);
 void llist_print(llist *ll, void (*print)(void*));

@@ -23,12 +23,25 @@
 typedef struct {
         long int x;
         long int y;
-} vector2;
+} lvec2;
 
-int msleep(long msec);
+typedef struct {
+        int x;
+        int y;
+} ivec2;
+
+typedef enum {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+} direction;
+
 void printInt(void *data);
 void printLong(void *data);
 int64_t ipow(int64_t base, uint8_t exp);
+ivec2 addIVec2(ivec2 a, ivec2 b);
+lvec2 addLVec2(lvec2 a, lvec2 b);
 
 
 #endif
