@@ -37,6 +37,14 @@ lvec2 addLVec2(lvec2 a, lvec2 b) {
         return sum;
 }
 
+bool ivec2Eq(ivec2 a, ivec2 b) {
+        return ((a.x == b.x) && (a.y == b.y));
+}
+
+bool lvec2Eq(lvec2 a, lvec2 b) {
+        return ((a.x == b.x) && (a.y == b.y));
+}
+
 // Credit to github.com/orlp 
 int64_t ipow(int64_t base, uint8_t exp) {
     static const uint8_t highest_bit_set[] = {
