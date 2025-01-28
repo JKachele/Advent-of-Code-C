@@ -7,18 +7,14 @@
  ************************************************/
 
 #include <stdio.h>
-#include "src/util/util.h"
 
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
-        ivec2 vec1 = {1, 2};
-        ivec2 vec2 = vec1;
-        printf("1:(%d, %d) ", vec1.x, vec1.y);
-        printf("2:(%d, %d)\n", vec2.x, vec2.y);
-        vec2.x = 30;
-        printf("1:(%d, %d) ", vec1.x, vec1.y);
-        printf("2:(%d, %d)\n", vec2.x, vec2.y);
+        int arr[4] = {0, 0, 0, 0};
+        int *pI = &arr[2];
+        *pI = 4;
+        printf("%d\n", arr[2]);
 
         return 0;
 }
