@@ -118,8 +118,8 @@ long findNextDigit(tllint program, long start, int index, int occur) {
         printf("Index: %d\n", index);
         tllint output;
         long next = start;
-        long out = start;
-        int occurCount = 1;
+        long out = 0;
+        int occurCount = 0;
         for (;next <= start + ipow(8, index + 1); next += ipow(8, index)) {
                 long reg[] = {next, 0, 0};
                 printf("%ld: ", reg[A]);
@@ -133,12 +133,27 @@ long findNextDigit(tllint program, long start, int index, int occur) {
                                 out = next;
                                 printTllint(output);
                                 printTllint(program);
-                                // break;
+                                break;
                         }
                         occurCount++;
                 }
         }
         return out;
+}
+
+int findStartVal(tllint program, long startA, long startI) {
+        if (startI < 0)
+                return startA;
+
+        long startVal = 0;
+        for (int i = 0; i < 8; i++) {
+                long a = findNextDigit(program, startA, startI, i);
+                if (a != 0)
+                        startVal += findStartVal(program, a, startI - 1);
+                else
+                        break;
+        }
+        return 0;
 }
 
 void part1(llist *ll) {
@@ -219,10 +234,12 @@ void part2(llist *ll) {
         // a = findNextDigit(program, output, a, 15);
         // a = findNextDigit(program, output, a, 14);
 
-        for (int i = progLen - 1; i >= 0; i--) {
-                int occur = 1;
-                a = findNextDigit(program, a, i, occur);
-        }
+        // for (int i = progLen - 1; i >= 0; i--) {
+        //         int occur = 1;
+        //         a = findNextDigit(program, a, i, occur);
+        // }
+        long aReg = findStartVal(program, a, progLen - 1);
+        printf("A Reg: %ld\n", aReg);
 
         printTllint(program);
 
