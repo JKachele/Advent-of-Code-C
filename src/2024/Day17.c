@@ -6,9 +6,11 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
 // #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
@@ -28,19 +30,25 @@ void printTllint(tllint i) {
         printf("\n");
 }
 
-int getTllIndex(tllint ll, int index) {
-        int i = 0;
-        int out = 0;
-        tll_foreach(ll, id) {
-                if (i == index)
-                        out = id->item;
-                i++;
+void bin(uint64_t num) {
+        if (num > 1) {
+                bin(num / 2);
         }
-        return out;
+        printf("%lu", num % 2);
 }
 
-long combo(long reg[3], int operand) {
-        long out;
+int tllintAtIndex(tllint i, int index) {
+        int counter = 0;
+        tll_foreach(i, it) {
+                if (counter == index)
+                        return it->item;
+                counter++;
+        }
+        return -1; // if index out of range
+}
+
+uint64_t combo(uint64_t reg[3], int operand) {
+        uint64_t out;
         if (operand < 4)
                 out = operand;
         else if (operand < 7)
@@ -50,15 +58,15 @@ long combo(long reg[3], int operand) {
         return out;
 }
 
-void xdv(long reg[3], int operand, int outReg) {
-        long denominator = combo(reg, operand);
+void xdv(uint64_t reg[3], int operand, int outReg) {
+        uint64_t denominator = combo(reg, operand);
         denominator = ipow(2, denominator);
 
-        long answer = reg[0] / denominator;
+        uint64_t answer = reg[0] / denominator;
         reg[outReg] = answer;
 }
 
-tllint runProgram(long reg[3], tllint program) {
+tllint runProgram(uint64_t reg[3], tllint program) {
         // Convert program to int array
         int programLength = tll_length(program);
         int p[programLength];
@@ -70,8 +78,8 @@ tllint runProgram(long reg[3], tllint program) {
         instPointer = 0;
         tllint output = tll_init();
         while (instPointer < programLength - 1) {
-                long opcode = p[instPointer];
-                long operand = p[instPointer + 1];
+                uint64_t opcode = p[instPointer];
+                uint64_t operand = p[instPointer + 1];
                 int jmpFlag = 0; // 1 if jump happened
 
                 switch (opcode) {
@@ -113,51 +121,32 @@ tllint runProgram(long reg[3], tllint program) {
         return output;
 }
 
-long findNextDigit(tllint program, long start, int index, int occur) {
-        printf("****************************************\n");
-        printf("Index: %d\n", index);
-        tllint output;
-        long next = start;
-        long out = 0;
-        int occurCount = 0;
-        for (;next <= start + ipow(8, index + 1); next += ipow(8, index)) {
-                long reg[] = {next, 0, 0};
-                printf("%ld: ", reg[A]);
-                output = runProgram(reg, program);
-                printTllint(output);
-                int outD = getTllIndex(output, index);
-                int progD = getTllIndex(program, index);
-                if (outD == progD) {// && out == start) {
-                        printf("********\n");
-                        if (occurCount == occur) {
-                                out = next;
-                                printTllint(output);
-                                printTllint(program);
-                                break;
-                        }
-                        occurCount++;
+uint64_t findRegA(tllint prog, int progIndex, uint64_t start) {
+        if (progIndex == tll_length(prog))
+                return start;
+
+        int goal = tllintAtIndex(prog, progIndex);
+        for (uint64_t i = 0; i < 8; i++) {
+                uint64_t aReg = start + (i << 7);
+                uint64_t reg[] = {aReg, 0, 0};
+                tllint out = runProgram(reg, prog);
+                uint64_t ret = -1;
+                if (tll_front(out) == goal &&
+                                !(progIndex == tll_length(prog) - 1 &&
+                                tll_length(out) != 1)) {
+                        ret = findRegA(prog, progIndex + 1, aReg >> 3);
+                }
+                if (ret != -1) {
+                        ret = (ret << 3) | (start % 8);
+                        return ret;
                 }
         }
-        return out;
-}
 
-int findStartVal(tllint program, long startA, long startI) {
-        if (startI < 0)
-                return startA;
-
-        long startVal = 0;
-        for (int i = 0; i < 8; i++) {
-                long a = findNextDigit(program, startA, startI, i);
-                if (a != 0)
-                        startVal += findStartVal(program, a, startI - 1);
-                else
-                        break;
-        }
-        return 0;
+        return -1;
 }
 
 void part1(llist *ll) {
-        long reg[3] = {0};
+        uint64_t reg[3] = {0};
         tllint program = tll_init();
 
         llNode *current = ll->head;
@@ -196,7 +185,6 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        long reg[3] = {0};
         tllint program = tll_init();
 
         char str[BUFFER_SIZE];
@@ -208,51 +196,29 @@ void part2(llist *ll) {
                 tll_push_back(program, inst);
                 tok = strtok(NULL, ",");
         }
-        int progLen = tll_length(program);
-        printTllint(program);
 
-        tllint output;
-        long a;
-        long a2;
-        for (a = 1; a > 0; a *= 2) {
-                reg[A] = a;
-                printf("%ld: ", reg[A]);
-                output = runProgram(reg, program);
-                printTllint(output);
-                if (tll_length(output) == tll_length(program))
+        uint64_t aReg = 0;
+        for (uint64_t i = 0; i < (1 << 10); i++) {
+                uint64_t reg[] = {i, 0, 0};
+                tllint out = runProgram(reg, program);
+                uint64_t ret = -1;
+                if (tll_front(out) == tll_front(program)) {
+                        ret = findRegA(program, 1, i >> 3);
+                }
+                if (ret != -1) {
+                        aReg = (ret << 3) | (i % 8);
                         break;
+                }
         }
-        // for (a2 = a; a2 < a + ipow(8, progLen); a2 += ipow(8, progLen - 1)) {
-        //         reg[A] = a2;
-        //         printf("%ld: ", reg[A]);
-        //         output = runProgram(reg, program);
-        //         printTllint(output);
-        //         if (tll_back(output) == tll_back(program))
-        //                 break;
-        // }
-        // printf("****************************************\n");
-        // a = findNextDigit(program, output, a, 15);
-        // a = findNextDigit(program, output, a, 14);
 
-        // for (int i = progLen - 1; i >= 0; i--) {
-        //         int occur = 1;
-        //         a = findNextDigit(program, a, i, occur);
-        // }
-        long aReg = findStartVal(program, a, progLen - 1);
-        printf("A Reg: %ld\n", aReg);
-
+        uint64_t reg[3] = {0};
+        reg[0] = aReg;
+        tllint out = runProgram(reg, program);
+        printf("Program: ");
         printTllint(program);
-
-        char outStr[tll_length(output)];
-        int count = 0;
-        tll_foreach(output, num) {
-                outStr[count] = '0' + num->item;
-                outStr[count + 1] = ',';
-                count += 2;
-        }
-        outStr[tll_length(output) * 2 - 1] = '\0';
-
-        printf("Part 2: Output: %s\n\n", outStr);
+        printf("Output:  ");
+        printTllint(out);
+        printf("Part 2: Reg A: %ld\n\n", aReg);
 }
 
 int main(int argc, char *argv[]) {
