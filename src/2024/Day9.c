@@ -234,7 +234,7 @@ void part2(char *input) {
 int main(int argc, char *argv[]) {
         char *input;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0)
-                input = getInput("assets/test.txt");
+                input = getInput("assets/tests/2024/Day9.txt");
                 // char *input = "1313165";
         else
                 input = getInput("assets/2024/Day9.txt");

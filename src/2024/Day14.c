@@ -309,7 +309,7 @@ void part2a(llist *ll) {
 int main(int argc, char *argv[]) {
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0)
-                ll = getInputFile("assets/test.txt");
+                ll = getInputFile("assets/tests/2024/Day14.txt");
         else
                 ll = getInputFile("assets/2024/Day14.txt");
         // llist_print(ll, printInput);
