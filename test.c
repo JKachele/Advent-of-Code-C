@@ -12,20 +12,21 @@
 #include <string.h>
 #include "src/lib/tllist.h"
 
-bool startsWith(const char* a, const char *b) {
-        int len = strlen(a) < strlen(b) ? strlen(a) : strlen(b);
-        for (int i = 0; i < len; i++) {
-                if (a[i] != b[i])
-                        return false;
+int arrToInt(int arr[], int len) {
+        int out = 0;
+        int mult = 1;
+        for (int i = len - 1; i >= 0; i--) {
+                out += arr[i] * mult;
+                mult *= 10;
         }
-        return true;
+        return out;
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        printf("%d\n", startsWith("Hello!!!", "He"));
-        printf("%lu\n", strlen("\0"));
+        int arr[] = {2, 4, 8};
+        printf("%d\n", arrToInt(arr, 3));
 
         return 0;
 }
