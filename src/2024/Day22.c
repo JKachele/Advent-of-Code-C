@@ -91,25 +91,43 @@ void part2(llist *ll) {
         }
 
         // Sequences encoded into a 20 bit number, 5 bits per diff
-        int16 totalBananas[ipow(2, 20)];
+        const int MAX_SEQ = ipow(2, 20);
+        int16 totalBananas[MAX_SEQ];
+        bool seqSeen[MAX_SEQ];
+        for (int i = 0; i < MAX_SEQ; i++)
+                totalBananas[i] = 0;
+
         for (int i = 0; i < numEntries; i++) {
-                bool seqSeen[ipow(2, 20)];
-                clearSeqSeen(seqSeen, ipow(2, 20));
+                clearSeqSeen(seqSeen, MAX_SEQ);
                 int seq = 0;
                 for (int j = 0; j < NUM_STEPS; j++) {
                         uint64 new = stepNumber(entries[i]);
-                        int diff = new - entries[i];
+
+                        int diff = (new % 10) - (entries[i] % 10);
                         seq = addDiff(seq, diff);
+
+                        if (seq >= MAX_SEQ) {
+                                printf("Seq Too Large!!!\n");
+                                break;
+                        }
+
+                        int8 bananas = new % 10;
+                        if (!seqSeen[seq]) {
+                                totalBananas[seq] += bananas;
+                                seqSeen[seq] = true;
+                        }
+
+                        entries[i] = new;
                 }
         }
 
-        uint64 total = 0;
-        for(int i = 0; i < numEntries; i++) {
-                total += entries[i];
-                // printf("%lu\n", entries[i]);
+        int maxBananas = 0;
+        for (int i = 0; i < MAX_SEQ; i++) {
+                if (totalBananas[i] > maxBananas)
+                        maxBananas = totalBananas[i];
         }
 
-        printf("Part 1: Sum of 2000th secret: %lu\n\n", total);
+        printf("Part 1: Max Bananas: %d\n\n", maxBananas);
 }
 
 int main(int argc, char *argv[]) {

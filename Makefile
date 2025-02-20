@@ -5,7 +5,7 @@
 ######################################################################
 
 CC = gcc
-CFLAGS = -std=c11 -O3 -g
+CFLAGS = -std=c11 -g
 CFLAGS += -Wall -Wextra -Wpedantic 
 CFLAGS += -Wno-unused-parameter -Wno-unused-variable
 CFLAGS += -Wno-stringop-truncation
