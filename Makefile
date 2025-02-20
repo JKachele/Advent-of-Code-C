@@ -8,6 +8,7 @@ CC = gcc
 CFLAGS = -std=c11 -O3 -g
 CFLAGS += -Wall -Wextra -Wpedantic 
 CFLAGS += -Wno-unused-parameter -Wno-unused-variable
+CFLAGS += -Wno-stringop-truncation
 LDFLAGS = -lm 
 
 SRC = src/2024/Day$(DAY).c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
