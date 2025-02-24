@@ -34,6 +34,33 @@ char *idToStr(int id) {
         return idStr;
 }
 
+void printCliques(tllclique cliques) {
+        tll_foreach(cliques, it) {
+                tllint16 clique = it->item;
+                printf("{");
+                tll_foreach(clique, jt) {
+                        printf("%d ", jt->item);
+                }
+                printf("}\n");
+        }
+}
+
+bool tllContains(tllint16 arr, int16 i) {
+        tll_foreach(arr, it) {
+                if (it->item == i)
+                        return true;
+        }
+        return false;
+}
+
+tllint16 tllIntersect(tllint16 a, tllint16 b) {
+        tllint16 out = tll_init();
+        tll_foreach(a, it) {
+                if (tllContains(b, it->item))
+                        tll_push_back(out, it->item);
+        }
+        return out;
+}
 
 /*
  * algorithm BronKerbosch2(R, P, X) is
@@ -42,19 +69,33 @@ char *idToStr(int id) {
  *     choose a pivot vertex u in P ⋃ X
  *     for each vertex v in P \ N(u) do
  *         BronKerbosch2(R ⋃ {v}, P ⋂ N(v), X ⋂ N(v))
- *         P := P \ {v}
- *         X := X ⋃ {v}
+ *         P = P \ {v}
+ *         X = X ⋃ {v}
  */
-void BK(tllclique *cliques, tllint16 nodes[],
+void bkAlg(tllclique *cliques, tllint16 nodes[],
                 tllint16 clique, tllint16 avail, tllint16 exclude) {
-        if (tll_length(avail) == 0 && tll_length(exclude) == 0)
+        if (tll_length(avail) == 0 && tll_length(exclude) == 0) {
                 tll_push_back(*cliques, clique);
+                return;
+        }
 
         int16 pivot;
         if (tll_length(avail) > 0)
                 pivot = tll_pop_front(avail);
         else
                 pivot = tll_pop_front(exclude);
+
+        tll_foreach(avail, it) {
+                int16 v = it->item;
+                if (tllContains(nodes[pivot], v))
+                        continue;
+                tll_push_back(clique, v);
+                bkAlg(cliques, nodes, clique, tllIntersect(avail, nodes[v]),
+                      tllIntersect(exclude, nodes[v]));
+                tll_pop_back(clique);
+                tll_remove(avail, it);
+                tll_push_back(exclude, v);
+        }
 
 }
 
@@ -93,6 +134,11 @@ int32 findCliques(link links[], int16 numLinks) {
         }
 
         tllclique cliques = tll_init();
+        tllint16 clique = tll_init();
+        tllint16 exclude = tll_init();
+
+        bkAlg(&cliques, vertAdj, clique, verts, exclude);
+        printCliques(cliques);
 
         return 0;
 }
