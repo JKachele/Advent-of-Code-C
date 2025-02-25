@@ -15,6 +15,7 @@
 #include "../util/util.h"
 
 #define MAX_VERT_ID 2525
+#define COMP 't'
 
 // Computers are defined as a 2 char string.
 // Convert into int A:0 - Z:25 and concat
@@ -23,31 +24,91 @@ typedef struct {
         int16 b;
 } link;
 
+typedef struct {
+        int16 a;
+        int16 b;
+        int16 c;
+} clique3;
+
 typedef tll(int16) tllint16;
 typedef tll(tllint16) tllclique;
+typedef tll(clique3) tllclique3;
 
-char *idToStr(int id) {
-        char *idStr = malloc(3);
-        idStr[0] = (id / 100) + 'a';
-        idStr[1] = (id % 100) + 'a';
-        idStr[2] = '\0';
-        return idStr;
+void idToStr(int id, char *str) {
+        str[0] = (id / 100) + 'a';
+        str[1] = (id % 100) + 'a';
+        str[2] = '\0';
+}
+
+void printTllint(tllint16 arr) {
+        printf("[ ");
+        tll_foreach(arr, it) {
+                char str[3];
+                idToStr(it->item, str);
+                printf ("%s ", str);
+        }
+        printf("]\n");
+}
+
+void printVerts(tllint16 verts, tllint16 vertAdj[]) {
+        int i = 0;
+        tll_foreach(verts, vert) {
+                int16 vertId = vert->item;
+                char str[3];
+                idToStr(vertId, str);
+                printf ("%s ", str);
+                printf("%s: [ ", str);
+                tll_foreach(vertAdj[vertId], adj) {
+                        char str2[3];
+                        idToStr(adj->item, str2);
+                        printf ("%s ", str2);
+                }
+                printf("]\n");
+                i++;
+        }
 }
 
 void printCliques(tllclique cliques) {
         tll_foreach(cliques, it) {
                 tllint16 clique = it->item;
-                printf("{");
+                printf("{ ");
                 tll_foreach(clique, jt) {
-                        printf("%d ", jt->item);
+                        char str[3];
+                        idToStr(jt->item, str);
+                        printf ("%s ", str);
                 }
                 printf("}\n");
+        }
+}
+
+void printClique3(tllclique3 ll) {
+        tll_foreach(ll, it) {
+                clique3 c = it->item;
+                char strA[3];
+                char strB[3];
+                char strC[3];
+                idToStr(c.a, strA);
+                idToStr(c.b, strB);
+                idToStr(c.c, strC);
+                printf("%s %s %s\n", strA, strB, strC);
         }
 }
 
 bool tllContains(tllint16 arr, int16 i) {
         tll_foreach(arr, it) {
                 if (it->item == i)
+                        return true;
+        }
+        return false;
+}
+
+bool cliquesEq(clique3 a, clique3 b) {
+        return a.a == b.a && a.b == b.b && a.c == b.c;
+}
+
+bool tllCliqueContains(tllclique3 cliques, clique3 clique) {
+        tll_foreach(cliques, it) {
+                if (cliquesEq(it->item, clique))
                         return true;
         }
         return false;
@@ -60,6 +121,83 @@ tllint16 tllIntersect(tllint16 a, tllint16 b) {
                         tll_push_back(out, it->item);
         }
         return out;
+}
+
+tllint16 tllCopy(tllint16 arr) {
+        tllint16 arr2 = tll_init();
+        tll_foreach(arr, it) {
+                tll_push_back(arr2, it->item);
+        }
+        return arr2;
+}
+
+void tllToArr(tllint16 ll, int16 arr[]) {
+        int i = 0;
+        tll_foreach(ll, it) {
+                arr[i] = it->item;
+                i++;
+        }
+}
+
+void swap(int16 *a, int16 *b) {
+        int16 temp = *a;
+        *a = *b;
+        *b = temp;
+}
+
+void quicksort(int16 arr[], int low, int high) {
+        if (low >= high) return;
+
+        int pivot = arr[low];
+        int i = low;
+        int j = high;
+        while (i < j) {
+                // Find first element greater than the pivot
+                while (arr[i] <= pivot && i <= high - 1)
+                        i++;
+
+                // Find last element smaller than pivot
+                while (arr[j] > pivot && j >= low + 1)
+                        j--;
+
+                // Swap if needed
+                if (i < j)
+                        swap(&arr[i], &arr[j]);
+        }
+        // Put pivot in the middle
+        swap(&arr[low], &arr[j]);
+
+        // Recursive call for left and right sides
+        quicksort(arr, low, j - 1);
+        quicksort(arr, j + 1, high);
+}
+
+tllint16 sortClique(tllint16 clique) {
+        int32 len = tll_length(clique);
+        int16 arr[len];
+        tllToArr(clique, arr);
+
+        quicksort(arr, 0, len - 1);
+
+        tllint16 sorted = tll_init();
+        for (int i = 0; i < len; i++) {
+                tll_push_back(sorted, arr[i]);
+        }
+
+        return sorted;
+}
+
+void cliqueToStr(tllint16 clique, char *str, int len) {
+        int i = 0;
+        tll_foreach(clique, it) {
+                if (i + 2 > len)
+                        return;
+                int16 id = it->item;
+                str[i++] = (id / 100) + 'a';
+                str[i++] = (id % 100) + 'a';
+                str[i++] = ',';
+        }
+        str[i - 1] = '\0';
 }
 
 /*
@@ -75,28 +213,78 @@ tllint16 tllIntersect(tllint16 a, tllint16 b) {
 void bkAlg(tllclique *cliques, tllint16 nodes[],
                 tllint16 clique, tllint16 avail, tllint16 exclude) {
         if (tll_length(avail) == 0 && tll_length(exclude) == 0) {
-                tll_push_back(*cliques, clique);
+                tll_push_back(*cliques, tllCopy(clique));
                 return;
         }
 
         int16 pivot;
         if (tll_length(avail) > 0)
-                pivot = tll_pop_front(avail);
+                pivot = tll_front(avail);
         else
-                pivot = tll_pop_front(exclude);
+                pivot = tll_front(exclude);
 
         tll_foreach(avail, it) {
                 int16 v = it->item;
                 if (tllContains(nodes[pivot], v))
                         continue;
+
                 tll_push_back(clique, v);
-                bkAlg(cliques, nodes, clique, tllIntersect(avail, nodes[v]),
-                      tllIntersect(exclude, nodes[v]));
+
+                tllint16 newAvail = tllIntersect(avail, nodes[v]);
+                tllint16 newExclude = tllIntersect(exclude, nodes[v]);
+                bkAlg(cliques, nodes, clique, newAvail, newExclude);
+
                 tll_pop_back(clique);
                 tll_remove(avail, it);
                 tll_push_back(exclude, v);
         }
 
+}
+
+void getClique3s(tllclique3 *clique3s, int16 clique[], int len) {
+        for (int i = 0; i < len - 2; i++) {
+                for (int j = i + 1; j < len - 1; j++) {
+                        for (int k = j + 1; k < len; k++) {
+                                clique3 c = {clique[i], clique[j], clique[k]};
+                                tll_push_back(*clique3s, c);
+                        }
+                }
+        }
+}
+
+void deduplicate(tllclique3 *cliques) {
+        tllclique3 test = tll_init();
+        tll_foreach(*cliques, it) {
+                if (!tllCliqueContains(test, it->item)) {
+                        tll_push_back(test, it->item);
+                } else {
+                        tll_remove(*cliques, it);
+                        // printf("REMOVED!\n");
+                }
+        }
+}
+
+uint32 numCliquesWithChar(tllclique3 cliques, char c) {
+        uint32 num = 0;
+        int charid = c - 'a';
+        tll_foreach(cliques, it) {
+                clique3 c3 = it->item;
+                bool found = false;
+                if (c3.a / 100 == charid)
+                        found = true;
+                else if (c3.b / 100 == charid)
+                        found = true;
+                else if (c3.c / 100 == charid)
+                        found = true;
+
+                if (found) {
+                        num++;
+                        // printf("%s %s %s\n", idToStr(c3.a),
+                        //                 idToStr(c3.b), idToStr(c3.c));
+                }
+        }
+
+        return num;
 }
 
 void addLink(tllint16 *verts, tllint16 vertAdj[MAX_VERT_ID], link link) {
@@ -122,7 +310,7 @@ void addLink(tllint16 *verts, tllint16 vertAdj[MAX_VERT_ID], link link) {
         }
 }
 
-int32 findCliques(link links[], int16 numLinks) {
+uint32 findNumCliques(link links[], int16 numLinks) {
         tllint16 verts = tll_init();
         tllint16 vertAdj[MAX_VERT_ID];
         for (int i = 0; i < MAX_VERT_ID; i++) {
@@ -132,15 +320,68 @@ int32 findCliques(link links[], int16 numLinks) {
         for (int i = 0; i < numLinks; i++) {
                 addLink(&verts, vertAdj, links[i]);
         }
+        // printVerts(verts, vertAdj);
 
         tllclique cliques = tll_init();
         tllint16 clique = tll_init();
         tllint16 exclude = tll_init();
 
         bkAlg(&cliques, vertAdj, clique, verts, exclude);
-        printCliques(cliques);
+        // printCliques(cliques);
 
-        return 0;
+        tllclique3 clique3s = tll_init();
+        tll_foreach(cliques, it) {
+                int32 len = tll_length(it->item);
+                if (len < 3)
+                        continue;
+
+                int16 clique[len];
+                tllToArr(it->item, clique);
+                getClique3s(&clique3s, clique, len);
+        }
+        // printClique3(clique3s);
+        deduplicate(&clique3s);
+        return numCliquesWithChar(clique3s, COMP);
+}
+
+tllint16 findLargestClique(link links[], int16 numLinks) {
+        tllint16 verts = tll_init();
+        tllint16 vertAdj[MAX_VERT_ID];
+        for (int i = 0; i < MAX_VERT_ID; i++) {
+                vertAdj[i] = (tllint16)tll_init();
+        }
+
+        for (int i = 0; i < numLinks; i++) {
+                addLink(&verts, vertAdj, links[i]);
+        }
+        // printVerts(verts, vertAdj);
+
+        tllclique cliques = tll_init();
+        tllint16 clique = tll_init();
+        tllint16 exclude = tll_init();
+
+        bkAlg(&cliques, vertAdj, clique, verts, exclude);
+        // printCliques(cliques);
+        
+        int len = 0;
+        int longestIndex = 0;
+        int i = 0;
+        tll_foreach(cliques, it) {
+                if ((int)tll_length(it->item) > len) {
+                        len = tll_length(it->item);
+                        longestIndex = i;
+                }
+                i++;
+        }
+        i = 0;
+        tll_foreach(cliques, it) {
+                if (i == longestIndex)
+                        return it->item;
+                i++;
+        }
+
+        printf("ERROR: Longest Not Found");
+        return (tllint16)tll_init();
 }
 
 void part1(llist *ll) {
@@ -158,25 +399,42 @@ void part1(llist *ll) {
                 current = current->next;
         }
 
-        findCliques(links, numLinks);
+        uint32 numCliques = findNumCliques(links, numLinks);
 
-        printf("Part 1: \n\n");
+        printf("Part 1: Cliques with 't': %u\n\n", numCliques);
 }
 
 void part2(llist *ll) {
+        int16 numLinks = ll->length;
+        link links[numLinks];
+
         llNode *current = ll->head;
-        while(current != NULL) {
-                char str[BUFFER_SIZE];
-                strncpy(str, (char*)current->data, BUFFER_SIZE);
+        for (int i = 0; i < numLinks; i++) {
+                char *str = (char*)current->data;
+
+                // AB-CD
+                links[i].a = ((str[0] - 'a') * 100) + (str[1] - 'a');
+                links[i].b = ((str[3] - 'a') * 100) + (str[4] - 'a');
+
                 current = current->next;
         }
-        printf("Part 2: \n");
+
+        tllint16 longest = sortClique(findLargestClique(links, numLinks));
+        // printTllint(longest);
+        
+        int len = tll_length(longest);
+        int strLen = len * 3;
+        char cliqueStr[strLen];
+        cliqueToStr(longest, cliqueStr, strLen);
+
+        printf("Part 2: password: %s\n\n", cliqueStr);
 }
 
 int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
+                ll = getInputFile("assets/tests/2024/Day23a.txt");
                 ll = getInputFile("assets/tests/2024/Day23.txt");
         } else {
                 ll = getInputFile("assets/2024/Day23.txt");
