@@ -11,7 +11,7 @@ CFLAGS += -Wno-unused-parameter -Wno-unused-variable
 CFLAGS += -Wno-stringop-truncation
 LDFLAGS = -lm 
 
-SRC = src/2024/Day$(DAY).c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
+SRC = src/2023/Day$(DAY).c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 TEST = test.c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
