@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
                 ll = getInputFile("assets/tests/2024/Day18.txt");
                 gridSize = 7;
         } else {
-                ll = getInputFile("assets/2024/Day18.txt");
+                ll = getInputFile("assets/inputs/2024/Day18.txt");
                 gridSize = 71;
         }
         // llist_print(ll, printInput);

@@ -437,7 +437,7 @@ int main(int argc, char *argv[]) {
                 ll = getInputFile("assets/tests/2024/Day23a.txt");
                 ll = getInputFile("assets/tests/2024/Day23.txt");
         } else {
-                ll = getInputFile("assets/2024/Day23.txt");
+                ll = getInputFile("assets/inputs/2024/Day23.txt");
         }
         // llist_print(ll, printInput);
 

@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
         if (argc > 1 && strcmp(argv[1], "TEST") == 0)
                 ll = getInputFile("assets/tests/2024/Day2.txt");
         else
-                ll = getInputFile("assets/2024/Day2.txt");
+                ll = getInputFile("assets/inputs/2024/Day2.txt");
         // llist_print(ll, printInput);
 
         part1(ll);
