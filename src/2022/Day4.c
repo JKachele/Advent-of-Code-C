@@ -41,13 +41,33 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        int total = 0;
+
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                ivec2 area1;
+                ivec2 area2;
+
+                area1.x = strtol(strtok(str, "-"), (char**)NULL, 10);
+                area1.y = strtol(strtok(NULL, ","), (char**)NULL, 10);
+                area2.x = strtol(strtok(NULL, "-"), (char**)NULL, 10);
+                area2.y = strtol(strtok(NULL, ""), (char**)NULL, 10);
+
+                if (area1.x <= area2.x && area1.y >= area2.x)
+                        total++;
+                else if (area1.x <= area2.y && area1.y >= area2.y)
+                        total++;
+                else if (area1.x <= area2.x && area1.y >= area2.x)
+                        total++;
+                else if (area1.x <= area2.y && area1.y >= area2.y)
+                        total++;
+
                 current = current->next;
         }
-        printf("Part 2: \n");
+        printf("Part 2: Num pairs with any overlap: %d\n\n", total);
 }
 
 int main(int argc, char *argv[]) {
