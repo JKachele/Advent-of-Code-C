@@ -55,5 +55,4 @@ dkms.conf
 # vscode
 .vscode/
 
-assets/
-!assets/tests/
+assets/inputs/
