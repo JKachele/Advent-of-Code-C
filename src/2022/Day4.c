@@ -58,11 +58,7 @@ void part2(llist *ll) {
 
                 if (area1.x <= area2.x && area1.y >= area2.x)
                         total++;
-                else if (area1.x <= area2.y && area1.y >= area2.y)
-                        total++;
-                else if (area1.x <= area2.x && area1.y >= area2.x)
-                        total++;
-                else if (area1.x <= area2.y && area1.y >= area2.y)
+                else if (area2.x <= area1.x && area2.y >= area1.x)
                         total++;
 
                 current = current->next;
