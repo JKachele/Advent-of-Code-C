@@ -58,6 +58,18 @@ int64_t ipow(int64_t base, uint8_t exp) {
         return result;
 }
 
+uint64 computeHash(char const *input) {
+        const uint64 p = 31;
+        const uint64 m = 1000000009;
+        uint64 hashVal = 0;
+        uint64 pow = 1;
+        for (int i = 0; i < (int)strlen(input); i++) {
+                hashVal = (hashVal + ((int)input[i] * pow)) % m;
+                pow = (pow * p) % m;
+        }
+        return hashVal;
+}
+
 // Credit to github.com/orlp 
 // int64_t ipow(int64_t base, uint8_t exp) {
 //     static const uint8_t highest_bit_set[] = {
