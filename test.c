@@ -10,22 +10,21 @@
 // #include <stdbool.h>
 // #include <stdint.h>
 // #include <string.h>
-// #include "src/util/util.h"
-#include "src/lib/tllist.h"
+#include "src/util/util.h"
+// #include "src/lib/tllist.h"
+
+uint64 parseDir(const char *line) {
+        return computeHash(line + 4);
+}
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        tll(int) arr = tll_init();
-        tll_push_back(arr, 1);
-        tll_push_back(arr, 2);
-        tll_push_back(arr, 4);
-        tll_push_back(arr, 8);
+        char *line = "dir bduiw";
+        char *dir = "bduiw";
 
-        tll_foreach(arr, it) {
-                printf("%d ", it->item);
-        }
-        printf("\n");
+        printf("%lu\n", parseDir(line));
+        printf("%lu\n", computeHash(dir));
 
         return 0;
 }
