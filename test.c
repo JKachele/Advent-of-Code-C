@@ -13,18 +13,17 @@
 #include "src/util/util.h"
 // #include "src/lib/tllist.h"
 
-uint64 parseDir(const char *line) {
-        return computeHash(line + 4);
+void test(ivec2 *a) {
+        ivec2 b = {654, 321};
+        *a = b;
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        char *line = "dir bduiw";
-        char *dir = "bduiw";
-
-        printf("%lu\n", parseDir(line));
-        printf("%lu\n", computeHash(dir));
+        ivec2 a = {123, 456};
+        test(&a);
+        printf("%d, %d\n", a.x, a.y);
 
         return 0;
 }
