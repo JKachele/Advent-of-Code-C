@@ -18,9 +18,8 @@ int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
         char *test = "abcd -11";
-        // printf("%s\n", test + 5);
-        int testI = strtol(test + 5, (char**)NULL, 10);
-        printf("%d\n", testI);
+        char *str = strtok(test, ":");
+        printf("%s\n", str);
 
         return 0;
 }
