@@ -271,10 +271,52 @@ int comparePackets(Packet *p1, Packet *p2) {
                 return 0;
 }
 
-int qsortComp(const void *p1, const void *p2) {
-        Packet *packet1 = (Packet*)p1;
-        Packet *packet2 = (Packet*)p2;
-        return comparePackets(packet1, packet2);
+static void swap(Packet **a, Packet **b) {
+        Packet *temp = *a;
+        *a = *b;
+        *b = temp;
+}
+
+// Uses first element in range (first-last) as pivot.
+// Moves elements smaller than pivot to front and larger to the back
+// Moves pivot to middle and returns pivot index
+static int partition(Packet **arr, int first, int last) {
+        // Initalize pivot and index pointers
+        Packet *p = arr[first];
+        int i = first;
+        int j = last;
+
+        while (i < j) {
+                // Find first element larger than pivot starting from the front
+                while (comparePackets(arr[i], p) < 1 && i < last) {
+                        i++;
+                }
+
+                // Find first element smaller than pivot starting from the back
+                while (comparePackets(arr[j], p) > 0 && j > first) {
+                        j--;
+                }
+
+                // If larger is before smaller, Swap
+                if (i < j) {
+                        swap(&arr[i], &arr[j]);
+                }
+        }
+        // Once all elements are moved, move the pivot to middle and return
+        swap(&arr[first], &arr[j]);
+        return j;
+}
+
+void sort(Packet **packets, int first, int last) {
+        if (first < last) {
+                int p = partition(packets, first, last);
+
+                // Recursivly call quicksort for left and right half
+                // split by the partition index
+                sort(packets, first, p - 1);   // First half
+                sort(packets, p + 1, last);    // Last half
+        }
+
 }
 
 void part1(llist *ll) {
@@ -334,10 +376,9 @@ void part2(llist *ll) {
         packets[numpackets - 2] = divPacket1;
         packets[numpackets - 1] = divPacket2;
 
-        // printPackets(packets, numpackets);
-
         // Sort packets using qsort from stdlib
-        qsort(packets, numpackets, sizeof(Packet*), &qsortComp);
+        // qsort(packets, numpackets, sizeof(Packet*), &qsortComp);
+        sort(packets, 0, numpackets - 1);
         printPackets(packets, numpackets);
 
         int64 divIndexProd = 1;
