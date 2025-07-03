@@ -11,7 +11,7 @@ CFLAGS += -Wno-unused-parameter -Wno-unused-variable
 CFLAGS += -Wno-stringop-truncation
 LDFLAGS = -lm 
 
-SRC = src/2022/Day$(DAY).c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
+SRC = $(FILE) $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 TEST = test.c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
@@ -35,14 +35,13 @@ dirs:
 
 run: all
 	$(BIN)/out
-	rm $(OBJ)
 
 runWithTest: all
 	$(BIN)/out TEST
-	rm $(OBJ)
 
 out: $(OBJ)
 	$(CC) -o $(BIN)/out $^ $(LDFLAGS)
+	rm $(OBJ)
 
 %.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
@@ -55,5 +54,4 @@ runTest: test
 
 clean:
 	rm -rf bin/
-	rm $(OBJ)
 
