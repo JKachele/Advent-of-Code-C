@@ -22,6 +22,19 @@ void initHashmap() {
                 hashMap[i] = -1;
         }
 }
+int getHashmapId(int index) {
+        for (int i = 0; i < 26*26; i++) {
+                if (hashMap[i] == index) {
+                        return i;
+                }
+        }
+        return -1;
+}
+void idToValve(int id, char *valve) {
+        valve[0] = (id / 26) + 'A';
+        valve[1] = (id % 26) + 'A';
+        valve[2] = '\0';
+}
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -34,13 +47,23 @@ void debugP(const char *format, ...) {
 
 void printDists(int num, int dists[num][num]) {
         if (!Debug) return;
+        printf("   ");
         for (int i = 0; i < num; i++) {
+                char valve[3];
+                idToValve(i, valve);
+                printf("%s ", valve);
+        }
+        printf("\n");
+        for (int i = 0; i < num; i++) {
+                char valve[3];
+                idToValve(i, valve);
+                printf("%s ", valve);
                 for (int j = 0; j < num; j++) {
                         int n = dists[i][j];
                         if (n != 1000000)
-                                printf("%d ", dists[i][j]);
+                                printf("%d  ", dists[i][j]);
                         else
-                                printf("* ");
+                                printf("*  ");
                 }
                 printf("\n");
         }
@@ -59,6 +82,55 @@ void floydWarshallAlg(int num, int dists[num][num]) {
                 if (dists[i][j] > pivDist)
                         dists[i][j] = pivDist;
         }
+}
+
+int findMaxFlow(int numValves, int distances[][numValves], int valveFlow[],
+                int timeLeft, bool closedValves[], int flow, int flowRate,
+                int currentValve) {
+        // Return total flow if no time is left or all valves are open
+        if (timeLeft <= 0) {
+                return flow;
+        }
+        bool allValvesOpen = true;
+        for (int i = 0; i < numValves; i++) {
+                if (closedValves[i]) {
+                        allValvesOpen = false;
+                        break;
+                }
+        }
+        if (allValvesOpen) {
+                return flow + (flowRate * timeLeft);
+        }
+
+        // Loop through remaining closed valves and try each
+        int maxFlow = 0;
+        for (int i = 0; i < numValves; i++) {
+                // Skip valve of already open
+                if (!closedValves[i]) continue;
+
+                // Copy closedValves Array
+                bool closedValvesCp[numValves];
+                memcpy(closedValvesCp, closedValves, numValves * sizeof(bool));
+
+                int timeToOpen = distances[currentValve][i] + 1;
+                int newFlow = flow + (timeToOpen * flowRate);
+                int newTimeLeft = timeLeft - timeToOpen;
+                int newFlowRate = flowRate + valveFlow[i];
+                closedValvesCp[i] = false;
+
+                int totalFlow;
+                if (newTimeLeft >= 0) {
+                        totalFlow = findMaxFlow(numValves, distances, valveFlow,
+                                newTimeLeft, closedValvesCp, newFlow, newFlowRate, i);
+                } else {
+                        totalFlow = flow + (timeLeft * flowRate); 
+                }
+
+                if (totalFlow > maxFlow) {
+                        maxFlow = totalFlow;
+                }
+        }
+        return maxFlow;
 }
 
 void part1(llist *ll) {
@@ -117,9 +189,19 @@ void part1(llist *ll) {
         }
 
         floydWarshallAlg(numValves, distances);
-        printDists(numValves, distances);
+        // printDists(numValves, distances);
+        bool closedValves[numValves];
+        for (int i = 0; i < numValves; i++) {
+                if (flow[i] > 0)
+                        closedValves[i] = true;
+                else
+                        closedValves[i] = false;
+        }
+        int maxFlow = findMaxFlow(numValves, distances, flow, 30, 
+                closedValves, 0, 0, 0);
 
-        printf("Part 1: \n\n");
+
+        printf("Part 1: Max Flow: %d\n\n", maxFlow);
 }
 
 void part2(llist *ll) {
