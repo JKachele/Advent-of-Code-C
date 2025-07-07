@@ -35,6 +35,13 @@ void idToValve(int id, char *valve) {
         valve[1] = (id % 26) + 'A';
         valve[2] = '\0';
 }
+void printValve(int id) {
+        char valve[3];
+        valve[0] = (id / 26) + 'A';
+        valve[1] = (id % 26) + 'A';
+        valve[2] = '\0';
+        printf("%s ", valve);
+}
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -86,7 +93,7 @@ void floydWarshallAlg(int num, int dists[num][num]) {
 
 int findMaxFlow(int numValves, int distances[][numValves], int valveFlow[],
                 int timeLeft, bool closedValves[], int flow, int flowRate,
-                int currentValve) {
+                int currentValve, int depth, int valvesOpened[]) {
         // Return total flow if no time is left or all valves are open
         if (timeLeft <= 0) {
                 return flow;
@@ -102,6 +109,7 @@ int findMaxFlow(int numValves, int distances[][numValves], int valveFlow[],
                 return flow + (flowRate * timeLeft);
         }
 
+        int finalValves[numValves];
         // Loop through remaining closed valves and try each
         int maxFlow = 0;
         for (int i = 0; i < numValves; i++) {
@@ -117,19 +125,24 @@ int findMaxFlow(int numValves, int distances[][numValves], int valveFlow[],
                 int newTimeLeft = timeLeft - timeToOpen;
                 int newFlowRate = flowRate + valveFlow[i];
                 closedValvesCp[i] = false;
+                valvesOpened[depth] = i;
 
                 int totalFlow;
                 if (newTimeLeft >= 0) {
                         totalFlow = findMaxFlow(numValves, distances, valveFlow,
-                                newTimeLeft, closedValvesCp, newFlow, newFlowRate, i);
+                                newTimeLeft, closedValvesCp, newFlow,
+                                newFlowRate, i, depth + 1, valvesOpened);
                 } else {
                         totalFlow = flow + (timeLeft * flowRate); 
                 }
 
                 if (totalFlow > maxFlow) {
                         maxFlow = totalFlow;
+                        memcpy(finalValves, valvesOpened,
+                                        numValves * sizeof(int));
                 }
         }
+        memcpy(valvesOpened, finalValves, numValves * sizeof(int));
         return maxFlow;
 }
 
@@ -140,6 +153,7 @@ void part1(llist *ll) {
         MAKE_LOOP(i, numValves, j, numValves)
                 distances[i][j] = 1000000;
         int flow[numValves];
+        int startValve = 0;
 
         llNode *current = ll->head;
         int valvesSeen = 0;
@@ -149,7 +163,8 @@ void part1(llist *ll) {
 
                 // get valve id and index
                 strtok(str, " ");
-                int id = valve2ID(strtok(NULL, " "));
+                char *valve = strtok(NULL, " ");
+                int id = valve2ID(valve);
                 int index = valvesSeen;
                 if (hashMap[id] == -1) {
                         hashMap[id] = valvesSeen;
@@ -158,6 +173,12 @@ void part1(llist *ll) {
                         index = hashMap[id];
                 }
                 distances[index][index] = 0;
+
+                // Get starting Valve
+                if (strcmp("AA", valve) == 0) {
+                        printf("Start at %d\n", index);
+                        startValve = index;
+                }
 
                 // Get Valve flow rate
                 strtok(NULL, "=");
@@ -188,17 +209,33 @@ void part1(llist *ll) {
                 current = current->next;
         }
 
+        printf("Start flow: %d\n", flow[startValve]);
+
         floydWarshallAlg(numValves, distances);
         // printDists(numValves, distances);
         bool closedValves[numValves];
+        int valvesOpened[numValves];
         for (int i = 0; i < numValves; i++) {
-                if (flow[i] > 0)
+                valvesOpened[i] = -1;
+                if (flow[i] > 0) {
                         closedValves[i] = true;
-                else
+                } else {
                         closedValves[i] = false;
+                }
         }
         int maxFlow = findMaxFlow(numValves, distances, flow, 30, 
-                closedValves, 0, 0, 0);
+                closedValves, 0, 0, startValve, 0, valvesOpened);
+
+        for (int i = 0; i < numValves; i++) {
+                printf("%d ", hashMap[valvesOpened[i]]);
+        }
+        printf("\n");
+        for (int i = 0; i < numValves; i++) {
+                char val[5];
+                idToValve(hashMap[valvesOpened[i]], val);
+                printf("%s ", val);
+        }
+        printf("\n");
 
 
         printf("Part 1: Max Flow: %d\n\n", maxFlow);
@@ -218,7 +255,8 @@ int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                ll = getInputFile("assets/tests/2022/Day16.txt");
+                // ll = getInputFile("assets/tests/2022/Day16.txt");
+                ll = getInputFile("assets/tests/2022/Day16b.txt");
                 Debug = true;
         } else {
                 ll = getInputFile("assets/inputs/2022/Day16.txt");
