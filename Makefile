@@ -12,7 +12,7 @@ CFLAGS += -Wno-stringop-truncation
 LDFLAGS = -lm 
 
 SRC = $(FILE) $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
-TEST = test.c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
+TEST = src/test.c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin
 
