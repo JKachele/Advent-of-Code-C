@@ -2,7 +2,7 @@
  *File----------Day16.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
- *Created-------Wednesday Apr 30, 2025 11:34:20 EDT
+ *Created-------Thursday Jul 10, 2025 13:36:38 UTC
  *License-------GNU GPL-3.0
  ************************************************/
 
@@ -16,61 +16,28 @@
 #include "../lib/tllist.h"
 #include "../util/util.h"
 
-struct maxFlowData {
-        int32 numV;
-        int32 *distances;
-        int32 *valveFlow;
-        int32 timeLeft;
-        bool *closedValves;
+#define TIME_LIMIT 30
+
+typedef tll(int32) tllint;
+
+struct valve {
+        char name[3];
+        int32 id;
+        int32 index;
         int32 flow;
-        int32 flowRate;
-        int32 currentValve;
-        int32 depth;
+        tllint neighbors;
 };
 
-static int32 hashMap[26*26];
-void initHashmap() {
-        for (int i = 0; i < 26*26; i++) {
-                hashMap[i] = -1;
-        }
-}
-int32 getHashmapId(int32 index) {
-        for (int i = 0; i < 26*26; i++) {
-                if (hashMap[i] == index) {
-                        return i;
-                }
-        }
-        return -1;
-}
-void idToValve(int32 id, char *valve) {
-        valve[0] = (id / 26) + 'A';
-        valve[1] = (id % 26) + 'A';
-        valve[2] = '\0';
-}
-void printValve(int32 id) {
-        char valve[3];
-        valve[0] = (id / 26) + 'A';
-        valve[1] = (id % 26) + 'A';
-        valve[2] = '\0';
-        printf("%s ", valve);
-}
+typedef tll(struct valve) tllvalve;
 
-int32 valve2ID(char *valve) {
-        int32 id = (valve[0] - 'A') * 26;
-        id += valve[1] - 'A';
-        return id;
-}
+struct state {
+        tllint opened;
+        int32 cur;
+        int32 elapsed;
+        int32 relieved;
+};
 
-
-void printPath(int32 num, int32 path[], int flow) {
-        printf("%d: ", flow);
-        for (int i = 0; i < num; i++) {
-                if (path[i] == -1)
-                        break;
-                printValve(getHashmapId(path[i]));
-        }
-        printf("\n");
-}
+typedef tll(struct state) tllstate;
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -79,6 +46,65 @@ void debugP(const char *format, ...) {
         if (Debug)
                 vprintf(format, args);
         va_end(args);
+}
+
+int32 valve2ID(char *valve) {
+        int32 id = (valve[0] - 'A') * 26;
+        id += valve[1] - 'A';
+        return id;
+}
+
+void idToValve(int32 id, char *valve) {
+        valve[0] = (id / 26) + 'A';
+        valve[1] = (id % 26) + 'A';
+        valve[2] = '\0';
+}
+
+void printValves(tllvalve valves) {
+        tll_foreach(valves, it) {
+                struct valve valve = it->item;
+                printf("%s(%d): flow: %d neighbors: ",
+                                valve.name, valve.id, valve.flow);
+                tll_foreach(valve.neighbors, vit) {
+                        char nvalve[3];
+                        idToValve(vit->item, nvalve);
+                        printf("%s ", nvalve);
+                }
+                printf("\n");
+        }
+}
+
+int getIndex(tllvalve valves, int32 id) {
+        tll_foreach(valves, it) {
+                if (it->item.id == id)
+                        return it->item.index;
+        }
+        return -1;
+}
+
+void getDistances(int32 numV, tllvalve valves, int32 dists[numV][numV]) {
+        // Initaloze array
+        MAKE_LOOP(i, numV, j, numV)
+                dists[i][j] = INT32_MAX;
+
+        // Set neighbors to 1
+        tll_foreach(valves, it) {
+                struct valve valve = it->item;
+                int vIndex = valve.index;
+                dists[vIndex][vIndex] = 0;
+                tll_foreach(valve.neighbors, vit) {
+                        int nIndex = getIndex(valves, vit->item);
+                        dists[vIndex][nIndex] = 1;
+                        dists[nIndex][vIndex] = 1;
+                }
+        }
+
+        MAKE_LOOP(p, numV, i, numV, j, numV) {
+                int32 pivDist = dists[i][p] + dists[p][j];
+                if (pivDist < 0) pivDist = INT32_MAX;
+                if (dists[i][j] > pivDist)
+                        dists[i][j] = pivDist;
+        }
 }
 
 void printDists(int32 num, int32 dists[num][num]) {
@@ -106,167 +132,138 @@ void printDists(int32 num, int32 dists[num][num]) {
         printf("\n");
 }
 
-void floydWarshallAlg(int32 num, int32 dists[num][num]) {
-        MAKE_LOOP(p, num, i, num, j, num) {
-                int32 pivDist = dists[i][p] + dists[p][j];
-                if (pivDist < 0) pivDist = INT32_MAX;
-                if (dists[i][j] > pivDist)
-                        dists[i][j] = pivDist;
+int32 getNumFlowing(tllvalve valves) {
+        int32 flowing = 0;
+        tll_foreach(valves, it) {
+                if (it->item.flow > 0)
+                        flowing++;
         }
+        return flowing;
 }
 
-int32 findMaxFlow(struct maxFlowData *data, int32 path[]) {
-        // Expand Variables
-        int32 (*distances)[data->numV] = (int32 (*)[data->numV])data->distances;
+void getUnopened(tllvalve valves, struct state state, tllint *unopened) {
+                tll_foreach(valves, it) {
+                        int32 id = it->item.id;
+                        bool opened = false;
+                        tll_foreach(state.opened, oit) {
+                                if (oit->item == id) {
+                                        opened = true;
+                                        break;
+                                }
+                        }
+                        if (!opened)
+                                tll_push_back(*unopened, id);
+                }
+}
 
-        // Return total flow if no time is left or all valves are open
-        if (data->timeLeft <= 0) {
-                return data->flow;
-        }
-        bool allValvesOpen = true;
-        for (int i = 0; i < data->numV; i++) {
-                if (data->closedValves[i]) {
-                        allValvesOpen = false;
-                        break;
+int32 waitTillEnd(tllvalve valves, struct state state) {
+        int32 timeLeft = TIME_LIMIT - state.elapsed;
+        int32 flowRate = 0;
+        tll_foreach(state.opened, it) {
+                int id = it->item;
+                tll_foreach(valves, vit) {
+                        if (vit->item.id == id)
+                                flowRate += vit->item.flow;
                 }
         }
-        if (allValvesOpen) {
-                return data->flow + (data->flowRate * data->timeLeft);
-        }
+        return state.relieved + (flowRate * timeLeft);
+}
 
-        int32 finalValves[data->numV];
-        // Loop through remaining closed valves and try each
-        int32 maxFlow = 0;
-        for (int i = 0; i < data->numV; i++) {
-                // Skip valve of already open
-                if (!data->closedValves[i]) continue;
+int32 getMaxFlow(int32 numV, tllvalve valves, int32 distances[numV][numV]) {
+        tllstate stateQueue = tll_init();
+        int32 numFlowing = getNumFlowing(valves);
 
-                struct maxFlowData newData = {0};
-                newData.numV = data->numV;
-                newData.distances = data->distances;
-                newData.valveFlow = data->valveFlow;
+        // Add inital state to the queue
+        struct state initState;
+        initState.opened = (tllint)tll_init();
+        initState.cur = valve2ID("AA");
+        initState.elapsed = 0;
+        initState.relieved = 0;
+        tll_push_back(stateQueue, initState);
 
-                // Copy closedValves Array
-                bool closedValvesCp[data->numV];
-                memcpy(closedValvesCp, data->closedValves, data->numV * sizeof(bool));
-                newData.closedValves = (bool*)closedValvesCp;
+        int32 max_relieved = 0;
+        while (tll_length(stateQueue) > 0) {
+                struct state curState = tll_pop_front(stateQueue);
 
-                int32 timeToOpen = distances[data->currentValve][i] + 1;
-                newData.flow = data->flow + (timeToOpen * data->flowRate);
-                newData.timeLeft = data->timeLeft - timeToOpen;
-                newData.flowRate = data->flowRate + data->valveFlow[i];
-                newData.closedValves[i] = false;
-                newData.currentValve = i;
-                newData.depth = data->depth + 1;
-
-                int32 totalFlow;
-                if (newData.timeLeft >= 0) {
-                        path[data->depth] = i;
-                        totalFlow = findMaxFlow(&newData, path);
-                } else {
-                        totalFlow = data->flow + (data->timeLeft * data->flowRate); 
-                        // printPath(data->numV, path, totalFlow);
+                // if all flowing valves are open, wait until end
+                if (tll_length(curState.opened) == numFlowing) {
+                        int32 totalRelieved = waitTillEnd(valves, curState);
+                        if (totalRelieved > max_relieved)
+                                max_relieved = totalRelieved;
+                        continue;
                 }
 
-                if (totalFlow > maxFlow) {
-                        maxFlow = totalFlow;
+                // Get list of unopened valves
+                tllint unpoened = tll_init();
+                getUnopened(valves, curState, &unpoened);
+
+                tll_foreach(unpoened, it) {
+                        struct valve valve;
+                        tll_foreach(valves, vit) {
+                                if (vit->item.id == it->item) {
+                                        valve = vit->item;
+                                        break;
+                                }
+                        }
+
+                        int32 dist;
                 }
-                path[data->depth] = -1;
         }
-        return maxFlow;
+
+        return 0;
 }
 
 void part1(llist *ll) {
-        initHashmap();
-        struct maxFlowData data;
-        data.numV = ll->length;
-        int32 distances[data.numV][data.numV];
-        int32 flow[data.numV];
-        data.currentValve = 0;
-        MAKE_LOOP(i, data.numV, j, data.numV)
-                distances[i][j] = INT32_MAX;
+        tllvalve valves = tll_init();
 
         llNode *current = ll->head;
-        int32 valvesSeen = 0;
+        int index = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+                struct valve curValve = {0};
 
-                // get valve id and index
+                // get valve id
                 strtok(str, " ");
                 char *valve = strtok(NULL, " ");
-                int32 id = valve2ID(valve);
-                int32 index = valvesSeen;
-                if (hashMap[id] == -1) {
-                        hashMap[id] = valvesSeen;
-                        valvesSeen++;
-                } else {
-                        index = hashMap[id];
-                }
-                // printf("%s: %d\n", valve, index);
-                distances[index][index] = 0;
-
-                // Get starting Valve
-                if (strcmp("AA", valve) == 0) {
-                        printf("Start at %d\n", index);
-                        data.currentValve = index;
-                }
+                strncpy(curValve.name, valve, 2);
+                curValve.id = valve2ID(valve);
+                curValve.index = index;
+                index++;
 
                 // Get Valve flow rate
                 strtok(NULL, "=");
                 char *flowStr = strtok(NULL, ";");
-                flow[index] = strtol(flowStr, (char**)NULL, 10);
+                curValve.flow = strtol(flowStr, (char**)NULL, 10);
 
                 // Get valve neighbors
+                curValve.neighbors = (tllint)tll_init();
                 for (int i = 0; i < 4; i++)
                         strtok(NULL, " ");
                 char *next = strtok(NULL, ",");
                 while (next != NULL) {
                         int32 nextId = valve2ID(next);
-                        int32 nextIndex = valvesSeen;
-                        if (hashMap[nextId] == -1) {
-                                hashMap[nextId] = valvesSeen;
-                                valvesSeen++;
-                        } else {
-                                nextIndex = hashMap[nextId];
-                        }
-                        distances[index][nextIndex] = 1;
-                        distances[nextIndex][index] = 1;
-
+                        tll_push_back(curValve.neighbors, nextId);
                         next = strtok(NULL, " ");
                         if (next != NULL) 
                                 next = strtok(NULL, ",");
                 }
 
+                tll_push_back(valves, curValve);
+
                 current = current->next;
         }
+        // printValves(valves);
+        int32 numV = tll_length(valves);
 
-        floydWarshallAlg(data.numV, distances);
-        // printDists(data.numV, distances);
-        bool closedValves[data.numV];
-        for (int i = 0; i < data.numV; i++) {
-                if (flow[i] > 0) {
-                        closedValves[i] = true;
-                } else {
-                        closedValves[i] = false;
-                }
-        }
 
-        data.distances = (int32*)distances;
-        data.valveFlow = (int32*)flow;
-        data.timeLeft = 30;
-        data.closedValves = (bool*)closedValves;
-        data.flow = 0;
-        data.flowRate = 0;
-        data.depth = 0;
+        int32 distances[numV][numV];
+        getDistances(numV, valves, distances);
+        printDists(numV, distances);
 
-        int32 path[data.numV];
-        for (int i = 0; i < data.numV; i++)
-                path[i] = -1;
+        int32 maxFlow = getMaxFlow(numV, valves, distances);
 
-        int32 maxFlow = findMaxFlow(&data, path);
-
-        printf("Part 1: Max Flow: %d\n\n", maxFlow);
+        printf("Part 1: \n\n");
 }
 
 void part2(llist *ll) {
@@ -283,9 +280,8 @@ int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                // ll = getInputFile("assets/tests/2022/Day16.txt");
+                ll = getInputFile("assets/tests/2022/Day16.txt");
                 // ll = getInputFile("assets/tests/2022/Day16b.txt");
-                ll = getInputFile("assets/tests/2022/Day16c.txt");
                 Debug = true;
         } else {
                 ll = getInputFile("assets/inputs/2022/Day16.txt");
