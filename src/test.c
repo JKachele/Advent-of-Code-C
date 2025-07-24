@@ -7,44 +7,44 @@
  ************************************************/
 
 #include <stdio.h>
+#include "lib/tllist.h"
 
-void testFun(int n, int *array2dIn) {
-        int (*array2d)[n] = (int (*)[n])array2dIn;
-        for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                        array2d[i][j] = (i * j) % 10;
-                }
+typedef tll(int) tllint;
+
+void tllPrint(tllint tllist) {
+        tll_foreach(tllist, it) {
+                printf("%d ", it->item);
+        }
+        printf("\n");
+}
+
+void tllintCopy(tllint *dest, tllint src) {
+        tll_foreach(src, it) {
+                tll_push_back(*dest, it->item);
         }
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        int n = 7;
-        int array2d[n][n];
-        int *arrPtr = (int *)array2d;
-        for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                        array2d[i][j] = 0;
-                }
-        }
+        tllint tll1 = tll_init();
+        tll_push_back(tll1, 0);
+        tll_push_back(tll1, 1);
+        tll_push_back(tll1, 2);
+        tll_push_back(tll1, 3);
+        tll_push_back(tll1, 4);
+        tllPrint(tll1);
 
-        for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                        printf("%d ", array2d[i][j]);
-                }
-                printf("\n");
-        }
+        tllint tll2 = tll_init();
+        tllintCopy(&tll2, tll1);
+        tllPrint(tll2);
 
-        testFun(n, arrPtr);
-
-        printf("\n");
-        for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                        printf("%d ", array2d[i][j]);
-                }
-                printf("\n");
-        }
+        tll_push_back(tll2, 5);
+        tll_push_back(tll2, 6);
+        tll_push_back(tll2, 7);
+        tll_push_back(tll2, 8);
+        tllPrint(tll1);
+        tllPrint(tll2);
 
         return 0;
 }
