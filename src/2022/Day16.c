@@ -17,6 +17,7 @@
 #include "../util/util.h"
 
 #define TIME_LIMIT 30
+#define TIME_LIMIT2 26
 
 typedef tll(int32) tllint;
 
@@ -32,12 +33,25 @@ struct state {
         tllint opened;
         tllint unopened;
         int32 cur;
+        int32 cur2;
         int32 elapsed;
         int32 flowRate;
         int32 relieved;
 };
 
 typedef tll(struct state) tllstate;
+
+struct state2 {
+        tllint opened;
+        tllint unopened;
+        int32 cur1;
+        int32 cur2;
+        int32 elapsed;
+        int32 flowRate;
+        int32 relieved;
+};
+
+typedef tll(struct state2) tllstate2;
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -79,11 +93,6 @@ void printState(struct state state, bool oneLine) {
         printf("}\n");
 }
 
-void printStates(tllstate states, bool oneLine) {
-        tll_foreach(states, it)
-                printState(it->item, oneLine);
-}
-
 int32 valve2ID(char *valve) {
         int32 id = (valve[0] - 'A') * 26;
         id += valve[1] - 'A';
@@ -108,6 +117,31 @@ void printValves(int32 numV, struct valve valves[]) {
                 }
                 printf("\n");
         }
+}
+
+void printDists(int32 num, int32 dists[num][num]) {
+        if (!Debug) return;
+        printf("   ");
+        for (int i = 0; i < num; i++) {
+                char valve[3];
+                idToValve(i, valve);
+                printf("%s ", valve);
+        }
+        printf("\n");
+        for (int i = 0; i < num; i++) {
+                char valve[3];
+                idToValve(i, valve);
+                printf("%s ", valve);
+                for (int j = 0; j < num; j++) {
+                        int32 n = dists[i][j];
+                        if (n != 1000000)
+                                printf("%d  ", dists[i][j]);
+                        else
+                                printf("*  ");
+                }
+                printf("\n");
+        }
+        printf("\n");
 }
 
 void tllintCopy(tllint *dest, tllint src) {
@@ -169,31 +203,6 @@ void getDistances(int32 numV, struct valve valves[], int32 dists[numV][numV]) {
         }
 }
 
-void printDists(int32 num, int32 dists[num][num]) {
-        // if (!Debug) return;
-        printf("   ");
-        for (int i = 0; i < num; i++) {
-                char valve[3];
-                idToValve(i, valve);
-                printf("%s ", valve);
-        }
-        printf("\n");
-        for (int i = 0; i < num; i++) {
-                char valve[3];
-                idToValve(i, valve);
-                printf("%s ", valve);
-                for (int j = 0; j < num; j++) {
-                        int32 n = dists[i][j];
-                        if (n != 1000000)
-                                printf("%d  ", dists[i][j]);
-                        else
-                                printf("*  ");
-                }
-                printf("\n");
-        }
-        printf("\n");
-}
-
 void unopenedCopy(tllint *dest, tllint src, int32 remove) {
         tll_foreach(src, it) {
                 if (it->item!= remove)
@@ -206,15 +215,20 @@ int32 waitTillEnd(struct state state) {
         return state.relieved + (state.flowRate * timeLeft);
 }
 
-int32 getMaxFlow(int32 numV, struct valve valves[], int32 distances[numV][numV]) {
+int32 waitTillEnd2(struct state2 state) {
+        int32 timeLeft = TIME_LIMIT - state.elapsed;
+        return state.relieved + (state.flowRate * timeLeft);
+}
+
+int32 getMaxFlow(int32 numV, struct valve valves[],
+                int32 distances[numV][numV], int numParties) {
         tllstate stateQueue = tll_init();
-        tllstate seenStates = tll_init();
-        // int32 numFlowing = getNumFlowing(valves);
 
         // Add inital state to the queue
         struct state initState;
         initState.opened = (tllint)tll_init();
         initState.cur = getIndex(numV, valves, 0); // Valve "AA" has id of 0
+        initState.cur2 = initState.cur;
         initState.elapsed = 0;
         initState.flowRate = 0;
         initState.relieved = 0;
@@ -225,13 +239,12 @@ int32 getMaxFlow(int32 numV, struct valve valves[], int32 distances[numV][numV])
         }
 
         tll_push_back(stateQueue, initState);
-        tll_push_back(seenStates, initState);
 
         int32 max_relieved = 0;
         int64 count = 0;
         while (tll_length(stateQueue) > 0) {
                 struct state curState = tll_pop_front(stateQueue);
-                if (count % 10000 == 0)
+                if (numParties == 2 && count % 10000 == 0)
                         printState(curState, true);
                 count++;
 
@@ -328,19 +341,57 @@ void part1(llist *ll) {
         getDistances(numV, valveArr, distances);
         // printDists(numV, distances);
 
-        int32 maxFlow = getMaxFlow(numV, valveArr, distances);
+        int32 maxFlow = getMaxFlow(numV, valveArr, distances, 1);
 
         printf("Part 1: Max Flow = %d\n\n", maxFlow);
 }
 
 void part2(llist *ll) {
+        int numV = ll->length;
+        struct valve valveArr[numV];
+
         llNode *current = ll->head;
+        int index = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                // get valve id
+                strtok(str, " ");
+                char *valve = strtok(NULL, " ");
+                strncpy(valveArr[index].name, valve, 3);
+                valveArr[index].id = valve2ID(valve);
+                valveArr[index].index = index;
+
+                // Get Valve flow rate
+                strtok(NULL, "=");
+                char *flowStr = strtok(NULL, ";");
+                valveArr[index].flow = strtol(flowStr, (char**)NULL, 10);
+
+
+                // Get valve neighbors
+                valveArr[index].neighbors = (tllint)tll_init();
+                for (int i = 0; i < 4; i++)
+                        strtok(NULL, " ");
+                char *next = strtok(NULL, ",");
+                while (next != NULL) {
+                        int32 nextId = valve2ID(next);
+                        tll_push_back(valveArr[index].neighbors, nextId);
+                        next = strtok(NULL, " ");
+                }
+
                 current = current->next;
+                index++;
         }
-        printf("Part 2: \n");
+        // printValves(numV, valveArr);
+
+        int32 distances[numV][numV];
+        getDistances(numV, valveArr, distances);
+        // printDists(numV, distances);
+
+        int32 maxFlow = getMaxFlow(numV, valveArr, distances, 2);
+
+        printf("Part 2: Max Flow = %d\n\n", maxFlow);
 }
 
 int main(int argc, char *argv[]) {
