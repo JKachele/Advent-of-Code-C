@@ -2,7 +2,7 @@
 
 # Prompt the user for the year to run
 while true; do
-    read -p "Enter a Year to Run (eg. 2024 or 24): " year
+    read -p "Enter a Year to Run (eg. 2024 or 24): " year day
 
     # Validate the input
     if [[ $year =~ ^[0-9]+$ ]]; then
@@ -26,10 +26,13 @@ while true; do
     fi
 done
 
-# Prompt the user for a day to run
-while true; do
+# If day wasn't provided, prompt the user for a day to run
+if [[ -z "$day" ]]; then
     read -p "Enter a Day to Run: " day
+fi
 
+# Check if the day provided is valid and retry if not
+while true; do
     # Validate the input
     if [[ $day =~ ^[0-9]+$ ]]; then
         # Format the day as two digits (e.g., 01, 02, ..., 25)
@@ -44,6 +47,8 @@ while true; do
     else
         echo "Invalid input. Please enter a valid day."
     fi
+    # Ask for day again if needed
+    read -p "Enter a Day to Run: " day
 done
 
 printf '\e[A\e[K'

@@ -28,10 +28,9 @@ struct valve {
         tllint neighbors;
 };
 
-typedef tll(struct valve) tllvalve;
-
 struct state {
         tllint opened;
+        tllint unopened;
         int32 cur;
         int32 elapsed;
         int32 flowRate;
@@ -50,29 +49,39 @@ void debugP(const char *format, ...) {
 }
 
 void printTllint(tllint tllist) {
-        printf("\t[ ");
+        printf("[ ");
         tll_foreach(tllist, it) {
                 printf("%d ", it->item);
         }
-        printf("]\n");
+        printf("]");
 }
 
-void printStates(tllstate states) {
-        tll_foreach(states, it) {
-                printf("{\n");
-                printTllint(it->item.opened);
-                printf("\tcur: %d\n", it->item.cur);
-                printf("\telapsed: %d\n", it->item.elapsed);
-                printf("\tflowRate: %d\n", it->item.flowRate);
-                printf("\trelieved: %d\n", it->item.relieved);
-                printf("}\n");
+void printState(struct state state, bool oneLine) {
+        if (!Debug) return;
+        if (oneLine) {
+                printTllint(state.opened);
+                printf(", ");
+                printTllint(state.unopened);
+                printf(", %d", state.cur);
+                printf(", %d", state.elapsed);
+                printf(", %d", state.flowRate);
+                printf(", %d\n", state.relieved);
+                return;
         }
+        printf("{\n\t");
+        printTllint(state.opened);
+        printf("\n\t");
+        printTllint(state.unopened);
+        printf("\n\tcur: %d\n", state.cur);
+        printf("\telapsed: %d\n", state.elapsed);
+        printf("\tflowRate: %d\n", state.flowRate);
+        printf("\trelieved: %d\n", state.relieved);
+        printf("}\n");
 }
 
-void tllintCopy(tllint *dest, tllint src) {
-        tll_foreach(src, it) {
-                tll_push_back(*dest, it->item);
-        }
+void printStates(tllstate states, bool oneLine) {
+        tll_foreach(states, it)
+                printState(it->item, oneLine);
 }
 
 int32 valve2ID(char *valve) {
@@ -87,11 +96,11 @@ void idToValve(int32 id, char *valve) {
         valve[2] = '\0';
 }
 
-void printValves(tllvalve valves) {
-        tll_foreach(valves, it) {
-                struct valve valve = it->item;
-                printf("%d: %s(%d): flow: %d neighbors: ",
-                                valve.index, valve.name, valve.id, valve.flow);
+void printValves(int32 numV, struct valve valves[]) {
+        for (int i = 0; i < numV; i++) {
+                struct valve valve = valves[i];
+                printf("%s(%d): flow: %d neighbors: ",
+                                valve.name, valve.id, valve.flow);
                 tll_foreach(valve.neighbors, vit) {
                         char nvalve[3];
                         idToValve(vit->item, nvalve);
@@ -101,26 +110,52 @@ void printValves(tllvalve valves) {
         }
 }
 
-int getIndex(tllvalve valves, int32 id) {
-        tll_foreach(valves, it) {
-                if (it->item.id == id)
-                        return it->item.index;
+void tllintCopy(tllint *dest, tllint src) {
+        tll_foreach(src, it) {
+                tll_push_back(*dest, it->item);
+        }
+}
+
+bool tllIntEqual(tllint a, tllint b) {
+        int32 lenCmp = tll_length(a) - tll_length(b);
+        // if length arent equal, return false
+        if (lenCmp != 0) return false;
+        
+        // check if evert element of a is in b
+        tll_foreach(a, ait) {
+                bool present = false;
+                tll_foreach(b, bit) {
+                        if (ait->item == bit->item) {
+                                present = true;
+                                break;
+                        }
+                }
+                if (!present)
+                        return false;
+        }
+        return true;
+}
+
+int getIndex(int32 numV, struct valve valves[], int32 id) {
+        for (int i = 0; i < numV; i++) {
+                if (valves[i].id == id)
+                        return i;
         }
         return -1;
 }
 
-void getDistances(int32 numV, tllvalve valves, int32 dists[numV][numV]) {
+void getDistances(int32 numV, struct valve valves[], int32 dists[numV][numV]) {
         // Initaloze array
         MAKE_LOOP(i, numV, j, numV)
                 dists[i][j] = INT32_MAX;
 
         // Set neighbors to 1
-        tll_foreach(valves, it) {
-                struct valve valve = it->item;
+        for (int i = 0; i < numV; i++) {
+                struct valve valve = valves[i];
                 int vIndex = valve.index;
                 dists[vIndex][vIndex] = 0;
                 tll_foreach(valve.neighbors, vit) {
-                        int nIndex = getIndex(valves, vit->item);
+                        int nIndex = getIndex(numV, valves, vit->item);
                         dists[vIndex][nIndex] = 1;
                         dists[nIndex][vIndex] = 1;
                 }
@@ -135,7 +170,7 @@ void getDistances(int32 numV, tllvalve valves, int32 dists[numV][numV]) {
 }
 
 void printDists(int32 num, int32 dists[num][num]) {
-        if (!Debug) return;
+        // if (!Debug) return;
         printf("   ");
         for (int i = 0; i < num; i++) {
                 char valve[3];
@@ -159,81 +194,67 @@ void printDists(int32 num, int32 dists[num][num]) {
         printf("\n");
 }
 
-int32 getNumFlowing(tllvalve valves) {
-        int32 flowing = 0;
-        tll_foreach(valves, it) {
-                if (it->item.flow > 0)
-                        flowing++;
+void unopenedCopy(tllint *dest, tllint src, int32 remove) {
+        tll_foreach(src, it) {
+                if (it->item!= remove)
+                        tll_push_back(*dest, it->item);
         }
-        return flowing;
 }
 
-void getUnopened(tllvalve valves, struct state state, tllint *unopened) {
-                tll_foreach(valves, it) {
-                        int32 id = it->item.index;
-                        bool opened = false;
-                        tll_foreach(state.opened, oit) {
-                                if (oit->item == id) {
-                                        opened = true;
-                                        break;
-                                }
-                        }
-                        if (!opened)
-                                tll_push_back(*unopened, id);
-                }
-}
-
-int32 waitTillEnd(tllvalve valves, struct state state) {
+int32 waitTillEnd(struct state state) {
         int32 timeLeft = TIME_LIMIT - state.elapsed;
         return state.relieved + (state.flowRate * timeLeft);
 }
 
-int32 getMaxFlow(int32 numV, tllvalve valves, int32 distances[numV][numV]) {
+int32 getMaxFlow(int32 numV, struct valve valves[], int32 distances[numV][numV]) {
         tllstate stateQueue = tll_init();
-        int32 numFlowing = getNumFlowing(valves);
+        tllstate seenStates = tll_init();
+        // int32 numFlowing = getNumFlowing(valves);
 
         // Add inital state to the queue
         struct state initState;
         initState.opened = (tllint)tll_init();
-        initState.cur = valve2ID("AA");
+        initState.cur = getIndex(numV, valves, 0); // Valve "AA" has id of 0
         initState.elapsed = 0;
         initState.flowRate = 0;
         initState.relieved = 0;
+        initState.unopened = (tllint)tll_init();
+        for (int i = 0; i < numV; i++) {
+                if (valves[i].flow != 0)
+                        tll_push_back(initState.unopened, valves[i].index);
+        }
+
         tll_push_back(stateQueue, initState);
+        tll_push_back(seenStates, initState);
 
         int32 max_relieved = 0;
+        int64 count = 0;
         while (tll_length(stateQueue) > 0) {
                 struct state curState = tll_pop_front(stateQueue);
+                if (count % 10000 == 0)
+                        printState(curState, true);
+                count++;
 
                 // if all flowing valves are open, wait until end
-                if (tll_length(curState.opened) == (size_t)numFlowing) {
-                        int32 totalRelieved = waitTillEnd(valves, curState);
+                if (tll_length(curState.unopened) == 0) {
+                        int32 totalRelieved = waitTillEnd(curState);
                         if (totalRelieved > max_relieved)
                                 max_relieved = totalRelieved;
                         continue;
                 }
 
-                // Get list of unopened valves
-                tllint unopened = tll_init();
-                getUnopened(valves, curState, &unopened);
+                tll_foreach(curState.unopened, it) {
+                        int32 newCur = it->item;
+                        struct valve valve = valves[newCur];
+                        if (valve.flow <= 0)
+                                continue;
 
-                tll_foreach(unopened, it) {
-                        struct valve valve;
-                        tll_foreach(valves, vit) {
-                                if (vit->item.index == it->item) {
-                                        valve = vit->item;
-                                        break;
-                                }
-                        }
-                        if (valve.flow <= 0) continue;
-
-                        int32 dist = distances[curState.cur][it->item] + 1;
+                        int32 dist = distances[curState.cur][newCur] + 1;
                         int32 newElapsed = curState.elapsed + dist;
 
                         // if opening the valve takes too long, wait to end
                         if (newElapsed > TIME_LIMIT) {
-                                int32 totalRelieved = waitTillEnd(valves,
-                                                curState);
+                                int32 totalRelieved = waitTillEnd(curState);
                                 if (totalRelieved > max_relieved)
                                         max_relieved = totalRelieved;
                                 continue;
@@ -245,71 +266,69 @@ int32 getMaxFlow(int32 numV, tllvalve valves, int32 distances[numV][numV]) {
 
                         tllint newOpened = tll_init();
                         tllintCopy(&newOpened, curState.opened);
-                        tll_push_back(newOpened, it->item);
+                        tll_push_back(newOpened, newCur);
+
+                        tllint newUnopened = tll_init();
+                        unopenedCopy(&newUnopened, curState.unopened, newCur);
 
                         struct state newState;
                         newState.opened = newOpened;
-                        newState.cur = it->item;
+                        newState.unopened = newUnopened;
+                        newState.cur = newCur;
                         newState.elapsed = newElapsed;
                         newState.flowRate = newFlowRate;
                         newState.relieved = newRelieved;
                         tll_push_back(stateQueue, newState);
                 }
         }
-        printf("\n");
 
         return max_relieved;
 }
 
 void part1(llist *ll) {
-        tllvalve valves = tll_init();
+        int numV = ll->length;
+        struct valve valveArr[numV];
 
         llNode *current = ll->head;
         int index = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
-                struct valve curValve = {0};
 
                 // get valve id
                 strtok(str, " ");
                 char *valve = strtok(NULL, " ");
-                strncpy(curValve.name, valve, 2);
-                curValve.id = valve2ID(valve);
-                curValve.index = index;
-                index++;
+                strncpy(valveArr[index].name, valve, 3);
+                valveArr[index].id = valve2ID(valve);
+                valveArr[index].index = index;
 
                 // Get Valve flow rate
                 strtok(NULL, "=");
                 char *flowStr = strtok(NULL, ";");
-                curValve.flow = strtol(flowStr, (char**)NULL, 10);
+                valveArr[index].flow = strtol(flowStr, (char**)NULL, 10);
+
 
                 // Get valve neighbors
-                curValve.neighbors = (tllint)tll_init();
+                valveArr[index].neighbors = (tllint)tll_init();
                 for (int i = 0; i < 4; i++)
                         strtok(NULL, " ");
                 char *next = strtok(NULL, ",");
                 while (next != NULL) {
                         int32 nextId = valve2ID(next);
-                        tll_push_back(curValve.neighbors, nextId);
+                        tll_push_back(valveArr[index].neighbors, nextId);
                         next = strtok(NULL, " ");
-                        if (next != NULL) 
-                                next = strtok(NULL, ",");
                 }
 
-                tll_push_back(valves, curValve);
-
                 current = current->next;
+                index++;
         }
-        // printValves(valves);
-        int32 numV = tll_length(valves);
-
+        // printValves(numV, valveArr);
 
         int32 distances[numV][numV];
-        getDistances(numV, valves, distances);
-        printDists(numV, distances);
+        getDistances(numV, valveArr, distances);
+        // printDists(numV, distances);
 
-        int32 maxFlow = getMaxFlow(numV, valves, distances);
+        int32 maxFlow = getMaxFlow(numV, valveArr, distances);
 
         printf("Part 1: Max Flow = %d\n\n", maxFlow);
 }
