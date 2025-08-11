@@ -16,8 +16,7 @@
 #include "../lib/tllist.h"
 #include "../util/util.h"
 
-#define TIME_LIMIT 30
-#define TIME_LIMIT2 26
+#define MAX_VALVES 100
 
 typedef tll(int32) tllint;
 
@@ -33,7 +32,6 @@ struct state {
         tllint opened;
         tllint unopened;
         int32 cur;
-        int32 cur2;
         int32 elapsed;
         int32 flowRate;
         int32 relieved;
@@ -41,17 +39,17 @@ struct state {
 
 typedef tll(struct state) tllstate;
 
-struct state2 {
-        tllint opened;
-        tllint unopened;
-        int32 cur1;
-        int32 cur2;
-        int32 elapsed;
-        int32 flowRate;
+struct endState {
         int32 relieved;
+        bool opened[MAX_VALVES];
 };
 
-typedef tll(struct state2) tllstate2;
+typedef tll(struct endState) tllendstate;
+
+union answer {
+        int32 maxRelieved;
+        tllendstate endStates;
+};
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -210,25 +208,47 @@ void unopenedCopy(tllint *dest, tllint src, int32 remove) {
         }
 }
 
-int32 waitTillEnd(struct state state) {
-        int32 timeLeft = TIME_LIMIT - state.elapsed;
+bool valveStateEq(bool state1[], bool state2[]) {
+        int cmp = memcmp(state1, state2, MAX_VALVES);
+        return !cmp;
+}
+
+void addEndState(tllendstate *endStates, struct state state, int relieved) {
+        // Create new end state initalized false(0)
+        struct endState endState = {0};
+        endState.relieved = relieved;
+
+        // Convert opened valves to bool array
+        tll_foreach(state.opened, it) {
+                endState.opened[it->item] = true;
+        }
+
+        // Check if valveState exists, edit if it does
+        tll_foreach(*endStates, it) {
+                if (valveStateEq(it->item.opened, endState.opened)) {
+                        if (it->item.relieved < relieved)
+                                it->item.relieved = relieved;
+                        return;
+                }
+        }
+        // If state doesn't exist, add it
+        tll_push_back(*endStates, endState);
+}
+
+int32 waitTillEnd(struct state state, int timeLimit) {
+        int32 timeLeft = timeLimit - state.elapsed;
         return state.relieved + (state.flowRate * timeLeft);
 }
 
-int32 waitTillEnd2(struct state2 state) {
-        int32 timeLeft = TIME_LIMIT - state.elapsed;
-        return state.relieved + (state.flowRate * timeLeft);
-}
-
-int32 getMaxFlow(int32 numV, struct valve valves[],
-                int32 distances[numV][numV], int numParties) {
+union answer getMaxFlow(int32 numV, struct valve valves[],
+                int32 distances[numV][numV], int timeLimit) {
         tllstate stateQueue = tll_init();
+        tllendstate endStates = tll_init();
 
         // Add inital state to the queue
         struct state initState;
         initState.opened = (tllint)tll_init();
         initState.cur = getIndex(numV, valves, 0); // Valve "AA" has id of 0
-        initState.cur2 = initState.cur;
         initState.elapsed = 0;
         initState.flowRate = 0;
         initState.relieved = 0;
@@ -244,13 +264,17 @@ int32 getMaxFlow(int32 numV, struct valve valves[],
         int64 count = 0;
         while (tll_length(stateQueue) > 0) {
                 struct state curState = tll_pop_front(stateQueue);
-                if (numParties == 2 && count % 10000 == 0)
-                        printState(curState, true);
+                // if (count % 10000 == 0)
+                //         printState(curState, true);
                 count++;
 
-                // if all flowing valves are open, wait until end
+                // Get totalRelieved if valves remined till end
+                int32 totalRelieved = waitTillEnd(curState, timeLimit);
+                if (timeLimit < 30)
+                        addEndState(&endStates, curState, totalRelieved);
+
+                // if all flowing valves are open, check if max flow
                 if (tll_length(curState.unopened) == 0) {
-                        int32 totalRelieved = waitTillEnd(curState);
                         if (totalRelieved > max_relieved)
                                 max_relieved = totalRelieved;
                         continue;
@@ -266,8 +290,7 @@ int32 getMaxFlow(int32 numV, struct valve valves[],
                         int32 newElapsed = curState.elapsed + dist;
 
                         // if opening the valve takes too long, wait to end
-                        if (newElapsed > TIME_LIMIT) {
-                                int32 totalRelieved = waitTillEnd(curState);
+                        if (newElapsed > timeLimit) {
                                 if (totalRelieved > max_relieved)
                                         max_relieved = totalRelieved;
                                 continue;
@@ -295,11 +318,55 @@ int32 getMaxFlow(int32 numV, struct valve valves[],
                 }
         }
 
-        return max_relieved;
+        union answer ans;
+        if (timeLimit == 30) {
+                ans.maxRelieved = max_relieved;
+        } else {
+                ans.endStates = endStates;
+        }
+        return ans;
+}
+
+bool arrOverlap(bool arr1[MAX_VALVES], bool arr2[MAX_VALVES]) {
+        for (int i=0; i<MAX_VALVES; i++) {
+                if (arr1[i] && arr2[i])
+                        return true;
+        }
+        return false;
+}
+
+int32 getMaxCombo(tllendstate endStatesTll, struct valve valves[]) {
+        // convert from linked list to array
+        int numStates = tll_length(endStatesTll);
+        struct endState states[numStates];
+        int index = 0;
+        tll_foreach(endStatesTll, it) {
+                states[index] = it->item;
+                index++;
+        }
+
+        // Loop through endState Combos
+        int32 maxFlow = 0;
+        for (int i=0; i<numStates; i++) {
+                for (int j=i+1; j<numStates; j++) {
+                        // if states dont overlap, update max flow if necessary
+                        if (!arrOverlap(states[i].opened, states[j].opened)) {
+                                int32 flow = states[i].relieved +
+                                        states[j].relieved;
+                                if (flow > maxFlow) maxFlow = flow;
+                        }
+                }
+        }
+        return maxFlow;
 }
 
 void part1(llist *ll) {
         int numV = ll->length;
+        if (numV > MAX_VALVES) {
+                printf("Number of valves, %d, exceeds MAX_VALVES, %d\n",
+                                numV, MAX_VALVES);
+                return;
+        }
         struct valve valveArr[numV];
 
         llNode *current = ll->head;
@@ -341,13 +408,18 @@ void part1(llist *ll) {
         getDistances(numV, valveArr, distances);
         // printDists(numV, distances);
 
-        int32 maxFlow = getMaxFlow(numV, valveArr, distances, 1);
+        union answer maxFlow = getMaxFlow(numV, valveArr, distances, 30);
 
-        printf("Part 1: Max Flow = %d\n\n", maxFlow);
+        printf("Part 1: Max Flow = %d\n\n", maxFlow.maxRelieved);
 }
 
 void part2(llist *ll) {
         int numV = ll->length;
+        if (numV > MAX_VALVES) {
+                printf("Number of valves, %d, exceeds MAX_VALVES, %d\n",
+                                numV, MAX_VALVES);
+                return;
+        }
         struct valve valveArr[numV];
 
         llNode *current = ll->head;
@@ -389,7 +461,24 @@ void part2(llist *ll) {
         getDistances(numV, valveArr, distances);
         // printDists(numV, distances);
 
-        int32 maxFlow = getMaxFlow(numV, valveArr, distances, 2);
+        union answer ans = getMaxFlow(numV, valveArr, distances, 26);
+        tllendstate endStates = ans.endStates;
+
+        // printf("Num States: %lu\n", tll_length(endStates));
+        // int stateNum = 0;
+        // tll_foreach(endStates, it) {
+        //         struct endState endState = it->item;
+        //         printf("Opened: [ ");
+        //         for (int i=0; i<MAX_VALVES; i++) {
+        //                 if (endState.opened[i]) {
+        //                         printf("%s ", valveArr[i].name);
+        //                 }
+        //         }
+        //         printf("] - %d\n", endState.relieved);
+        //         stateNum++;
+        // }
+
+        int32 maxFlow = getMaxCombo(endStates, valveArr);
 
         printf("Part 2: Max Flow = %d\n\n", maxFlow);
 }
@@ -398,8 +487,8 @@ int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                // ll = getInputFile("assets/tests/2022/Day16.txt");
-                ll = getInputFile("assets/tests/2022/Day16b.txt");
+                ll = getInputFile("assets/tests/2022/Day16.txt");
+                // ll = getInputFile("assets/tests/2022/Day16b.txt");
                 Debug = true;
         } else {
                 ll = getInputFile("assets/inputs/2022/Day16.txt");
