@@ -7,20 +7,13 @@
  ************************************************/
 
 #include <stdio.h>
-#include <string.h>
-
-struct testStruct {
-        int i;
-        int arr[100];
-};
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        struct testStruct ts = {0};
-        memset(&ts, 0, sizeof(struct testStruct));
-        for (int i = 0; i < 100; i++) {
-                printf("%d: %s\n", i, (ts.arr[i] == 0 ? "False" : "True"));
+        int bla = -1;
+        for (int i = bla; i >= 0; i--) {
+                printf("kljsagdfljkgd\n");
         }
 
         return 0;
