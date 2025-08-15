@@ -36,20 +36,29 @@ typedef enum {
 
 typedef tll(uint8) tlluint8;
 
+struct seen {
+        int32 count;
+        int64 pieceCount;
+        int64 top;
+};
+
 struct state {
         int32 jetIndex;
         int32 numJets;
         int32 rockIndex;
-        int32 numRocks;
-        int32 top;
+        int64 numRocks;
+        int64 top;
         tlluint8 chamber;
-        ivec2 pos;
+        lvec2 pos;
+        // Hash table indexed by (jetIndex << 3) + rockIndex
+        struct seen seen[100000];
+        int64 addedBySeen;
 };
 
 struct rock {
         int8 numPieces;
-        ivec2 size;
-        ivec2 pieces[MaxRockSize];
+        lvec2 size;
+        lvec2 pieces[MaxRockSize];
 };
 
 // Each rock is stored as offsets to the bottom left corner of the shape
@@ -104,15 +113,6 @@ const struct rock Rocks[NumRocks] = {
         }
 };
 
-uint8 tll_get(tlluint8 list, int index) {
-        int i = 0;
-        tll_foreach(list, it) {
-                if (i == index)
-                        return it->item;
-        }
-        return 0;
-}
-
 static bool Debug = false;
 void debugP(const char *format, ...) {
         va_list args;
@@ -122,7 +122,7 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
-void adjustRockCoords(struct rock *rock, ivec2 pos) {
+void adjustRockCoords(struct rock *rock, lvec2 pos) {
         for (int i=0; i<rock->numPieces; i++) {
                 rock->pieces[i].x += pos.x;
                 rock->pieces[i].y += pos.y;
@@ -174,7 +174,7 @@ void printChamber(struct state state, int32 numLines) {
         printf("+-------+\n\n");
 }       
 
-bool isValidMove(struct state *state, ivec2 pos) {
+bool isValidMove(struct state *state, lvec2 pos) {
         // Check for pos out of bounds
         if (pos.x < 0 || pos.x >= Width || pos.y < 0)
                 return false;
@@ -191,8 +191,8 @@ bool isValidMove(struct state *state, ivec2 pos) {
         }
 
         // Check for collision with other rocks
-        int32 y = state->top;
-        int32 rockTop = state->pos.y + rock.size.y - 1;
+        int64 y = state->top;
+        int64 rockTop = state->pos.y + rock.size.y - 1;
         tll_rforeach(state->chamber, it) {
                 if (y < pos.y) break;
                 if (y > rockTop) {
@@ -217,7 +217,7 @@ void moveRock(struct state *state, dir jets[], bool print) {
                 printChamber(*state, 10);
         while (true) {
                 // Move rock to the side by jet
-                ivec2 pos = state->pos;
+                lvec2 pos = state->pos;
                 dir jet = jets[state->jetIndex];
                 state->jetIndex++;
                 if (state->jetIndex >= state->numJets)
@@ -250,11 +250,11 @@ void moveRock(struct state *state, dir jets[], bool print) {
 
 void setChamber(struct state *state) {
         struct rock rock = Rocks[state->rockIndex];
-        ivec2 pos = state->pos;
+        lvec2 pos = state->pos;
         adjustRockCoords(&rock, pos);
 
         // Modify existing lines
-        int32 y = state->top;
+        int64 y = state->top;
         tll_rforeach(state->chamber, it) {
                 if (y < pos.y) break;
                 for (int i=0; i<rock.numPieces; i++) {
@@ -266,7 +266,7 @@ void setChamber(struct state *state) {
         }
 
         // Add lines to chamber
-        int32 rockTop = state->pos.y + rock.size.y - 1;
+        int64 rockTop = state->pos.y + rock.size.y - 1;
         for (int y=state->top+1; y<=rockTop; y++) {
                 uint8 line = 0;
                 for (int j=0; j<rock.numPieces; j++) {
@@ -280,11 +280,26 @@ void setChamber(struct state *state) {
         state->top = tll_length(state->chamber) - 1;
 
         // So print function doesnt print this
-        state->pos = (ivec2){-7, -7};
+        state->pos = (lvec2){-7, -7};
 }
 
-int32 rockStack(int numJets, dir jets[], int32 numRocks) {
-        struct state state;
+void addSeen(struct state *state, int64 target) {
+        int32 hashIndex = (state->jetIndex << 3) + state->rockIndex;
+        struct seen *seen = &(state->seen[hashIndex]);
+        if (seen->count >= 2) {
+                int64 dTop = state->top - seen->top;
+                int64 dPieceCount = state->numRocks - seen->pieceCount;
+                int64 numRepeats = (target - state->numRocks) / dPieceCount;
+                state->addedBySeen += numRepeats * dTop;
+                state->numRocks += numRepeats * dPieceCount;
+        }
+        seen->count++;
+        seen->top = state->top;
+        seen->pieceCount = state->numRocks;
+}
+
+int64 rockStack(int32 numJets, dir jets[], int64 target) {
+        struct state state = {0};
         state.numJets = numJets;
         // NOTE: Numbers are backwards. LSB is the left wall, MSB is right wall
         state.chamber = (tlluint8)tll_init();
@@ -293,16 +308,12 @@ int32 rockStack(int numJets, dir jets[], int32 numRocks) {
         state.jetIndex = 0;
         state.rockIndex = 0;
         state.numRocks = 0;
-        while (state.numRocks < numRocks) {
+        while (state.numRocks < target) {
                 // Place new rock at x=2, y=top+4
-                state.pos = (ivec2){2, state.top + 4};
+                state.pos = (lvec2){2, state.top + 4};
                 moveRock(&state, jets, false);
                 setChamber(&state);
-                // if (state.numRocks >= 697) {
-                //         printf("%d\n", state.numRocks + 1);
-                //         printf("%d\n", state.top + 1);
-                //         printChamber(state, 10);
-                // }
+                addSeen(&state, target);
 
                 state.numRocks++;
                 state.rockIndex++;
@@ -310,10 +321,12 @@ int32 rockStack(int numJets, dir jets[], int32 numRocks) {
         }
 
         // printChamber(state, -1);
-        return state.top + 1;
+        return state.top + state.addedBySeen + 1;
 }
 
 void part1(const char *input) {
+        const int64 Target = 2022;
+
         int32 numJets = strlen(input);
         char str[numJets+1];
         strncpy(str, input, numJets+1);
@@ -330,14 +343,33 @@ void part1(const char *input) {
                         printf("Invalid jet direction: %c\n", str[i]);
         }
 
-        int32 height = rockStack(numJets, jets, 2022);
-        // int32 height = rockStack(numJets, jets, 700);
+        int64 height = rockStack(numJets, jets, Target);
 
-        printf("Part 1: Rock stack height: %d\n", height);
+        printf("Part 1: Rock stack height: %ld\n", height);
 }
 
 void part2(const char *input) {
-        printf("Part 2: \n");
+        const int64 Target = 1000000000000;
+
+        int32 numJets = strlen(input);
+        char str[numJets+1];
+        strncpy(str, input, numJets+1);
+        // printf("%s\n", str);
+        // printf("Num Jets: %d\n", numJets);
+        
+        dir jets[numJets];
+        for (int i=0; i<numJets; i++) {
+                if (str[i] == '<')
+                        jets[i] = LEFT;
+                else if (str[i] == '>')
+                        jets[i] = RIGHT;
+                else
+                        printf("Invalid jet direction: %c\n", str[i]);
+        }
+
+        int64 height = rockStack(numJets, jets, Target);
+
+        printf("Part 2: Rock stack height: %ld\n", height);
 }
 
 void getInput(const char *fileName, int32 buffer, char *input) {
@@ -361,7 +393,7 @@ void getInput(const char *fileName, int32 buffer, char *input) {
 
 int main(int argc, char *argv[]) {
         clock_t begin = clock();
-        const int32 Buffer = 16384;
+        const int32 Buffer = 0x3FFF;
         char input[Buffer];
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
                 getInput("assets/tests/2022/Day17.txt", Buffer, input);
