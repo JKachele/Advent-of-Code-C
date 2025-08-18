@@ -120,6 +120,15 @@ state timeLeft(state inState, int32 timeLimit) {
         return newState;
 }
 
+bool canOutProduceBest(int32 bestSofar, state state, int32 timeLimit) {
+        int32 timeLeft = timeLimit - state.timeElapsed;
+        int potentialGeodes = state.res[3];
+        for (int i=0; i<timeLeft; i++) {
+                potentialGeodes += (state.bots[3] + i);
+        }
+        return potentialGeodes > bestSofar;
+}
+
 int32 maxGeodes(blueprint bp, int32 timeLimit) {
         tllstate stateQueue = tll_init();
 
@@ -130,6 +139,9 @@ int32 maxGeodes(blueprint bp, int32 timeLimit) {
         int32 maxGeodes = 0;
         while (tll_length(stateQueue) > 0) {
                 state curState = tll_pop_front(stateQueue);
+
+                if (!canOutProduceBest(maxGeodes, curState, timeLimit))
+                        continue;
 
                 if (curState.timeElapsed >= timeLimit) {
                         if (curState.res[3] > maxGeodes)
@@ -253,13 +265,53 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        const int32 TimeLimit = 32;
+        const int32 NumBp = 3;
+        blueprint blueprints[NumBp];
+        memset(blueprints, 0, sizeof(blueprint) * NumBp);
+
         llNode *current = ll->head;
+        int16 index = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                char *token = strtok(str, " ");
+                for (int i=0; i<6; i++) token = strtok(NULL, " ");
+                blueprints[index].ore[0] = strtol(token, (char**)NULL, 10);
+
+                for (int i=0; i<6; i++) token = strtok(NULL, " ");
+                blueprints[index].clay[0] = strtol(token, (char**)NULL, 10);
+
+                for (int i=0; i<6; i++) token = strtok(NULL, " ");
+                blueprints[index].obs[0] = strtol(token, (char**)NULL, 10);
+
+                for (int i=0; i<3; i++) token = strtok(NULL, " ");
+                blueprints[index].obs[1] = strtol(token, (char**)NULL, 10);
+
+                for (int i=0; i<6; i++) token = strtok(NULL, " ");
+                blueprints[index].geode[0] = strtol(token, (char**)NULL, 10);
+
+                for (int i=0; i<3; i++) token = strtok(NULL, " ");
+                blueprints[index].geode[2] = strtol(token, (char**)NULL, 10);
+
                 current = current->next;
+                index++;
+                if (index >= NumBp) break;
         }
-        printf("Part 2: \n");
+        for (int i=0; i<NumBp; i++) {
+                getMaxes(&blueprints[i]);
+        }
+
+        int32 geodeProduct = 1;
+        for (int i=0; i<NumBp; i++) {
+                int32 geodes = maxGeodes(blueprints[i], TimeLimit);
+                debugP("Blueprint %d: %d Geodes\n", i + 1, geodes);
+                if (geodes > 0)
+                        geodeProduct *= geodes;
+        }
+
+        printf("Part 2: Blueprint Geode Product: %d\n\n", geodeProduct);
 }
 
 int main(int argc, char *argv[]) {
