@@ -9,11 +9,18 @@
 #include <stdio.h>
 #include "util/util.h"
 
+int32 strtoid(const char *str) {
+        int32 id = (int32)(str[0] - 'a') << 15;
+        id += (int32)(str[1] - 'a') << 10;
+        id += (int32)(str[2] - 'a') << 5;
+        id += (int32)(str[3] - 'a');
+        return id;
+}
+
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        bool arr[5][7][3];
-        printf("%lu\n", sizeof(arr));
+        printf("%d\n", strtoid("root"));
 
         return 0;
 }
