@@ -15,9 +15,11 @@
 #include "../lib/tllist.h"
 #include "../util/util.h"
 
+#define KEY 811589153
+
 typedef struct {
         int32 index;
-        int32 value;
+        int64 value;
 } fileNum;
 
 typedef tll(fileNum) file;
@@ -34,7 +36,7 @@ void debugP(const char *format, ...) {
 void printFile(file file) {
         printf("[");
         tll_foreach(file, it) {
-                printf("%d, ", it->item.value);
+                printf("%ld, ", it->item.value);
         }
         printf("\b\b]\n");
 }
@@ -45,9 +47,9 @@ void printFileIndex(file file, int32 indexIn, int32 indexNum, int32 pad) {
         tll_foreach(file, it) {
                 if (index - indexIn >= (pad * -1) && index - indexIn <= pad) {
                         if (index == indexIn) {
-                                printf("*%d* ", it->item.value);
+                                printf("*%ld* ", it->item.value);
                         } else {
-                                printf("%d ", it->item.value);
+                                printf("%ld ", it->item.value);
                         }
                 }
                 index++;
@@ -55,14 +57,14 @@ void printFileIndex(file file, int32 indexIn, int32 indexNum, int32 pad) {
         printf("\n");
 }
 
-int32 getMoveIndex(int32 lm, int32 index, int32 move) {
-        int32 moveIndex = index + move;
+int32 getMoveIndex(int32 lm, int32 index, int64 move) {
+        int64 moveIndex = index + move;
         if (moveIndex < 0) {
-                moveIndex = (moveIndex % lm) + lm;
+                moveIndex = ((moveIndex % lm) + lm) % lm;
         } else {
                 moveIndex = moveIndex % lm;
         }
-        return moveIndex;
+        return (int32)moveIndex;
 }
 
 void insertBefore(file *file, fileNum value, int32 index) {
@@ -93,6 +95,7 @@ void mix(file *file) {
                 }
                 int32 moveIndex = getMoveIndex(lm, index, num.value);
                 insertBefore(file, num, moveIndex);
+                // printf("%ld: %d\n    ", num.value, moveIndex);
                 // printFile(*file);
         }
 }
@@ -148,13 +151,56 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        file file = tll_init();
+        int32 len = ll->length;
+
         llNode *current = ll->head;
+        int32 index = 0;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
+
+                fileNum num;
+                num.index = index;
+                num.value = strtol(str, (char**)NULL, 10) * KEY;
+                tll_push_back(file, num);
+
                 current = current->next;
+                index++;
         }
-        printf("Part 2: \n");
+
+        // printFile(file);
+        for (int i=0; i<10; i++) {
+                mix(&file);
+                // printf("%d: \n    ", i + 1);
+                // printFile(file);
+        }
+        index = 0;
+        tll_foreach(file, it) {
+                if (it->item.value == 0)
+                        break;
+                index++;
+        }
+
+        int32 index0 = index;
+        int32 index1k = (index0 + 1000) % len;
+        int32 index2k = (index0 + 2000) % len;
+        int32 index3k = (index0 + 3000) % len;
+        // printf("%lu\n", tll_length(file));
+        // printf("%d, %d, %d, %d\n\n", index0, index1k, index2k, index3k);
+        printFileIndex(file, index1k, 1000, 0);
+        printFileIndex(file, index2k, 2000, 0);
+        printFileIndex(file, index3k, 3000, 0);
+
+        int64 sum = 0;
+        index = 0;
+        tll_foreach(file, it) {
+                if (index == index1k || index == index2k || index == index3k)
+                        sum += it->item.value;
+                index++;
+        }
+
+        printf("Part 2: Grove Coordinates = %ld\n\n", sum);
 }
 
 int main(int argc, char *argv[]) {
