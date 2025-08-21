@@ -22,6 +22,12 @@ int main(int argc, char *argv[]) {
 
         printf("%d\n", strtoid("root"));
 
+        int n = 0;
+        for (int i=0; i<10; i++) {
+                printf("%d\n", n);
+                n = (n + 3) % 4;
+        }
+
         return 0;
 }
 

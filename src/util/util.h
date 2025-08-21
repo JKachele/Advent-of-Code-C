@@ -70,6 +70,7 @@ typedef enum {
         WEST
 } direction;
 
+bool isDigit(char c);
 void printInt(void *data);
 void printLong(void *data);
 int64_t ipow(int64_t base, uint8_t exp);

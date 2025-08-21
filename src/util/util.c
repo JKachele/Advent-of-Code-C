@@ -9,6 +9,10 @@
 #include "util.h"
 #include <stdio.h>
 
+bool isDigit(char c) {
+        return (c >= '0' && c <= '9');
+}
+
 void printInt(void *data) {
         if (data == NULL)
                 return;

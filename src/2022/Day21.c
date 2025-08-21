@@ -47,10 +47,6 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
-bool isDigit(char c) {
-        return (c >= '0' && c <= '9');
-}
-
 int32 strtoid(const char *str) {
         int32 id = (int32)(str[0] - 'a') << 15;
         id += (int32)(str[1] - 'a') << 10;
