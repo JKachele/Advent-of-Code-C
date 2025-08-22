@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
 
         printf("%d\n", strtoid("root"));
 
-        for (int i=0; i<16; i++) {
-                int ans = i / 4;
+        for (int i=0; i<9; i++) {
+                int ans = i / 3;
                 printf("%d: %d\n", i, ans);
         }
 

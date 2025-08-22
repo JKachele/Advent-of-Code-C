@@ -63,12 +63,12 @@ typedef struct {
         int32 z;
 } ivec3;
 
-typedef enum {
-        NORTH,
-        EAST,
-        SOUTH,
-        WEST
-} direction;
+// typedef enum {
+//         NORTH,
+//         EAST,
+//         SOUTH,
+//         WEST
+// } direction;
 
 bool isDigit(char c);
 void printInt(void *data);
