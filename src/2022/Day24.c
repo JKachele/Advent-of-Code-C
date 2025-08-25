@@ -170,7 +170,8 @@ void addToQueue(tllstate *queue, state s) {
         tll_push_back(*queue, s);
 }
 
-int findPath(ivec2 size, cell valley[size.y][size.x], ivec2 start, ivec2 end) {
+int findPath(ivec2 size, cell valley[size.y][size.x],
+                ivec2 start, ivec2 end, int32 timeStart) {
         const ivec2 moves[5] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}, {0, 0}};
         int32 maxTime = lcm(size.x - 2, size.y - 2);
         int32 maxStates = getMaxStates(size, maxTime);
@@ -185,7 +186,7 @@ int findPath(ivec2 size, cell valley[size.y][size.x], ivec2 start, ivec2 end) {
         memset(seen, false, maxStates);
         tllstate queue = tll_init(); // Queue sorted by time
         
-        state initState = {start, 0};
+        state initState = {start, timeStart};
         tll_push_back(queue, initState);
 
         while (tll_length(queue) > 0) {
@@ -193,7 +194,7 @@ int findPath(ivec2 size, cell valley[size.y][size.x], ivec2 start, ivec2 end) {
 
                 // If at end guaranteed to be the minimum time to reach
                 if (ivec2Eq(cur.pos, end)) {
-                        return cur.time;
+                        return cur.time - timeStart;
                 }
 
                 // Get valley state for the next minuite
@@ -228,7 +229,7 @@ int findPath(ivec2 size, cell valley[size.y][size.x], ivec2 start, ivec2 end) {
         return -1;
 }
 
-void part1(llist *ll) {
+void solve(llist *ll) {
         ivec2 size;
         size.y = ll->length;
         size.x = getLongestLine(ll);
@@ -281,19 +282,12 @@ void part1(llist *ll) {
         }
         // printValley(size, valley);
 
-        int32 minTime = findPath(size, valley, start, end);
-
+        int32 minTime = findPath(size, valley, start, end, 0);
         printf("Part 1: %d\n\n", minTime);
-}
 
-void part2(llist *ll) {
-        llNode *current = ll->head;
-        while(current != NULL) {
-                char str[INPUT_BUFFER_SIZE];
-                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
-                current = current->next;
-        }
-        printf("Part 2: \n");
+        minTime += findPath(size, valley, end, start, minTime);
+        minTime += findPath(size, valley, start, end, minTime);
+        printf("Part 2: %d\n\n", minTime);
 }
 
 int main(int argc, char *argv[]) {
@@ -310,16 +304,13 @@ int main(int argc, char *argv[]) {
         // llist_print(ll, printInput);
 
         clock_t parse = clock();
-        part1(ll);
+        solve(ll);
         clock_t pt1 = clock();
-        part2(ll);
-        clock_t pt2 = clock();
 
         double parseTime = ((double)(parse - begin) / CLOCKS_PER_SEC) * 1000;
         double pt1Time = ((double)(pt1 - parse) / CLOCKS_PER_SEC) * 1000;
-        double pt2Time = ((double)(pt2 - pt1) / CLOCKS_PER_SEC) * 1000;
-        printf("Execution Time (ms) - Input Parse: %f, Part1: %f, Part2: %f\n", 
-                        parseTime, pt1Time, pt2Time);
+        printf("Execution Time (ms) - Input Parse: %f, Solve: %f\n", 
+                        parseTime, pt1Time);
 
         return 0;
 }
