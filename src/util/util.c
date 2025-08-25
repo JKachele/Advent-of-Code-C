@@ -27,44 +27,6 @@ void printLong(void *data) {
         printf("%ld", *num);
 }
 
-ivec2 addIVec2(ivec2 a, ivec2 b) {
-        ivec2 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        return sum;
-}
-
-lvec2 addLVec2(lvec2 a, lvec2 b) {
-        lvec2 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        return sum;
-}
-
-ivec3 addIVec3(ivec3 a, ivec3 b) {
-        ivec3 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        sum.z = a.z + b.z;
-        return sum;
-}
-
-lvec3 addLVec3(lvec3 a, lvec3 b) {
-        lvec3 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        sum.z = a.z + b.z;
-        return sum;
-}
-
-bool ivec2Eq(ivec2 a, ivec2 b) {
-        return ((a.x == b.x) && (a.y == b.y));
-}
-
-bool lvec2Eq(lvec2 a, lvec2 b) {
-        return ((a.x == b.x) && (a.y == b.y));
-}
-
 int64_t ipow(int64_t base, uint8_t exp) {
         int result = 1;
         for(;;) {

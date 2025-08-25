@@ -9,23 +9,22 @@
 #include <stdio.h>
 #include "util/util.h"
 
-int32 strtoid(const char *str) {
-        int32 id = (int32)(str[0] - 'a') << 15;
-        id += (int32)(str[1] - 'a') << 10;
-        id += (int32)(str[2] - 'a') << 5;
-        id += (int32)(str[3] - 'a');
-        return id;
+typedef struct {
+        ivec2 pos;
+        int32 time;
+} state;
+
+int32 getIndex(ivec2 size, int32 lcm, state s) {
+        return ((((s.pos.y - 1) * (size.x - 2)) + (s.pos.x - 1)) * lcm) +
+                (s.time % lcm);
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        printf("%d\n", strtoid("root"));
-
-        for (int i=0; i<9; i++) {
-                int ans = i / 3;
-                printf("%d: %d\n", i, ans);
-        }
+        ivec2 size = {8, 6};
+        state s = {{1, 0}, 1};
+        printf("%d\n", getIndex(size, 12, s));
 
         return 0;
 }

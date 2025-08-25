@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "vector.h"
 
 /* #define max(a,b) \
     ({ __typeof__(a) _a = (a); \
@@ -41,28 +42,6 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
-typedef struct {
-        int64 x;
-        int64 y;
-} lvec2;
-
-typedef struct {
-        int32 x;
-        int32 y;
-} ivec2;
-
-typedef struct {
-        int64 x;
-        int64 y;
-        int64 z;
-} lvec3;
-
-typedef struct {
-        int32 x;
-        int32 y;
-        int32 z;
-} ivec3;
-
 // typedef enum {
 //         NORTH,
 //         EAST,
@@ -74,12 +53,6 @@ bool isDigit(char c);
 void printInt(void *data);
 void printLong(void *data);
 int64_t ipow(int64_t base, uint8_t exp);
-ivec2 addIVec2(ivec2 a, ivec2 b);
-lvec2 addLVec2(lvec2 a, lvec2 b);
-ivec3 addIVec3(ivec3 a, ivec3 b);
-lvec3 addLVec3(lvec3 a, lvec3 b);
-bool ivec2Eq(ivec2 a, ivec2 b);
-bool lvec2Eq(lvec2 a, lvec2 b);
 uint64 computeHash(char const *input);
 
 
