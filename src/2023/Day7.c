@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
                 ll = getInputFile("assets/tests/2023/Day7.txt");
         } else {
-                ll = getInputFile("assets/2023/Day7.txt");
+                ll = getInputFile("assets/inputs/2023/Day7.txt");
         }
         // llist_print(ll, printInput);
 

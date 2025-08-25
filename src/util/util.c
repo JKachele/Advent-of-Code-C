@@ -9,6 +9,10 @@
 #include "util.h"
 #include <stdio.h>
 
+bool isDigit(char c) {
+        return (c >= '0' && c <= '9');
+}
+
 void printInt(void *data) {
         if (data == NULL)
                 return;
@@ -23,28 +27,6 @@ void printLong(void *data) {
         printf("%ld", *num);
 }
 
-ivec2 addIVec2(ivec2 a, ivec2 b) {
-        ivec2 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        return sum;
-}
-
-lvec2 addLVec2(lvec2 a, lvec2 b) {
-        lvec2 sum;
-        sum.x = a.x + b.x;
-        sum.y = a.y + b.y;
-        return sum;
-}
-
-bool ivec2Eq(ivec2 a, ivec2 b) {
-        return ((a.x == b.x) && (a.y == b.y));
-}
-
-bool lvec2Eq(lvec2 a, lvec2 b) {
-        return ((a.x == b.x) && (a.y == b.y));
-}
-
 int64_t ipow(int64_t base, uint8_t exp) {
         int result = 1;
         for(;;) {
@@ -56,6 +38,18 @@ int64_t ipow(int64_t base, uint8_t exp) {
                 base *= base;
         }
         return result;
+}
+
+uint64 computeHash(char const *input) {
+        const uint64 p = 31;
+        const uint64 m = 1000000009;
+        uint64 hashVal = 0;
+        uint64 pow = 1;
+        for (int i = 0; i < (int)strlen(input); i++) {
+                hashVal = (hashVal + ((int)input[i] * pow)) % m;
+                pow = (pow * p) % m;
+        }
+        return hashVal;
 }
 
 // Credit to github.com/orlp 

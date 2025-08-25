@@ -10,8 +10,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+#include "vector.h"
 
-#define max(a,b) \
+/* #define max(a,b) \
     ({ __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
     _a > _b ? _a : _b; })
@@ -20,6 +22,7 @@
     ({ __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
     _a < _b ? _a : _b; })
+*/
 
 // Nested For Loops
 #define MAKE_LOOP_1(i, mi)  for(int i = 0; i < mi; i++)
@@ -39,30 +42,18 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
-typedef struct {
-        long int x;
-        long int y;
-} lvec2;
+// typedef enum {
+//         NORTH,
+//         EAST,
+//         SOUTH,
+//         WEST
+// } direction;
 
-typedef struct {
-        int x;
-        int y;
-} ivec2;
-
-typedef enum {
-        NORTH,
-        EAST,
-        SOUTH,
-        WEST
-} direction;
-
+bool isDigit(char c);
 void printInt(void *data);
 void printLong(void *data);
 int64_t ipow(int64_t base, uint8_t exp);
-ivec2 addIVec2(ivec2 a, ivec2 b);
-lvec2 addLVec2(lvec2 a, lvec2 b);
-bool ivec2Eq(ivec2 a, ivec2 b);
-bool lvec2Eq(lvec2 a, lvec2 b);
+uint64 computeHash(char const *input);
 
 
 #endif

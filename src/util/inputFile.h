@@ -12,6 +12,7 @@
 #define BUFFER_SIZE 4096
 
 llist *getInputFile(char *fileName);
+llist *getInputFileLen(char *fileName, const int BufferSize);
 void printInput(void *data);
 int getLongestLine(llist *ll);
 

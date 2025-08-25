@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
                 input = getInput("assets/tests/2024/Day9.txt");
                 // char *input = "1313165";
         else
-                input = getInput("assets/2024/Day9.txt");
+                input = getInput("assets/inputs/2024/Day9.txt");
         // printf("%s\n", input);
 
         part1(input);
