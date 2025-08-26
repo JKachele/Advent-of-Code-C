@@ -7,24 +7,16 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "util/util.h"
-
-typedef struct {
-        ivec2 pos;
-        int32 time;
-} state;
-
-int32 getIndex(ivec2 size, int32 lcm, state s) {
-        return ((((s.pos.y - 1) * (size.x - 2)) + (s.pos.x - 1)) * lcm) +
-                (s.time % lcm);
-}
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        ivec2 size = {8, 6};
-        state s = {{1, 0}, 1};
-        printf("%d\n", getIndex(size, 12, s));
+        int *test = calloc(10, sizeof(int));
+        test[3] = 10;
+        printf("%d\n", test[3]);
+        printf("%d\n", *(test + 3));
 
         return 0;
 }

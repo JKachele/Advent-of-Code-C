@@ -2,11 +2,12 @@
  *File----------Day12.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
- *Created-------Wednesday Jul 10, 2024 13:25:23 EDT
+ *Created-------Tuesday Aug 26, 2025 11:39:16 UTC
  *License-------GNU GPL-3.0
  ************************************************/
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -14,230 +15,358 @@
 #include "../lib/tllist.h"
 #include "../util/util.h"
 
-void print(char *str) {
-	char c = *str;
-	while (c != '\0') {
-		printf("%c", c);
-		c = *(str++);
-	}
-	printf("|\n");
+#define INPUT_BUFFER_SIZE 4096
+
+typedef enum {
+        UNKNOWN,
+        DAMAGED,
+        OPERATIONAL
+} spring;
+
+typedef struct {
+        int64 numS;
+        spring *springs;
+        int64 numC;
+        int32 *counts;
+} record;
+
+typedef tll(record) tllrecord;
+
+typedef struct {
+        record rec;
+        int64 configs;
+} seenEntry;
+
+typedef tll(seenEntry) tllseen;
+
+static bool Debug = false;
+void debugP(const char *format, ...) {
+        va_list args;
+        va_start(args, format);
+        if (Debug)
+                vprintf(format, args);
+        va_end(args);
 }
 
-bool countsValid(llist *counts, int records[], int numRecords) {
-	if (counts->length != numRecords)
-		return false;
-	llNode *countNode = counts->head;
-	for (int i = 0; i < numRecords; i++) {
-		int count = *(int *)countNode->data;
-		if (count != records[i])
-			return false;
-		countNode = countNode->next;
-	}
-	return true;
+void printRecord(record rec) {
+        for (int i=0; i<rec.numS; i++) {
+                switch (rec.springs[i]) {
+                        case UNKNOWN:
+                                printf("?");
+                                break;
+                        case DAMAGED:
+                                printf("#");
+                                break;
+                        case OPERATIONAL:
+                                printf(".");
+                                break;
+                }
+        }
+        printf(" [ ");
+        for (int i=0; i<rec.numC; i++) {
+                printf("%d ", rec.counts[i]);
+        }
+        printf("]\n");
 }
 
-bool isValid(char *cfg, int records[], int numRecords) {
-	llist *counts = llist_create();
-	bool inGroup = false;
-	int groupSize = 0;
-	for (int i = 0; i < (int)strlen(cfg); i++) {
-		if (cfg[i] == '#') {
-			inGroup = true;
-			groupSize++;
-		} else if (inGroup) {
-			int *count = malloc(sizeof(int));
-			*count = groupSize;
-			llist_add(counts, count);
-			groupSize = 0;
-			inGroup = false;
-		}
-	}
-	if (inGroup) {
-		int *count = malloc(sizeof(int));
-		*count = groupSize;
-		llist_add(counts, count);
-	}
-	bool valid = countsValid(counts, records, numRecords);
-	llist_free(counts);
-	return valid;
+void printRecords(tllrecord records) {
+        tll_foreach(records, it) {
+                printRecord(it->item);
+        }
+        printf("\n");
 }
 
-// Part 1: Brute Force
-int countBF(char *cfg, int records[], int numRecords) {
-	int cfgLen = strlen(cfg);
-	int unknowns[strlen(cfg)];
-	int numUnknown = 0;
-	for (int i = 0; i < cfgLen; i++) {
-		if (cfg[i] == '?') {
-			unknowns[numUnknown] = i;
-			numUnknown++;
-		}
-	}
+record copyRecord(record rec) {
+        record new = {0};
+        new.numS = rec.numS;
+        new.numC = rec.numC;
 
-	// look through all configurations of springs
-	int numValid = 0;
-	int numConf = 2 << (numUnknown - 1);
-	for (int i = 0; i < numConf; i++) {
-		char *cfgTest = malloc(strlen(cfg) + 1);
-		strncpy(cfgTest, cfg, strlen(cfg) + 1);
-		int x = 0, y = i;
-		while (y > 0) {
-			if ((y & 1) == 1)
-				cfgTest[unknowns[x]] = '#';
-			x++;
-			y = y >> 1;
-		}
-		if (isValid(cfgTest, records, numRecords))
-			numValid++;
-		free(cfgTest);
-	}
-	// printf("%s - %d\n", cfg, numValid);
+        spring *springs = calloc(new.numS, sizeof(spring));
+        memcpy(springs, rec.springs, new.numS * sizeof(spring));
+        new.springs = springs;
 
-	return numValid;
+        int32 *counts = calloc(new.numC, sizeof(int32));
+        memcpy(counts, rec.counts, new.numC * sizeof(int32));
+        new.counts = counts;
+
+        return new;
 }
 
-// Checks if the given cfg and record is possible
-bool isValidCondition(char *cfg, int record) {
+void freeEntry(seenEntry entry) {
+        free(entry.rec.springs);
+        free(entry.rec.counts);
+}
+
+int64 seenBefore(tllseen seen, record rec) {
+        tll_foreach(seen, it) {
+                seenEntry entry = it->item;
+                record seenRec = entry.rec;
+
+                if (seenRec.numS != rec.numS || seenRec.numC != rec.numC)
+                        continue;
+
+                // Check springs
+                bool diff = false;
+                for (int i=0; i<rec.numS; i++) {
+                        if (seenRec.springs[i] != rec.springs[i]) {
+                                diff = true;
+                                break;
+                        }
+                }
+                if (diff) continue;
+
+                // Check Counts
+                diff = false;
+                for (int i=0; i<rec.numC; i++) {
+                        if (seenRec.counts[i] != rec.counts[i]) {
+                                diff = true;
+                                break;
+                        }
+                }
+                if (diff) continue;
+
+                // If all is equal, return count
+                return entry.configs;
+        }
+        return -1;
+}
+
+bool validConfig(record rec) {
 	// Enough Springs left for record
-	if ((int)strlen(cfg) < record)
-		return false;
+        if (rec.numS < rec.counts[0])
+                return false;
 	// None of the first record of springs can be functional
-	for (int i = 0; i < record; i++) {
-		if (cfg[i] == '.')
-			return false;
-	}
+        for (int i=0; i<rec.counts[0]; i++) {
+                if (rec.springs[i] == OPERATIONAL)
+                        return false;
+        }
 	// Either first record is equal to cfg length (All springs are broken)
 	// or the spring after the first group is functional
-	return ((int)strlen(cfg) == record) || (cfg[record] != '#');
+        return (rec.numS == rec.counts[0]) ||
+                (rec.springs[rec.counts[0]] != DAMAGED);
 }
 
-// Dynamic programming and memoization
-int count(char *cfg, int records[], int numRecords) {
-	// if cfg is empty, return 1 if records is also empty.
-	if (cfg[0] == '\0')
-		return (numRecords == 0) ? 1 : 0;
-	// if records is empty, return 1 if cfg has no # in it.
-	if (numRecords == 0)
-		return (strchr(cfg, '#') == NULL) ? 1 : 0;
+int64 countValidConfigs(record rec, tllseen *seen) {
+        // If no springs left, add 1 if no counts are left as well
+        if (rec.numS <= 0) {
+                bool valid = rec.numC == 0;
+                return valid ? 1 : 0;
+        }
+        // If no counts left, add 1 if springs conatins no damaged
+        if (rec.numC == 0) {
+                bool found = false;
+                for (int i=0; i<rec.numS; i++) {
+                        if (rec.springs[i] == DAMAGED) {
+                                return 0;
+                        }
+                }
+                return 1;
+        }
 
-	int numCombinations = 0;
+        // Check if seen this configuration before
+        int64 seenCount = seenBefore(*seen, rec);
+        if (seenCount != -1)
+                return seenCount;
 
-	// if '.' or '?'
-	if (cfg[0] == '.' || cfg[0] == '?') {
-		numCombinations += count(cfg + 1, records, numRecords);
-	}
-	// if '#' or '?'
-	if (cfg[0] == '#' || cfg[0] == '?') {
-		if (isValidCondition(cfg, records[0])) {
-			numCombinations += count(cfg + records[0] + 1,
-						 records + 1, numRecords - 1);
-		}
-	}
+	int64 numCombinations = 0;
+
+        // If 1st spring is OPERATIONAL or UNKNOWN
+        if (rec.springs[0] == OPERATIONAL || rec.springs[0] == UNKNOWN) {
+                record new = {0};
+                new.numS = rec.numS - 1;
+                new.springs = rec.springs + 1;
+                new.numC = rec.numC;
+                new.counts = rec.counts;
+                int64 configs = countValidConfigs(new, seen);
+                numCombinations += configs;
+        }
+
+        // If 1st spring is DAMAGED or UNKNOWN Check if the config is
+        if ((rec.springs[0] == DAMAGED || rec.springs[0] == UNKNOWN) &&
+                        validConfig(rec)) {
+                record new = {0};
+                new.numS = rec.numS - rec.counts[0] - 1;
+                new.springs = rec.springs + rec.counts[0] + 1;
+                new.numC = rec.numC - 1;
+                new.counts = rec.counts + 1;
+                int64 configs = countValidConfigs(new, seen);
+                numCombinations += configs;
+
+        }
+        
+        seenEntry entry = {0};
+        entry.rec = copyRecord(rec);
+        entry.configs = numCombinations;
+        tll_push_back(*seen, entry);
 
 	return numCombinations;
 }
 
+record unfoldRecord(record rec) {
+        record unfold = {0};
+        unfold.numS = (rec.numS * 5) + 4;
+        unfold.numC = rec.numC * 5;
+
+        spring *springs = calloc(unfold.numS, sizeof(spring));
+        memcpy(springs, rec.springs, rec.numS * sizeof(spring));
+        for (int i=1; i<5; i++) {
+                springs[(rec.numS * i) + (i - 1)] = UNKNOWN;
+                memcpy(springs + (rec.numS * i) + i, rec.springs,
+                                rec.numS * sizeof(spring));
+        }
+        unfold.springs = springs;
+
+        int32 *counts = calloc(unfold.numC, sizeof(int32));
+        for (int i=0; i<5; i++) {
+                memcpy(counts + (rec.numC * i), rec.counts,
+                                rec.numC * sizeof(int32));
+        }
+        unfold.counts = counts;
+
+        return unfold;
+}
+
 void part1(llist *ll) {
-	llNode *current = ll->head;
-	int arrangementSum = 0;
-	while (current != NULL) {
-		char *strIn = (char *)current->data;
-		char *str = malloc(strlen(strIn) + 1);
-		strncpy(str, strIn, strlen(strIn) + 1);
+        tllrecord records = tll_init();
+
+        llNode *current = ll->head;
+        while(current != NULL) {
+                char str[INPUT_BUFFER_SIZE];
+                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
 
 		char *cfg = strtok(str, " ");
-		char *cfgrecords = strtok(NULL, " ");
+		char *cfgCounts = strtok(NULL, " ");
 
-		int numRecords = 1;
-		for (int i = 0; i < (int)strlen(cfgrecords); i++) {
-			if (cfgrecords[i] == ',')
-				numRecords++;
+                int32 numSprings = strlen(cfg);
+                spring *springs = calloc(numSprings, sizeof(spring));
+                for (int i = 0; i < numSprings; i++) {
+                        switch (cfg[i]) {
+                        case '?':
+                                springs[i] = UNKNOWN;
+                                break;
+                        case '#':
+                                springs[i] = DAMAGED;
+                                break;
+                        case '.':
+                                springs[i] = OPERATIONAL;
+                                break;
+                        default:
+                                printf("Unknown spring %c\n", cfg[i]);
+                        }
+                }
+
+		int32 numCounts = 1;
+		for (int i = 0; i < (int)strlen(cfgCounts); i++) {
+			if (cfgCounts[i] == ',')
+				numCounts++;
 		}
 		// printf("[%s] [%s] %d\n", cfg, cfgrecords, numRecords);
 
-		int records[numRecords];
-		char *recordstr = strtok(cfgrecords, ",");
-		for (int i = 0; i < numRecords; i++) {
-			records[i] = strtol(recordstr, NULL, 10);
-			recordstr = strtok(NULL, ",");
+		int32 *counts = calloc(numCounts, sizeof(int32));
+		char *countStr = strtok(cfgCounts, ",");
+		for (int i = 0; i < numCounts; i++) {
+			counts[i] = strtol(countStr, NULL, 10);
+			countStr = strtok(NULL, ",");
 		}
 
-		arrangementSum += countBF(cfg, records, numRecords);
-		// arrangementSum += count(cfg, records, numRecords);
+                record rec = {numSprings, springs, numCounts, counts};
+                tll_push_back(records, rec);
 
-		current = current->next;
-	}
+                current = current->next;
+        }
+        // printRecords(records);
 
-	printf("Part 1: Arrangement Sum: %d\n", arrangementSum);
+        int32 countSum = 0;
+        tll_foreach(records, it) {
+                tllseen seen = tll_init();
+                int32 count = countValidConfigs(it->item, &seen);
+                tll_free_and_free(seen, freeEntry);
+                countSum += count;
+                // printf("%d: ", count);
+                // printRecord(it->item);
+        }
+
+        printf("Part 1: %d\n\n", countSum);
 }
 
 void part2(llist *ll) {
-	llNode *current = ll->head;
-	int arrangementSum = 0;
+        tllrecord records = tll_init();
 
-	const int NUM_UNFOLD = 5;
+        llNode *current = ll->head;
+        while(current != NULL) {
+                char str[INPUT_BUFFER_SIZE];
+                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
 
-	while (current != NULL) {
-		char *strIn = (char *)current->data;
-		char *str = malloc(strlen(strIn) + 1);
-		strncpy(str, strIn, strlen(strIn) + 1);
-		// printf("%s - ", str);
+		char *cfg = strtok(str, " ");
+		char *cfgCounts = strtok(NULL, " ");
 
-		char *cfgFold = strtok(str, " ");
-		char *cfgrecords = strtok(NULL, " ");
+                int32 numSprings = strlen(cfg);
+                spring *springs = calloc(numSprings, sizeof(spring));
+                for (int i = 0; i < numSprings; i++) {
+                        switch (cfg[i]) {
+                        case '?':
+                                springs[i] = UNKNOWN;
+                                break;
+                        case '#':
+                                springs[i] = DAMAGED;
+                                break;
+                        case '.':
+                                springs[i] = OPERATIONAL;
+                                break;
+                        default:
+                                printf("Unknown spring %c\n", cfg[i]);
+                        }
+                }
 
-		// Unfold cfg
-		int unfoldSize = (strlen(cfgFold) * NUM_UNFOLD) + NUM_UNFOLD;
-		char cfg[unfoldSize];
-		strncpy(cfg, cfgFold, strlen(cfgFold));
-		int offset = strlen(cfgFold) + 1;
-		for (int i = 1; i < NUM_UNFOLD; i++) {
-			cfg[(offset * i) - 1] = '?';
-			strncpy(cfg + (offset * i), cfgFold, strlen(cfgFold));
+		int32 numCounts = 1;
+		for (int i = 0; i < (int)strlen(cfgCounts); i++) {
+			if (cfgCounts[i] == ',')
+				numCounts++;
 		}
-		cfg[unfoldSize - 1] = '\0';
-		// printf("[%s] [%s]\n", cfgFold, cfg);
+		// printf("[%s] [%s] %d\n", cfg, cfgrecords, numRecords);
 
-		int numRecordsFold = 1;
-		for (int i = 0; i < (int)strlen(cfgrecords); i++) {
-			if (cfgrecords[i] == ',')
-				numRecordsFold++;
-		}
-		int numRecords = numRecordsFold * NUM_UNFOLD;
-
-		int records[numRecords];
-		char *recordstr = strtok(cfgrecords, ",");
-		for (int i = 0; i < numRecordsFold; i++) {
-			int record = strtol(recordstr, NULL, 10);
-			for (int j = 0; j < NUM_UNFOLD; j++)
-				records[i + (j * numRecordsFold)] = record;
-			recordstr = strtok(NULL, ",");
+		int32 *counts = calloc(numCounts, sizeof(int32));
+		char *countStr = strtok(cfgCounts, ",");
+		for (int i = 0; i < numCounts; i++) {
+			counts[i] = strtol(countStr, NULL, 10);
+			countStr = strtok(NULL, ",");
 		}
 
-		printf("%s\n\t[%s]\n\t[%d", strIn, cfg, records[0]);
-		for (int i = 1; i < numRecords; i++) {
-			printf(", %d", records[i]);
-		}
-		int arrangemens = count(cfg, records, numRecords);
-		arrangementSum += arrangemens;
-		printf("]\n%d\n", arrangemens);
+                record rec = {numSprings, springs, numCounts, counts};
+                tll_push_back(records, rec);
 
-		// arrangementSum += countBF(cfg, records, numRecords);
-		// arrangementSum += count(cfg, records, numRecords);
+                current = current->next;
+        }
+        // printRecords(records);
+        
+        tllrecord unfolded = tll_init();
+        tll_foreach(records, it) {
+                record unfold = unfoldRecord(it->item);
+                tll_push_back(unfolded, unfold);
+        }
+        // printRecords(unfolded);
 
-		current = current->next;
-	}
+        int64 countSum = 0;
+        tll_foreach(unfolded, it) {
+                tllseen seen = tll_init();
+                int64 count = countValidConfigs(it->item, &seen);
+                tll_free_and_free(seen, freeEntry);
+                countSum += count;
+        }
 
-	printf("Part 2: Arrangement Sum: %d\n", arrangementSum);
+        printf("Part 2: %ld\n\n", countSum);
 }
 
 int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                ll = getInputFile("assets/tests/2023/Day12.txt");
+                char *file = "assets/tests/2023/Day12.txt";
+                ll = getInputFileLen(file, INPUT_BUFFER_SIZE);
+                Debug = true;
         } else {
-                ll = getInputFile("assets/2023/Day12.txt");
+                char *file = "assets/inputs/2023/Day12.txt";
+                ll = getInputFileLen(file, INPUT_BUFFER_SIZE);
         }
         // llist_print(ll, printInput);
 
