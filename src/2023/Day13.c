@@ -75,7 +75,7 @@ bool testVertMirrorLine(pattern p, int32 line) {
         return true;
 }
 
-int32 findVerticalMirror(pattern p) {
+int32 findVerticalMirror(pattern p, int32 avoid) {
         ivec2 size = p.size;
         bool (*map)[size.x] = (bool(*)[size.x])p.map;
 
@@ -101,6 +101,7 @@ int32 findVerticalMirror(pattern p) {
 
         // expand each potential mirror line to confirm full mirror
         tll_foreach(mirrorColumns, it) {
+                if (it->item == avoid - 1) continue;
                 if (testVertMirrorLine(p, it->item))
                         return it->item + 1;
         }
@@ -124,7 +125,7 @@ bool testHroizMirrorLine(pattern p, int32 line) {
         return true;
 }
 
-int32 findHorizontalMirror(pattern p) {
+int32 findHorizontalMirror(pattern p, int32 avoid) {
         ivec2 size = p.size;
         bool (*map)[size.x] = (bool(*)[size.x])p.map;
 
@@ -150,6 +151,7 @@ int32 findHorizontalMirror(pattern p) {
 
         // expand each potential mirror line to confirm full mirror
         tll_foreach(mirrorRows, it) {
+                if (it->item == avoid - 1) continue;
                 if (testHroizMirrorLine(p, it->item))
                         return it->item + 1;
         }
@@ -158,10 +160,34 @@ int32 findHorizontalMirror(pattern p) {
 }
 
 int32 findMirror(pattern p) {
-        int32 verticalMirror = findVerticalMirror(p);
-        int32 horizontalMirror = findHorizontalMirror(p);
+        int32 verticalMirror = findVerticalMirror(p, -1);
+        int32 horizontalMirror = findHorizontalMirror(p, -1);
 
         return verticalMirror + (100 * horizontalMirror);
+}
+
+int32 findDiffMirror(pattern p) {
+        ivec2 size = p.size;
+        bool (*map)[size.x] = (bool(*)[size.x])p.map;
+
+        int32 initV = findVerticalMirror(p, -1);
+        int32 initH = findHorizontalMirror(p, -1);
+        // printf("V: %d, H: %d\n", initV, initH);
+
+        for (int y=0; y<size.y; y++) {
+                for (int x=0; x<size.x; x++) {
+                        map[y][x] = !map[y][x];
+                        int32 newV = findVerticalMirror(p, initV);
+                        int32 newH = findHorizontalMirror(p, initH);
+                        map[y][x] = !map[y][x];
+                        // printf("(%d, %d) V: %d, H: %d\n", x, y, newV, newH);
+                        if (newV != 0)
+                                return newV;
+                        if (newH != 0)
+                                return 100 * newH;
+                }
+        }
+        return 0;
 }
 
 void part1(llist *ll) {
@@ -215,7 +241,7 @@ void part1(llist *ll) {
 
                 current = current->next;
         }
-        printPatterns(patterns);
+        // printPatterns(patterns);
 
         int32 summarySum = 0;
         tll_foreach(patterns, it) {
@@ -227,13 +253,62 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        tllpattern patterns = tll_init();
+
         llNode *current = ll->head;
+        tllstr mapStr = tll_init();
         while(current != NULL) {
-                char str[INPUT_BUFFER_SIZE];
+                char *str = malloc(INPUT_BUFFER_SIZE);
                 strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
+
+                if (strlen(str) > 0) {
+                        tll_push_back(mapStr, str);
+                        current = current->next;
+                        continue;
+                }
+
+                // If empty line
+                pattern p = {0};
+                p.size.x = (int)strlen(tll_front(mapStr));
+                p.size.y = tll_length(mapStr);
+
+                // Create bool array
+                bool (*map)[p.size.x];
+                map = calloc(p.size.x * p.size.y, sizeof(bool));
+
+                // Populate array
+                int32 y = 0;
+                tll_foreach(mapStr, it) {
+                        for (int x=0; x<p.size.x; x++) {
+                                if (it->item[x] == '#')
+                                        map[y][x] = true;
+                                else if (it->item[x] == '.')
+                                        map[y][x] = false;
+                                else
+                                        printf("Unknown '%c' at (%d, %d)\n",
+                                                        it->item[x], x, y);
+                        }
+                        y++;
+                }
+                p.map = (bool**)map;
+
+                tll_push_back(patterns, p);
+
+                tll_free_and_free(mapStr, free);
+
                 current = current->next;
         }
-        printf("Part 2: \n");
+        // printPatterns(patterns);
+
+        int32 summarySum = 0;
+        tll_foreach(patterns, it) {
+                int32 old = findMirror(it->item);
+                int32 summary = findDiffMirror(it->item);
+                // printf("%d -> %d\n", old, summary);
+                summarySum += summary;
+        }
+
+        printf("Part 2: %d\n\n", summarySum);
 }
 
 int main(int argc, char *argv[]) {
