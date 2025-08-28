@@ -166,11 +166,11 @@ lightPair splitH(ivec2 pos) {
         return (lightPair){a, b};
 }
 
-void traceLight(ivec2 size, tile grid[size.y][size.x]) {
+void traceLight(ivec2 size, tile grid[][size.x], ivec2 initP, direction initD) {
         ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
         tlllight queue = tll_init();
 
-        light initLight = {{0, 0}, RIGHT};
+        light initLight = {initP, initD};
         tll_push_back(queue, initLight);
 
         while (tll_length(queue) > 0) {
@@ -242,7 +242,62 @@ int32 numEnergized(ivec2 size, tile grid[size.y][size.x]) {
         return count;
 }
 
+void resetGrid(ivec2 size, tile grid[size.y][size.x]) {
+        for (int y=0; y<size.y; y++) {
+                for (int x=0; x<size.x; x++) {
+                        grid[y][x].energized = false;
+                        grid[y][x].seen[0] = false;
+                        grid[y][x].seen[1] = false;
+                }
+        }
+}
+
 void part1(llist *ll) {
+        ivec2 size = {getLongestLine(ll), ll->length};
+        tile grid[size.y][size.x];
+        memset(grid, 0, size.y * size.x * sizeof(tile));
+
+        llNode *current = ll->head;
+        int32 yIndex = 0;
+        while(current != NULL) {
+                char *str = (char*)current->data;
+
+                for (int x=0; x<size.x; x++) {
+                        switch (str[x]) {
+                        case '.':
+                                grid[yIndex][x].type = EMPTY;
+                                break;
+                        case '/':
+                                grid[yIndex][x].type = MIRROR_R;
+                                break;
+                        case '\\':
+                                grid[yIndex][x].type = MIRROR_L;
+                                break;
+                        case '|':
+                                grid[yIndex][x].type = SPLIT_V;
+                                break;
+                        case '-':
+                                grid[yIndex][x].type = SPLIT_H;
+                                break;
+                        default:
+                                printf("Unknown tile %c\n", str[x]);
+                        }
+                }
+
+                current = current->next;
+                yIndex++;
+        }
+        // printGrid(size, grid);
+
+        traceLight(size, grid, (ivec2){0, 0}, RIGHT);
+        // printEnergized(size, grid);
+
+        int32 energized = numEnergized(size, grid);
+
+        printf("Part 1: %d\n\n", energized);
+}
+
+void part2(llist *ll) {
         ivec2 size = {getLongestLine(ll), ll->length};
         tile grid[size.y][size.x];
         memset(grid, 0, size.y * size.x * sizeof(tile));
@@ -279,22 +334,39 @@ void part1(llist *ll) {
         }
         printGrid(size, grid);
 
-        traceLight(size, grid);
-        printEnergized(size, grid);
+        int32 maxEnergized = 0;
+        for (int x=0; x<size.x; x++) {
+                ivec2 pos = {x, 0};
+                traceLight(size, grid, pos, DOWN);
+                int32 energized = numEnergized(size, grid);
+                if (energized > maxEnergized)
+                        maxEnergized = energized;
+                resetGrid(size, grid);
 
-        int32 energized = numEnergized(size, grid);
-
-        printf("Part 1: %d\n\n", energized);
-}
-
-void part2(llist *ll) {
-        llNode *current = ll->head;
-        while(current != NULL) {
-                char str[INPUT_BUFFER_SIZE];
-                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
-                current = current->next;
+                pos = (ivec2){x, size.y-1};
+                traceLight(size, grid, pos, UP);
+                energized = numEnergized(size, grid);
+                if (energized > maxEnergized)
+                        maxEnergized = energized;
+                resetGrid(size, grid);
         }
-        printf("Part 2: \n");
+        for (int y=0; y<size.y; y++) {
+                ivec2 pos = {0, y};
+                traceLight(size, grid, pos, RIGHT);
+                int32 energized = numEnergized(size, grid);
+                if (energized > maxEnergized)
+                        maxEnergized = energized;
+                resetGrid(size, grid);
+
+                pos = (ivec2){size.x-1, y};
+                traceLight(size, grid, pos, LEFT);
+                energized = numEnergized(size, grid);
+                if (energized > maxEnergized)
+                        maxEnergized = energized;
+                resetGrid(size, grid);
+        }
+
+        printf("Part 1: %d\n\n", maxEnergized);
 }
 
 int main(int argc, char *argv[]) {
