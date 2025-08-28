@@ -20,6 +20,12 @@
 
 #define INPUT_BUFFER_SIZE 65536
 
+typedef struct {
+        char *label;
+        int32 focus;
+} lens;
+
+typedef tll(lens) tlllens;
 typedef tll(char*) tllstr;
 
 static bool Debug = false;
@@ -31,6 +37,15 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
+void printBox(tlllens box, int32 index) {
+        printf("Box %d: ", index);
+        tll_foreach(box, it) {
+                lens l = it->item;
+                printf("[%s %d] ", l.label, l.focus);
+        }
+        printf("\n");
+}
+
 uint8 hash(const char *str) {
         uint32 c = 0;
         uint32 hash = 0;
@@ -40,6 +55,72 @@ uint8 hash(const char *str) {
                 hash = hash % 256;
         }
         return (uint8)hash;
+}
+
+void addLens(tlllens *box, const char *label, int32 focus) {
+        tll_foreach(*box, it) {
+                if (strcmp(it->item.label, label) == 0) {
+                        it->item.focus = focus;
+                        return;
+                }
+        }
+
+        // If lens not present, add it to back
+        lens new = {0};
+        new.label = malloc(strlen(label) + 1);
+        strcpy(new.label, label);
+        new.focus = focus;
+        tll_push_back(*box, new);
+}
+
+void removeLens(tlllens *box, const char *label) {
+        tll_foreach(*box, it) {
+                if (strcmp(it->item.label, label) == 0) {
+                        tll_remove(*box, it);
+                        return;
+                }
+        }
+}
+
+void sequenceStep(tlllens boxes[256], const char *step) {
+        char label[strlen(step)];
+        int32 oppIndex = 0;
+        for (uint32 i = 0; i < strlen(step); i++) {
+                if (step[i] == '=' || step[i] == '-') {
+                        label[i] = '\0';
+                        oppIndex = i;
+                        break;
+                }
+                label[i] = step[i];
+        }
+        uint8 box = hash(label);
+        char opp = step[oppIndex];
+
+        if (opp == '-') {
+                removeLens(&boxes[box], label);
+                // printf("Removed Lens %s From Box %d\n", label, box);
+        } else if (opp == '=') {
+                int32 focus = strtol(step+oppIndex+1, (char**)NULL, 10);
+                addLens(&boxes[box], label, focus);
+                // printf("Added Lens %s To Box %d With Focus %d\n",
+                //                 label, box, focus);
+        } else {
+                printf("Unknown operation: %c\n", opp);
+        }
+}
+
+int32 findFocusPower(tlllens box, uint8 boxIndex) {
+        int32 focusPower = 0;
+        int32 lensIndex = 1;
+        tll_foreach(box, it) {
+                int32 lens = boxIndex + 1;
+                lens *= lensIndex;
+                lens *= it->item.focus;
+
+                focusPower += lens;
+                lensIndex++;
+        }
+        return focusPower;
 }
 
 void part1(llist *ll) {
@@ -65,13 +146,33 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        llNode *current = ll->head;
-        while(current != NULL) {
-                char str[INPUT_BUFFER_SIZE];
-                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
-                current = current->next;
+        tllstr initSeq = tll_init();
+
+        char str[INPUT_BUFFER_SIZE];
+        strncpy(str, (char*)ll->head->data, INPUT_BUFFER_SIZE);
+
+        char *seqPart = strtok(str, ",");
+        while (seqPart != NULL) {
+                tll_push_back(initSeq, seqPart);
+                seqPart = strtok(NULL, ",");
         }
-        printf("Part 2: \n");
+
+        tlllens boxes[256];
+        for (int i=0; i<256; i++)
+                boxes[i] = (tlllens)tll_init();
+
+        tll_foreach(initSeq, it) {
+                sequenceStep(boxes, it->item);
+        }
+        // printBox(boxes[0], 0);
+        // printBox(boxes[3], 3);
+
+        int64 totalFocusPower = 0;
+        for (int i=0; i<256; i++) {
+                totalFocusPower += findFocusPower(boxes[i], i);
+        }
+
+        printf("Part 2: %ld\n\n", totalFocusPower);
 }
 
 int main(int argc, char *argv[]) {
