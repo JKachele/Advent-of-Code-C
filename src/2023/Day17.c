@@ -131,7 +131,43 @@ tllcrucible findNext(ivec2 size, uint8 grid[size.y][size.x], crucible cur) {
         return nextCrucibles ;
 }
 
-uint32 dijkstra(ivec2 size, uint8 grid[size.y][size.x]) {
+tllcrucible findNextUltra(ivec2 size, uint8 grid[][size.x], crucible cur) {
+        ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        tllcrucible nextCrucibles = tll_init();
+
+        for (int i=0; i<4; i++) {
+                // Can't move more than 10 in a straight line
+                if ((int)cur.dir == i && cur.straight == 10)
+                        continue;
+
+                // Has to move at least 4 in a straight line
+                if ((int)cur.dir != i && cur.straight < 4)
+                        continue;
+
+                // Can't move in opposite direction
+                if (i == (int)opposite(cur.dir))
+                        continue;
+
+                // Create next crucible
+                crucible next;
+                next.pos = addIVec2(cur.pos, dirs[i]);
+                // Cannot move out of bounds
+                if (!validPos(size, next.pos))
+                        continue;
+                next.dir = i;
+                if ((int)cur.dir == i)
+                        next.straight = cur.straight + 1;
+                else
+                        next.straight = 1;
+                next.cost = cur.cost + grid[next.pos.y][next.pos.x];
+
+                tll_push_back(nextCrucibles, next);
+        }
+
+        return nextCrucibles ;
+}
+
+uint32 dijkstra(ivec2 size, uint8 grid[size.y][size.x], bool ultra) {
         const ivec2 Goal = {size.x-1, size.y-1};
 
         tllcrucible queue = tll_init();
@@ -147,10 +183,21 @@ uint32 dijkstra(ivec2 size, uint8 grid[size.y][size.x]) {
                 // printCrucible(cur);
 
                 // If at goal, Guarantee the lowest cost path
-                if (ivec2Eq(cur.pos, Goal))
-                        return cur.cost;
+                if (ivec2Eq(cur.pos, Goal)) {
+                        // Ultra needs at least 4 straight moves before end
+                        if (!ultra)
+                                return cur.cost;
+                        else if (cur.straight >= 4)
+                                return cur.cost;
+                        else
+                                continue;
+                }
 
-                tllcrucible nextCrucibles = findNext(size, grid, cur);
+                tllcrucible nextCrucibles;
+                if (ultra)
+                        nextCrucibles = findNextUltra(size, grid, cur);
+                else
+                        nextCrucibles = findNext(size, grid, cur);
                 tll_foreach(nextCrucibles, it) {
                         uint32 hash = getHash(it->item);
                         // printf("%u\n", hash);
@@ -182,19 +229,32 @@ void part1(llist *ll) {
         }
         // printGrid(size, grid);
 
-        uint32 minCost = dijkstra(size, grid);
+        uint32 minCost = dijkstra(size, grid, false);
 
         printf("Part 1: %u\n\n", minCost);
 }
 
 void part2(llist *ll) {
+        ivec2 size = {getLongestLine(ll), ll->length};
+        uint8 grid[size.y][size.x];
+
         llNode *current = ll->head;
+        int32 yIndex = 0;
         while(current != NULL) {
-                char str[INPUT_BUFFER_SIZE];
-                strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
+                char *str = (char*)current->data;
+
+                for (int x=0; x<size.x; x++) {
+                        grid[yIndex][x] = str[x] - '0';
+                }
+
                 current = current->next;
+                yIndex++;
         }
-        printf("Part 2: \n");
+        // printGrid(size, grid);
+
+        uint32 minCost = dijkstra(size, grid, true);
+
+        printf("Part 2: %u\n\n", minCost);
 }
 
 int main(int argc, char *argv[]) {
@@ -202,6 +262,7 @@ int main(int argc, char *argv[]) {
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
                 char *file = "assets/tests/2023/Day17.txt";
+                // char *file = "assets/tests/2023/Day17b.txt";
                 ll = getInputFileLen(file, INPUT_BUFFER_SIZE);
                 Debug = true;
         } else {
