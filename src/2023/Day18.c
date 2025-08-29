@@ -76,6 +76,16 @@ void printPath(tllivec2 path, ivec4 bounds) {
         printf("\n");
 }
 
+char dirtoc(direction dir) {
+        switch (dir) {
+        case UP: return 'U';
+        case RIGHT: return 'R';
+        case DOWN: return 'D';
+        case LEFT: return 'L';
+        }
+        return '?';
+}
+
 tllivec2 digPlan(tllplan plan) {
         const ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
         tllivec2 path = tll_init();
@@ -159,6 +169,38 @@ int32 fillPath(tllivec2 path, ivec4 bounds) {
         return numDug;
 }
 
+int64 getVertices(tllplan plan, lvec2 vertices[]) {
+        const ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        lvec2 cur = {0, 0};
+        int32 index = 0;
+        int64 points = 0;
+        tll_foreach(plan, it) {
+                planstep step = it->item;
+                cur.x += dirs[step.dir].x * step.length;
+                cur.y += dirs[step.dir].y * step.length;
+                vertices[index] = cur;
+                points += step.length;
+                index++;
+        }
+        return points;
+}
+
+int64 shoelaceAlg(int32 len, lvec2 vertices[]) {
+        int64 sum1 = 0;
+        int64 sum2 = 0;
+        for (int i=0; i<len; i++) {
+                if (i != len-1) {
+                        sum1 += vertices[i].x * vertices[i+1].y;
+                        sum2 += vertices[i].y * vertices[i+1].x;
+                } else {
+                        sum1 += vertices[i].x * vertices[0].y;
+                        sum2 += vertices[i].y * vertices[0].x;
+                }
+        }
+        int64 area = labs(sum1 - sum2) / 2;
+        return area;
+}
+
 void part1(llist *ll) {
         tllplan plan = tll_init();
 
@@ -207,13 +249,34 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        tllplan plan = tll_init();
+
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[INPUT_BUFFER_SIZE];
                 strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
+
+                planstep step = {0};
+                char *token = strtok(str, "#");
+                token = strtok(NULL, ")");
+                // Convert from R,D,L,U to U,R,D,L
+                step.dir = ((token[5] - '0') + 1) % 4;
+                token[5] = '\0';
+                step.length = strtol(token, (char**)NULL, 16);
+                // printf("%c %d\n", dirtoc(step.dir), step.length);
+                
+                tll_push_back(plan, step);
                 current = current->next;
         }
-        printf("Part 2: \n");
+        int32 numVertices = tll_length(plan);
+        lvec2 vertices[numVertices];
+        int64 borderPoints = getVertices(plan, vertices);
+
+        int64 area = shoelaceAlg(numVertices, vertices);
+        // Use Pick's Theorem to calculate the full area including perimeter
+        int64 numPoints = (area - (borderPoints / 2) + 1) + borderPoints;
+
+        printf("Part 2: %ld\n", numPoints);
 }
 
 int main(int argc, char *argv[]) {
