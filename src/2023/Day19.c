@@ -21,28 +21,37 @@
 #define INPUT_BUFFER_SIZE 4096
 #define SEED 0x12345678
 
-typedef enum {
+typedef enum category {
         COOL,
         MUSICAL,
         AERO,
         SHINY,
 } category;
 
-typedef struct {
+typedef struct rule {
         bool condition;
         category cat;
-        bool greater;
+        bool gt;
         int32 num;
         int32 dest;     // Hash of destination, 0 is accept, 1 is reject
 } rule;
 
 typedef tll(rule) tllrule;
 
-typedef struct {
+typedef struct part {
         int32 values[4];
 } part;
 
 typedef tll(part) tllpart;
+
+typedef tll(ivec2) tllivec2;
+
+typedef struct state {
+        ivec2 ranges[4];
+        int32 rule;
+} state;
+
+typedef tll(state) tllstate;
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -75,7 +84,7 @@ void printRules(tllrule rules) {
                         printf("s");
                         break;
                 }
-                printf("%c", r.greater? '>' : '<');
+                printf("%c", r.gt? '>' : '<');
                 printf("%d:%u ", r.num, r.dest);
         }
         printf("]\n");
@@ -123,7 +132,7 @@ rule parseRule(char *str) {
         char *less = strchr(ruleStr, '<');
         char *opp = greater != NULL ? greater : less;
         // printf("%s - %s\n", ruleStr, opp);
-        r.greater = opp[0] == '>';
+        r.gt = opp[0] == '>';
         opp[0] = '\0';
 
         char *cat = ruleStr;
@@ -200,26 +209,112 @@ uint16 nextWF(part p, tllrule wf) {
                 bool greater = partVal > r.num;
                 bool less = partVal < r.num;
 
-                if (greater == r.greater && less != r.greater)
+                if (greater == r.gt && less != r.gt)
                         return r.dest;
         }
         return 0;
 }
 
 bool partAccepted(part p, tllrule rules[]) {
-        const uint16 startWF = (uint16)FNV("in", SEED);
-        const uint16 accept = (uint16)FNV("A", SEED);
-        const uint16 reject = (uint16)FNV("R", SEED);
+        const uint16 StartWF = (uint16)FNV("in", SEED);
+        const uint16 Accept = (uint16)FNV("A", SEED);
+        const uint16 Reject = (uint16)FNV("R", SEED);
 
-        uint16 currWF = startWF;
-        while (currWF != accept && currWF != reject) {
+        uint16 currWF = StartWF;
+        while (currWF != Accept && currWF != Reject) {
                 tllrule ruleList = rules[currWF];
                 uint16 nextWFID = nextWF(p, ruleList);
                 // printf("NextWF: %u\n", nextWFID);
                 currWF = nextWFID;
         }
 
-        return currWF == accept;
+        return currWF == Accept;
+}
+
+void copyRanges(ivec2 ranges[], ivec2 newRanges[]) {
+        for (int i=0; i<4; i++) {
+                newRanges[i] = ranges[i];
+        }
+}
+
+uint64 addAccept(ivec2 ranges[]) {
+        uint64 accepted = 1;
+        for (int i=0; i<4; i++) {
+                accepted *= (ranges[i].y - ranges[i].x) + 1;
+        }
+        return accepted;
+}
+
+ivec2 adjustRange(ivec2 range, int32 limit, bool greater, bool leftover) {
+        if (range.x > limit || range.y < limit)
+                return (ivec2){-1, -1};
+
+        ivec2 newRange = range;
+        if (greater) {
+                if (leftover)
+                        newRange.y = limit;
+                else
+                        newRange.x = limit + 1;
+        } else {
+                if (leftover)
+                        newRange.x = limit;
+                else
+                        newRange.y = limit - 1;
+        }
+        return newRange;
+}
+
+uint64 maxPartsAccepted(tllrule rules[]) {
+        const uint16 StartWF = (uint16)FNV("in", SEED);
+        const uint16 Accept = (uint16)FNV("A", SEED);
+        const uint16 Reject = (uint16)FNV("R", SEED);
+
+        uint64 numAccepted = 0;
+
+        tllstate queue = tll_init();
+        state initState;
+        initState.rule = StartWF;
+        for (int i=0; i<4; i++) initState.ranges[i] = (ivec2){1, 4000};
+        tll_push_back(queue, initState);
+
+        while (tll_length(queue) > 0) {
+                state curS = tll_pop_front(queue);
+
+                if (curS.rule == Accept) {
+                        numAccepted += addAccept(curS.ranges);
+                        continue;
+                } else if (curS.rule == Reject) {
+                        continue;
+                }
+
+                tllrule curWF = rules[curS.rule];
+                ivec2 leftover[4] = {0};
+                copyRanges(curS.ranges, leftover);
+                tll_foreach(curWF, it) {
+                        rule r = it->item;
+                        state nextS = curS;
+                        copyRanges(leftover, nextS.ranges);
+
+                        if (r.condition == false) {
+                                nextS.rule = r.dest;
+                                tll_push_back(queue, nextS);
+                                continue;
+                        }
+
+                        ivec2 curR = nextS.ranges[r.cat];
+                        ivec2 nextR = adjustRange(curR, r.num, r.gt, false);
+                        if (nextR.x == -1 || nextR.y == -1)
+                                continue;
+                        nextS.ranges[r.cat] = nextR;
+                        nextS.rule = r.dest;
+                        tll_push_back(queue, nextS);
+
+                        // Set leftover ranges
+                        leftover[r.cat] = adjustRange(curR, r.num, r.gt, true);
+                }
+        }
+
+        return numAccepted;
 }
 
 void part1(llist *ll) {
@@ -267,13 +362,24 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        tllrule rules[(uint32)UINT16_MAX + 1] = {0};
+
+        // Parse Workflows
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[INPUT_BUFFER_SIZE];
                 strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
+                if (strlen(str) == 0)
+                        break;
+                parseRules(str, rules);
                 current = current->next;
         }
-        printf("Part 2: \n");
+        debugP("A: %u\n", (uint16)FNV("A", SEED));
+        debugP("R: %u\n\n", (uint16)FNV("R", SEED));
+
+        uint64 numAccepted = maxPartsAccepted(rules);
+
+        printf("Part 2: %lu\n", numAccepted);
 }
 
 int main(int argc, char *argv[]) {

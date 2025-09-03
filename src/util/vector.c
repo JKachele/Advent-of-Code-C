@@ -7,6 +7,7 @@
  ************************************************/
 
 #include "vector.h"
+#include <stdint.h>
 
 ivec2 addIVec2(ivec2 a, ivec2 b) {
         ivec2 sum;
@@ -46,11 +47,11 @@ bool lvec2Eq(lvec2 a, lvec2 b) {
         return ((a.x == b.x) && (a.y == b.y));
 }
 
-int ivec2area(ivec2 v) {
+int32_t ivec2area(ivec2 v) {
         return v.x * v.y;
 }
 
-long lvec2area(lvec2 v) {
+int64_t lvec2area(lvec2 v) {
         return v.x * v.y;
 }
 
