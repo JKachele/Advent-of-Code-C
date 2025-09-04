@@ -34,6 +34,7 @@ typedef enum signalType {
 } signalType;
 
 typedef tll(uint16) tlluint16;
+typedef tll(int64) tllint64;
 
 union moduleState {
         bool on;
@@ -44,6 +45,7 @@ typedef struct module {
         moduleType type;
         tlluint16 outputs;
         union moduleState state;
+        int64 firstHighSignal;
 } module;
 
 typedef struct state {
@@ -72,6 +74,19 @@ uint16 FNV16(const char *key, uint32 h) {
                 h *= 16777619;
         }
         return (uint16)h;
+}
+
+int64 gcd(int64 a, int64 b) {
+        while (b != 0) {
+                int64 tmp = a;
+                a = b;
+                b = tmp % b;
+        }
+        return a;
+}
+
+int64 lcm(int64 a, int64 b) {
+        return a * b / gcd(a, b);
 }
 
 void evalBroadcaster(module *m, signalType sig, uint16 src, tllstate *que) {
@@ -120,7 +135,7 @@ void evalConjunction(module *m, signalType sig, uint16 src,
         }
 }
 
-ivec2 sendPulse(module modules[]) {
+ivec2 sendPulse(module modules[], int64 numPress) {
         const uint16 StartModule = FNV16("broadcaster", SEED);
 
         tllstate queue = tll_init();
@@ -131,9 +146,12 @@ ivec2 sendPulse(module modules[]) {
         while (tll_length(queue) > 0) {
                 state curS = tll_pop_front(queue);
                 module *curM = &modules[curS.dest];
+                module *srcM = &modules[curS.src];
 
                 if (curS.signal == HIGH) sigCount.x++;
                 if (curS.signal == LOW) sigCount.y++;
+                if (curS.signal == HIGH && srcM->firstHighSignal == 0)
+                        srcM->firstHighSignal = numPress;
 
                 switch (curM->type) {
                 case NONE:
@@ -167,6 +185,36 @@ void initConj(module modules[], tlluint16 moduleIDs) {
                                 mc->state.inOn.head->item++;
                 }
         }
+}
+
+tlluint16 getRXInputs(module modules[], tlluint16 moduleIDs) {
+        const uint16 rx = FNV16("rx", SEED);
+
+        uint16 rxInput = 0;
+        tll_foreach(moduleIDs, it) {
+                module m = modules[it->item];
+                bool found = false;
+                tll_foreach(m.outputs, it2) {
+                        if (it2->item == rx) {
+                                rxInput = it->item;
+                                found = true;
+                                break;
+                        }
+                }
+                if (found) break;
+        }
+
+        tlluint16 rxInputs = tll_init();
+        tll_foreach(moduleIDs, it) {
+                module m = modules[it->item];
+                tll_foreach(m.outputs, it2) {
+                        if (it2->item == rxInput) {
+                                tll_push_back(rxInputs, it->item);
+                                break;
+                        }
+                }
+        }
+        return rxInputs;
 }
 
 void part1(llist *ll) {
@@ -213,7 +261,7 @@ void part1(llist *ll) {
 
         ivec2 sigTotal = {0, 0};
         for (int i=0; i<1000; i++) {
-                ivec2 sigCount = sendPulse(modules);
+                ivec2 sigCount = sendPulse(modules, i);
                 // printf("%d, %d\n", sigCount.x, sigCount.y);
                 sigTotal = addIVec2(sigTotal, sigCount);
         }
@@ -225,13 +273,71 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
+        module modules[(uint32)UINT16_MAX+1] = {0};
+        tlluint16 moduleIDs = tll_init();
+
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[INPUT_BUFFER_SIZE];
                 strncpy(str, (char*)current->data, INPUT_BUFFER_SIZE);
+
+                moduleType mt = NONE;
+                uint16 moduleID;
+                if (str[0] == '%' || str[0] == '&') {
+                        mt = str[0]=='%' ? FLIP : CONJ;
+                        char *name = strtok(str + 1, " ");
+                        moduleID = FNV16(name, SEED);
+                        debugP("%s: %u\n", name, moduleID);
+                } else {
+                        char *name = strtok(str, " ");
+                        if (strcmp(name, "broadcaster") == 0)
+                                mt = BROAD;
+                        moduleID = FNV16(name, SEED);
+                        debugP("%s: %u\n", name, moduleID);
+                }
+                if (modules[moduleID].type != NONE)
+                        printf("COLLISION: %u\n", moduleID);
+                modules[moduleID].type = mt;
+                tll_push_back(moduleIDs, moduleID);
+
+                strtok(NULL, " ");
+                char *out = strtok(NULL, ", ");
+                while (out != NULL) {
+                        uint16 outID = FNV16(out, SEED);
+                        tll_push_back(modules[moduleID].outputs, outID);
+                        out = strtok(NULL, ", ");
+                }
+
                 current = current->next;
         }
-        printf("Part 2: \n");
+        debugP("\n");
+
+        initConj(modules, moduleIDs);
+        tlluint16 rxInputs = getRXInputs(modules, moduleIDs);
+        tllint64 firstHighSignals = tll_init();
+
+        int64 presses = 1;
+        while (true) {
+                sendPulse(modules, presses);
+                bool allSentHigh = true;
+                tll_foreach(rxInputs, it) {
+                        module m = modules[it->item];
+                        if (m.firstHighSignal == 0) {
+                                allSentHigh = false;
+                                break;
+                        }
+                }
+                if (allSentHigh) break;
+                presses++;
+        }
+
+        int64 allHighSignals = 1;
+        tll_foreach(rxInputs, it) {
+                module m = modules[it->item];
+                allHighSignals = lcm(allHighSignals, m.firstHighSignal);
+        }
+
+        printf("Part 2: %ld\n\n", allHighSignals);
 }
 
 int main(int argc, char *argv[]) {

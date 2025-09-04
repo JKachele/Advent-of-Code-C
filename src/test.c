@@ -11,17 +11,27 @@
 #include "util/util.h"
 #include "lib/tllist.h"
 
-struct test {
-        int a;
-        int b;
-};
+int64 gcd(int64 a, int64 b) {
+        while (b != 0) {
+                int64 tmp = a;
+                a = b;
+                b = tmp % b;
+        }
+        return a;
+}
+
+int64 lcm(int64 a, int64 b) {
+        return a * b / gcd(a, b);
+}
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        struct test a = {100, 200};
-        struct test b = a;
-        b.a = 300;
-        printf("%d, %d\n", a.a, b.a);
+        int64 nums[] = {12, 15, 75};
+        int64 ans = 1;
+        for (int i=0; i<3; i++) {
+                ans = lcm(ans, nums[i]);
+        }
+        printf("%ld\n", ans);
 }
 
