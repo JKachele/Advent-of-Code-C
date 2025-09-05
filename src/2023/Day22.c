@@ -32,10 +32,13 @@ typedef union brickCoord {
 typedef tll(brickCoord) tllbrickCoord;
 
 typedef tll(ivec3) tllivec3;
+typedef tll(int32) tllint32;
 
 typedef struct brick {
         int32 id;
         tllivec3 cubes;
+        tllint32 supporting;
+        bool onGround;
 } brick;
 
 typedef tll(brick) tllbrick;
@@ -63,41 +66,45 @@ void printBricks(tllbrickCoord bricks) {
         printf("\n");
 }
 
-void printStack(ivec3 s, int32 stack[][s.y][s.z]) {
+void printStack(ivec3 size, int32 stack[][size.y][size.x]) {
         if (!Debug) return;
+        int zStart = size.z < 21 ? size.z-1 : 20;
+
         printf("X:\n");
-        for (int z=s.z-1; z>=0; z--) {
-                for (int x=0; x<s.x; x++) {
+        for (int z=zStart; z>=0; z--) {
+                for (int x=0; x<size.x; x++) {
                         int id = -1;
-                        for (int y=0; y<s.y; y++) {
+                        for (int y=0; y<size.y; y++) {
                                 if (stack[z][y][x] != -1)
                                         id = stack[z][y][x];
                         }
                         if (id == -1)
-                                printf(". ");
+                                printf("  .  ");
                         else if (id == -2)
-                                printf("--");
+                                printf("-----");
                         else
-                                printf("%c ", id + 'A');
+                                // printf("%c ", id + 'A');
+                                printf("%04d ", id);
                 }
                 printf("\n");
         }
         printf("\n");
 
         printf("y:\n");
-        for (int z=s.z-1; z>=0; z--) {
-                for (int y=0; y<s.y; y++) {
+        for (int z=zStart; z>=0; z--) {
+                for (int y=0; y<size.y; y++) {
                         int id = -1;
-                        for (int x=0; x<s.x; x++) {
+                        for (int x=0; x<size.x; x++) {
                                 if (stack[z][y][x] != -1)
                                         id = stack[z][y][x];
                         }
                         if (id == -1)
-                                printf(". ");
+                                printf("  .  ");
                         else if (id == -2)
-                                printf("--");
+                                printf("-----");
                         else
-                                printf("%c ", id + 'A');
+                                // printf("%c ", id + 'A');
+                                printf("%04d ", id);
                 }
                 printf("\n");
         }
@@ -136,7 +143,7 @@ tllbrick expandBrick(tllbrickCoord brickCoords) {
         return bricks;
 }
 
-void populateStack(ivec3 size, int32 stack[][size.y][size.z], tllbrick bricks) {
+void populateStack(ivec3 size, int32 stack[][size.y][size.x], tllbrick bricks) {
         MAKE_LOOP(z, size.z, y, size.y, x, size.x) {
                 if (z == 0)
                         stack[z][y][x] = -2;
@@ -152,7 +159,7 @@ void populateStack(ivec3 size, int32 stack[][size.y][size.z], tllbrick bricks) {
         }
 }
 
-void dropBrick(ivec3 size, int32 stack[][size.y][size.z], brick brick) {
+void dropBrick(ivec3 size, int32 stack[][size.y][size.x], brick brick) {
         tll_foreach(brick.cubes, it) {
                 ivec3 *pos = &it->item;
                 stack[pos->z][pos->y][pos->x] = -1;
@@ -161,7 +168,7 @@ void dropBrick(ivec3 size, int32 stack[][size.y][size.z], brick brick) {
         }
 }
 
-bool fallStack(ivec3 size, int32 stack[][size.y][size.z], tllbrick bricks) {
+bool fallStack(ivec3 size, int32 stack[][size.y][size.x], tllbrick bricks) {
         bool dropped = false;
         tll_foreach(bricks, it) {
                 brick b = it->item;
@@ -180,54 +187,94 @@ bool fallStack(ivec3 size, int32 stack[][size.y][size.z], tllbrick bricks) {
         return dropped;
 }
 
-int32 numSupported(ivec3 size, int32 stack[][size.y][size.z], tllbrick bricks) {
-        bool good[tll_length(bricks)];
-        memset(good, 1, tll_length(bricks) * sizeof(bool));
+int32 numSupported(ivec3 size, int32 stack[][size.y][size.x], tllbrick bricks) {
+        int32 numBricks = tll_length(bricks);
+        bool good[numBricks];
+        memset(good, 1, numBricks * sizeof(bool));
         
         tll_foreach(bricks, it) {
-                brick b = it->item;
-                int32 idUnder = -1;
-                bool onlyOne = true;
-                tll_foreach(b.cubes, itt) {
+                brick *b = &it->item;
+                bool support[numBricks];
+                memset(support, 0, numBricks * sizeof(bool));
+                tll_foreach(b->cubes, itt) {
                         ivec3 pos = itt->item;
                         int32 under = stack[pos.z-1][pos.y][pos.x];
-                        if (under != -1 && under != b.id) {
-                                if (idUnder == -1 || idUnder == under) {
-                                        idUnder = under;
-                                        continue;
+                        if (under == -2) {
+                                b->onGround = true;
+                        } else if (under != -1 && under != b->id) {
+                                if (!support[under]) {
+                                        tll_push_back(b->supporting, under);
+                                        support[under] = true;
                                 }
-                                onlyOne = false;
-                                break;
                         }
                 }
-                if (onlyOne && idUnder != -1) {
-                        good[idUnder] = false;
+                if (tll_length(b->supporting) == 1) {
+                        good[tll_front(b->supporting)] = false;
                 }
         }
 
         int32 numSupported = 0;
-        for (u32 i=0; i<tll_length(bricks); i++) {
+        for (int i=0; i<numBricks; i++) {
                 if (good[i]) {
                         numSupported++;
                         debugP("%c\n", i + 'A');
                 }
         }
+        debugP("\n");
         return numSupported;
+}
+
+int32 chainReact(tllbrick bricks, int32 removeId) {
+        int32 numBricks = tll_length(bricks);
+        bool intact[numBricks];
+        memset(intact, 1, numBricks * sizeof(bool));
+        intact[removeId] = false;
+
+        bool bricksBroken;
+        do {
+                bricksBroken = false;
+                tll_foreach(bricks, it) {
+                        brick b = it->item;
+                        if (!intact[b.id])
+                                continue;
+                        // Cannot be broken if on ground
+                        if (b.onGround)
+                                continue;
+                        bool broken = true;
+                        tll_foreach(b.supporting, itt) {
+                                if (intact[itt->item]) {
+                                        broken = false;
+                                        break;
+                                }
+                        }
+                        if (broken) {
+                                intact[b.id] = false;
+                                bricksBroken = true;
+                        }
+                }
+        } while (bricksBroken);
+
+        int32 numBroken = -1; // -1 because don't count original removed brick
+        for (int i=0; i<numBricks; i++) {
+                if (!intact[i])
+                        numBroken++;
+        }
+        return numBroken;
 }
 
 void part1(struct input input) {
         ivec3 size = getSize(input.brickCoords);
         tllbrick bricks = expandBrick(input.brickCoords);
 
-        int32 stack[size.z][size.y][size.z];
+        int32 stack[size.z][size.y][size.x];
         populateStack(size, stack, bricks);
-        printStack(size, stack);
+        // printStack(size, stack);
 
         bool dropped = true;
         while (dropped == true) {
                 dropped = fallStack(size, stack, bricks);
         }
-        printStack(size, stack);
+        // printStack(size, stack);
 
         int32 supported = numSupported(size, stack, bricks);
 
@@ -235,7 +282,31 @@ void part1(struct input input) {
 }
 
 void part2(struct input input) {
-        printf("Part 2: \n");
+        ivec3 size = getSize(input.brickCoords);
+        tllbrick bricks = expandBrick(input.brickCoords);
+
+        int32 stack[size.z][size.y][size.z];
+        populateStack(size, stack, bricks);
+        // printStack(size, stack);
+
+        bool dropped = true;
+        while (dropped == true) {
+                dropped = fallStack(size, stack, bricks);
+        }
+        printStack(size, stack);
+
+        // Populate the list of supporting bricks for each brick
+        numSupported(size, stack, bricks);
+
+        int64 totalBroken = 0;
+        tll_foreach(bricks, it) {
+                brick b = it->item;
+                int32 numBroken = chainReact(bricks, b.id);
+                debugP("%d: %d\n", b.id, numBroken);
+                totalBroken += numBroken;
+        }
+
+        printf("Part 2: %ld\n", totalBroken);
 }
 
 struct input parseInput(llist *ll) {
