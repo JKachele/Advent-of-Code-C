@@ -15,8 +15,15 @@
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        printf("%d\n", (uint32)UINT16_MAX + 1);
-        printf("%d\n", 0x10000);
+        int arr[10] = {0};
 
+        int index = 20;
+        for (int i=0; i<10; i++) {
+                arr[i] = index++;
+        }
+
+        for (int i=0; i<10; i++) {
+                printf("%d\n", arr[i]);
+        }
 }
 
