@@ -40,8 +40,8 @@ typedef struct tile {
 
 typedef struct state {
         ivec2 pos;
-        ivec2 prev;
         int32 cost;
+        bool *seen; // 16 bit index 8 bits for x and y
 } state;
 
 typedef tll(state) tllstate;
@@ -93,56 +93,71 @@ void printMap(ivec2 size, tile map[size.y][size.x]) {
         printf("\n");
 }
 
-// Add a state to the queue, sorting from highest cost to lowest cost
-void addState(tllstate *queue, ivec2 pos, ivec2 prev, int32 cost) {
-        bool added = false;
-        tll_foreach(*queue, it) {
-                state *s = &it->item;
-                if (ivec2Eq(s->pos, pos)) {
-                        if (cost > s->cost) {
-                                s->cost = cost;
-                                s->prev = prev;
+void printMapPath(ivec2 size, tile map[][size.x], bool path[]) {
+        for (int y=0; y<size.y; y++) {
+                for (int x=0; x<size.x; x++) {
+                        int32 index = (y << 8) | x;
+                        if (path[index]) {
+                                printf("O");
+                        } else if (map[y][x].type == FOREST) {
+                                printf("#");
+                        } else if (map[y][x].type == PATH) {
+                                printf(".");
+                        } else {
+                                switch (map[y][x].dir) {
+                                case RIGHT:
+                                        printf(">");
+                                        break;
+                                case DOWN:
+                                        printf("v");
+                                        break;
+                                case LEFT:
+                                        printf("<");
+                                        break;
+                                case UP:
+                                        printf("^");
+                                        break;
+                                }
                         }
-                        added = true;
-                        break;
                 }
+                printf("\n");
         }
-        if (!added) {
-                state new = {pos, prev, cost};
-                tll_push_back(*queue, new);
-        }
+        printf("\n");
 }
 
-tllivec2 getNextPos(ivec2 size, tile map[][size.x], ivec2 pos, ivec2 prev) {
+// Add a state to the queue, sorting from highest cost to lowest cost
+tllivec2 getNextPos(ivec2 size, tile map[][size.x],
+                     ivec2 pos, bool seen[], bool slope) {
         ivec2 dirs[] = {{{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, -1}}};
         tllivec2 nextPoss = tll_init();
 
         tile curT = map[pos.y][pos.x];
 
-        if (curT.type == SLOPE) {
-                ivec2 next = addIVec2(pos, dirs[curT.dir]);
-                if (ivec2Eq(next, prev))
-                        return nextPoss;
-                tll_push_back(nextPoss, next);
+        if (slope && curT.type == SLOPE) {
+                ivec2 nextP = addIVec2(pos, dirs[curT.dir]);
+                int32 index = (nextP.y << 8) | nextP.x;
+                if (!seen[index])
+                        tll_push_back(nextPoss, nextP);
                 return nextPoss;
         }
 
         for (int i=0; i<4; i++) {
                 ivec2 nextP = addIVec2(pos, dirs[i]);
-                if (ivec2Eq(nextP, prev))
-                        continue;
                 tile nextT = map[nextP.y][nextP.x];
-                if (nextT.type != FOREST && !nextT.seen)
+                int32 index = (nextP.y << 8) | nextP.x;
+                if (nextT.type != FOREST && !seen[index])
                         tll_push_back(nextPoss, nextP);
         }
 
         return nextPoss;
 }
 
-int32 bfs(ivec2 size, tile map[size.y][size.x], ivec2 start, ivec2 end) {
+int32 bfs(ivec2 size, tile map[size.y][size.x],
+                ivec2 start, ivec2 end, bool slope) {
         ivec2 dirs[] = {{{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, -1}}};
         tllstate queue = tll_init();
-        state init = {start, start, 0};
+        state init = {start, 0, NULL};
+        init.seen = calloc(1 << 16, sizeof(bool));
         tll_push_back(queue, init);
 
         int32 longest = 0;
@@ -155,14 +170,25 @@ int32 bfs(ivec2 size, tile map[size.y][size.x], ivec2 start, ivec2 end) {
                         if (curS.cost > longest)
                                 longest = curS.cost;
                         // printf("Path found with cost %d\n", curS.cost);
+                        // printMapPath(size, map, curS.seen);
+                        free(curS.seen);
                         continue;
                 }
 
-                // map[curP.y][curP.x].seen = true;
-                tllivec2 nextPoss = getNextPos(size, map, curP, curS.prev);
+                tllivec2 nextPoss;
+                nextPoss = getNextPos(size, map, curP, curS.seen, slope);
                 tll_foreach(nextPoss, it) {
-                        addState(&queue, it->item, curP, curS.cost + 1);
+                        // addState(&queue, it->item, curP, curS.cost + 1);
+                        state new;
+                        new.pos = it->item;
+                        new.cost = curS.cost + 1;
+                        new.seen = calloc(1 << 16, sizeof(bool));
+                        memcpy(new.seen, curS.seen, 1 << 16);
+                        int32 index = (new.pos.y << 8) | new.pos.x;
+                        new.seen[index] = true;
+                        tll_push_front(queue, new);
                 }
+                free(curS.seen);
         }
 
         return longest;
@@ -173,13 +199,19 @@ void part1(struct input input) {
         tile (*map)[size.x] = (tile(*)[size.x])input.map;
         // printMap(size, map);
 
-        int32 longestPath = bfs(size, map, input.start, input.end);
+        int32 longestPath = bfs(size, map, input.start, input.end, true);
 
         printf("Part 1: %d\n\n", longestPath);
 }
 
 void part2(struct input input) {
-        printf("Part 2: \n");
+        ivec2 size = input.size;
+        tile (*map)[size.x] = (tile(*)[size.x])input.map;
+        // printMap(size, map);
+
+        int32 longestPath = bfs(size, map, input.start, input.end, false);
+
+        printf("Part 2: %d\n\n", longestPath);
 }
 
 struct input parseInput(llist *ll) {
