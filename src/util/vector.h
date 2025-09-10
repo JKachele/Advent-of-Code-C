@@ -90,6 +90,7 @@ ivec3 addIVec3(ivec3 a, ivec3 b);
 ivec3 ivec3Add(ivec3 a, ivec3 b);
 lvec3 addLVec3(lvec3 a, lvec3 b);
 lvec3 lvec3Add(lvec3 a, lvec3 b);
+lvec3 lvec3Sub(lvec3 a, lvec3 b);
 bool ivec2Eq(ivec2 a, ivec2 b);
 bool lvec2Eq(lvec2 a, lvec2 b);
 bool ivec3Eq(ivec3 a, ivec3 b);

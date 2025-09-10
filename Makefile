@@ -11,7 +11,9 @@ CFLAGS += -Wno-unused-parameter -Wno-unused-variable
 CFLAGS += -Wno-stringop-truncation
 LDFLAGS = -lm 
 
-SRC = $(FILE) $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
+SRC =  $(FILE)
+SRC += $(wildcard src/util/*.c)# $(wildcard src/util/*/*.c)
+ARC += $(wildcard src/lib/*.c)
 TEST = src/test.c $(wildcard src/util/*.c) $(wildcard src/lib/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = bin

@@ -23,19 +23,20 @@
 #define MIN 200000000000000
 #define MAX 400000000000000
 
-typedef struct line {
-        lvec2 start;
-        lvec2 end;
-} line;
+// Vector equation of a plane in the form of w.vec = c
+typedef struct plane {
+        lvec3 vec;
+        int64 c;
+} plane;
 
 typedef struct stone {
         lvec3 pos;
         lvec3 vel;
 } stone;
-typedef tll(stone) tllstone;
 
 struct input {
-        tllstone stones;
+        stone *stones;
+        int32 numStones;
 };
 
 static bool Debug = false;
@@ -53,12 +54,23 @@ void printStone(stone s) {
         printf("(%ld, %ld, %ld)\n", s.vel.x, s.vel.y, s.vel.z);
 }
 
-void printStones(tllstone stones) {
+void printStones(int32 numStones, stone *stones) {
         if (!Debug) return;
-        tll_foreach(stones, it) {
-                printStone(it->item);
-        }
+        for (int i=0; i<numStones; i++)
+                printStone(stones[i]);
         printf("\n");
+}
+
+lvec3 cross(lvec3 a, lvec3 b) {
+        lvec3 c;
+        c.x = (a.y * b.z) - (a.z * b.y);
+        c.y = (a.z * b.x) - (a.x * b.z);
+        c.z = (a.x * b.y) - (a.y * b.x);
+        return c;
+}
+
+int64 dot(lvec3 a, lvec3 b) {
+        return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
 bool intersect2d(stone a, stone b, int64 minVal, int64 maxVal) {
@@ -93,24 +105,93 @@ bool intersect2d(stone a, stone b, int64 minVal, int64 maxVal) {
         return true;
 }
 
-void part1(struct input input) {
-        tllstone stones = input.stones;
-        int numStones = tll_length(stones);
-        printStones(stones);
+bool linearIndependent(stone a, stone b) {
+        lvec3 c = cross(a.vel, b.vel);
+        return (c.x != 0) || (c.y != 0) || (c.z != 0);
+}
 
-        stone *stoneArr = calloc(numStones, sizeof(stone));
-        int i = 0;
-        tll_foreach(stones, it) {
-                stoneArr[i] = it->item;
-                i++;
+plane findPLane(stone a, stone b) {
+        lvec3 pos = lvec3Sub(a.pos, b.pos);
+        lvec3 vel = lvec3Sub(a.vel, b.vel);
+        lvec3 vCross = cross(a.vel, b.vel);
+        plane p;
+        p.vec = cross(pos, vel);
+        p.c = dot(pos, vCross);
+        return p;
+}
+
+stone getRock(int32 numStones, stone *stones) {
+        stone rock = {0};
+
+        // Get 3 linearly independent stones
+        stone s1 = stones[0];
+        stone s2;
+        stone s3;
+        int i;
+        for (i=1; i<numStones; i++) {
+                if (linearIndependent(s1, stones[i])) {
+                        s2 = stones[i];
+                        break;
+                }
         }
+        for (i+=1; i<numStones; i++) {
+                if (linearIndependent(s1, stones[i]) &&
+                                linearIndependent(s2, stones[i])) {
+                        s3 = stones[i];
+                        break;
+                }
+        }
+
+        // Find 3 planes of possible rock velocities
+        plane pa = findPLane(s1, s2);
+        plane pb = findPLane(s1, s3);
+        plane pc = findPLane(s2, s3);
+
+        return rock;
+}
+
+// Get 3 linearly independent stones
+void getLinearIndepStones(int32 numStones, stone *stones, stone *stoneOut) {
+        stone s1 = stones[0];
+        stone s2;
+        stone s3;
+        int i;
+        for (i=1; i<numStones; i++) {
+                if (linearIndependent(s1, stones[i])) {
+                        s2 = stones[i];
+                        break;
+                }
+        }
+        for (i+=1; i<numStones; i++) {
+                if (linearIndependent(s1, stones[i]) &&
+                                linearIndependent(s2, stones[i])) {
+                        s3 = stones[i];
+                        break;
+                }
+        }
+        stoneOut[0] = s1;
+        stoneOut[1] = s2;
+        stoneOut[2] = s3;
+}
+
+lvec3 getRockPos(int32 numStones, stone *stones) {
+        stone indepStones[3];
+        getLinearIndepStones(numStones, stones, indepStones);
+
+        return (lvec3){0};
+}
+
+void part1(struct input input) {
+        stone *stones = input.stones;
+        int32 numStones = input.numStones;
+        // printStones(numStones, stones);
 
         int64 minVal = Debug ? TEST_MIN : MIN;
         int64 maxVal = Debug ? TEST_MAX : MAX;
         int numIntersections = 0;
         for (int i=0; i<numStones; i++) {
                 for (int j=i+1; j<numStones; j++) {
-                        bool inter = intersect2d(stoneArr[i], stoneArr[j],
+                        bool inter = intersect2d(stones[i], stones[j],
                                         minVal, maxVal);
                         if (inter)
                                 numIntersections++;
@@ -120,33 +201,43 @@ void part1(struct input input) {
         printf("Part 1: %d\n\n", numIntersections);
 }
 
+// Using linear algebra method described by u/Quantris on reddit
 void part2(struct input input) {
+        stone *stones = input.stones;
+        int32 numStones = input.numStones;
+        printStones(numStones, stones);
+
+        lvec3 RockPos = getRockPos(numStones, stones);
+
         printf("Part 2: \n");
 }
 
 struct input parseInput(llist *ll) {
         struct input input = {0};
+        input.numStones = ll->length;
+        input.stones = calloc(input.numStones, sizeof(stone));
 
         llNode *current = ll->head;
+        int i = 0;
         while(current != NULL) {
                 char *str = (char*)current->data;
 
-                stone s = {0};
+                stone *s2 = &input.stones[i];
                 
                 char *tok = strtok(str, ", ");
                 for (int i=0; i<3; i++) {
-                        s.pos.raw[i] = strtol(tok, NULL, 10);
+                        s2->pos.raw[i] = strtol(tok, NULL, 10);
                         tok = strtok(NULL, ", ");
                 }
 
                 tok = strtok(NULL, ", ");
                 for (int i=0; i<3; i++) {
-                        s.vel.raw[i] = strtol(tok, NULL, 10);
+                        s2->vel.raw[i] = strtol(tok, NULL, 10);
                         tok = strtok(NULL, ", ");
                 }
 
-                tll_push_back(input.stones, s);
                 current = current->next;
+                i++;
         }
 
         return input;

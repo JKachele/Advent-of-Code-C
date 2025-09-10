@@ -69,6 +69,14 @@ lvec3 lvec3Add(lvec3 a, lvec3 b) {
         return sum;
 }
 
+lvec3 lvec3Sub(lvec3 a, lvec3 b) {
+        lvec3 diff;
+        diff.x = a.x - b.x;
+        diff.y = a.y - b.y;
+        diff.z = a.z - b.z;
+        return diff;
+}
+
 bool ivec2Eq(ivec2 a, ivec2 b) {
         return ((a.x == b.x) && (a.y == b.y));
 }
