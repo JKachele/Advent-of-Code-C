@@ -29,6 +29,28 @@ typedef struct plane {
         int64 c;
 } plane;
 
+typedef union lvec5 {
+        int64 raw[5];
+        struct {
+                int64 a;
+                int64 b;
+                int64 c;
+                int64 d;
+                int64 e;
+        };
+} lvec5;
+
+typedef union mat4x4 {
+        int64 raw[4][4];
+        lvec4 col[4];
+        struct {
+                int64 m00, m01, m02, m03;
+                int64 m10, m11, m12, m13;
+                int64 m20, m21, m22, m23;
+                int64 m30, m31, m32, m33;
+        };
+} mat4x4;
+
 typedef struct stone {
         lvec3 pos;
         lvec3 vel;
@@ -150,14 +172,44 @@ stone getRock(int32 numStones, stone *stones) {
         return rock;
 }
 
-// Get 3 linearly independent stones
+lvec4 vec5to4(lvec5 vec) {
+        return (lvec4){{vec.raw[0], vec.raw[1], vec.raw[2], vec.raw[3]}};
+}
+
+int64 det(mat4x4 mat) {
+        // a b c d
+        // e f g h
+        // i j k l
+        // m n o p
+        int64 a = mat.m00, b = mat.m01, c = mat.m02, d = mat.m03;
+        int64 e = mat.m10, f = mat.m11, g = mat.m12, h = mat.m13;
+        int64 i = mat.m20, j = mat.m21, k = mat.m22, l = mat.m23;
+        int64 m = mat.m30, n = mat.m31, o = mat.m32, p = mat.m33;
+
+        int64 det_kl = (k * p) - (l * o);
+        int64 det_jl = (j * p) - (l * n);
+        int64 det_jk = (j * o) - (k * n);
+        int64 det_il = (i * p) - (l * m);
+        int64 det_ik = (i * o) - (k * m);
+        int64 det_ij = (i * n) - (j * m);
+
+        int64 detA = (f * det_kl) - (g * det_jl) + (h * det_jk);
+        int64 detB = (e * det_kl) - (g * det_il) + (h * det_ik);
+        int64 detC = (e * det_jl) - (f * det_il) + (h * det_ij);
+        int64 detD = (e * det_jk) - (f * det_ik) + (g * det_ij);
+
+        return (a * detA) - (b * detB) + (c * detC) - (d * detD);
+}
+
+// Get 4 linearly independent stones
 void getLinearIndepStones(int32 numStones, stone *stones, stone *stoneOut) {
         stone s1 = stones[0];
         stone s2;
         stone s3;
+        stone s4;
         int i;
         for (i=1; i<numStones; i++) {
-                if (linearIndependent(s1, stones[i])) {
+                if (linearIndependent(stoneOut[0], stones[i])) {
                         s2 = stones[i];
                         break;
                 }
@@ -169,14 +221,87 @@ void getLinearIndepStones(int32 numStones, stone *stones, stone *stoneOut) {
                         break;
                 }
         }
+        for (i+=1; i<numStones; i++) {
+                if (linearIndependent(s1, stones[i]) &&
+                                linearIndependent(s2, stones[i]) &&
+                                linearIndependent(s3, stones[i])) {
+                        s4 = stones[i];
+                        break;
+                }
+        }
         stoneOut[0] = s1;
         stoneOut[1] = s2;
         stoneOut[2] = s3;
+        stoneOut[3] = s4;
+}
+
+// Get coefficients for the linear equation for the x/y pos and vel of the rock
+lvec5 getEqCoefs(stone a, stone b, bool xy) {
+        lvec5 eqCoefs;
+        if (xy) {
+                eqCoefs.a = b.vel.y - a.vel.y;
+                eqCoefs.b = a.vel.x - b.vel.x;
+                eqCoefs.c = b.pos.y - a.pos.y;
+                eqCoefs.d = b.pos.x - a.pos.x;
+                eqCoefs.e =  (a.pos.y * a.vel.x) - (b.pos.y * b.vel.x);
+                eqCoefs.e += (b.pos.x * b.vel.y) - (a.pos.x * a.vel.y);
+        } else {
+                eqCoefs.a = b.vel.z - a.vel.z;
+                eqCoefs.b = a.vel.x - b.vel.x;
+                eqCoefs.c = b.pos.z - a.pos.z;
+                eqCoefs.d = b.pos.x - a.pos.x;
+                eqCoefs.e =  (a.pos.z * a.vel.x) - (b.pos.z * b.vel.x);
+                eqCoefs.e += (b.pos.x * b.vel.z) - (a.pos.x * a.vel.z);
+        }
+        return eqCoefs;
+}
+
+lvec2 cramers(mat4x4 coefs, lvec4 consts) {
+        int64 coefDet = det(coefs);
+
+        mat4x4 xMat = coefs;
+        xMat.m00 = consts.x;
+        xMat.m10 = consts.y;
+        xMat.m20 = consts.z;
+        xMat.m30 = consts.w;
+        int64 xDet = det(xMat);
+
+        mat4x4 yMat = coefs;
+        yMat.m01 = consts.x;
+        yMat.m11 = consts.y;
+        yMat.m21 = consts.z;
+        yMat.m31 = consts.w;
+        int64 yDet = det(yMat);
+
+        printf("CoefDet: %ld, XDet %ld, YDet %ld\n", coefDet, xDet, yDet);
+
+        return (lvec2){0};
 }
 
 lvec3 getRockPos(int32 numStones, stone *stones) {
-        stone indepStones[3];
-        getLinearIndepStones(numStones, stones, indepStones);
+        stone indep[4];
+        getLinearIndepStones(numStones, stones, indep);
+
+        mat4x4 eqCoefs;
+        lvec4 consts;
+        for (int i=0; i<4; i++) {
+                // lvec5 coefs = getEqCoefs(indep[i], indep[(i+1)%4]);
+                lvec5 coefs = getEqCoefs(stones[i], stones[(i+1)%numStones], true);
+                eqCoefs.col[i] = vec5to4(coefs);
+                consts.raw[i] = coefs.e;
+        }
+
+        printf("\n");
+        for (int i=0; i<4; i++) {
+                printf("[ ");
+                for (int j=0; j<4; j++) {
+                        printf("%ld ", eqCoefs.raw[i][j]);
+                }
+                printf("] %ld\n", consts.raw[i]);
+        }
+        printf("\n");
+
+        lvec2 sol = cramers(eqCoefs, consts);
 
         return (lvec3){0};
 }
