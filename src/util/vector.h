@@ -82,6 +82,16 @@ typedef union vec3 {
         };
 } vec3;
 
+typedef union vec4 {
+        double raw[4];
+        struct {
+                double x;
+                double y;
+                double z;
+                double w;
+        };
+} vec4;
+
 ivec2 addIVec2(ivec2 a, ivec2 b);
 ivec2 ivec2Add(ivec2 a, ivec2 b);
 lvec2 addLVec2(lvec2 a, lvec2 b);
