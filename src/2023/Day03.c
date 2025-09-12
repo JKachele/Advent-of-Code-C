@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day3.c
+ *File----------Day03.c
  *Project-------{{PROJECT}}
  *Author--------Justin Kachele
  *Created-------Sunday Mar 24, 2024 18:55:44 EDT
@@ -234,9 +234,9 @@ int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                ll = getInputFile("assets/tests/2023/Day3.txt");
+                ll = getInputFile("assets/tests/2023/Day03.txt");
         } else {
-                ll = getInputFile("assets/inputs/2023/Day3.txt");
+                ll = getInputFile("assets/inputs/2023/Day03.txt");
         }
         // llist_print(ll, printInput);
         MAX_X = llist_get_longest_node(ll);

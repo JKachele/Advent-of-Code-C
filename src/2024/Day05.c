@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day5.c
+ *File----------Day05.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Wednesday Dec 11, 2024 16:53:29 EST
@@ -173,9 +173,9 @@ void part2(llist *ll) {
 int main(int argc, char *argv[]) {
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0)
-                ll = getInputFile("assets/tests/2024/Day5.txt");
+                ll = getInputFile("assets/tests/2024/Day05.txt");
         else
-                ll = getInputFile("assets/inputs/2024/Day5.txt");
+                ll = getInputFile("assets/inputs/2024/Day05.txt");
         // llist_print(ll, printInput);
 
         part1(ll);

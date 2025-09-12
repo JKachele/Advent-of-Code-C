@@ -1,8 +1,8 @@
 /*************************************************
- *File----------Day4.c
+ *File----------Day02.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
- *Created-------Wednesday Mar 19, 2025 16:49:04 EDT
+ *Created-------Wednesday Mar 19, 2025 11:28:11 EDT
  *License-------GNU GPL-3.0
  ************************************************/
 
@@ -14,65 +14,80 @@
 #include "../lib/tllist.h"
 #include "../util/util.h"
 
+// (A,X) = Rock, (B,Y) = Paper, (C,Z) = Scissors
+int8 roundScore(char oponent, char me) {
+        int8 score = 0;
+
+        // Rock = 0, Paper = 1, Scissors = 2
+        int8 oponentVal = oponent - 'A';
+        int8 myVal = me - 'X';
+
+        // Formula: 0 = tie, 1 = Win, 2 = Loss
+        int8 result = ((myVal - oponentVal) + 3) % 3;
+        if (result == 1)
+                score += 6;
+        else if (result == 0)
+                score += 3;
+
+        // Add shape selected
+        score += myVal + 1;
+
+        return score;
+}
+
+int8 roundScore2(char oponent, char me) {
+        int8 score = 0;
+
+        // Rock = 0, Paper = 1, Scissors = 2
+        // Outcome: -1 = loss, 0 = tie, 1 = win;
+        int8 oponentVal = oponent - 'A';
+        int8 outcome = me - 'Y';
+
+        score += (outcome + 1) * 3;
+
+        int8 myVal = ((oponentVal + outcome) + 3) % 3;
+        score += myVal + 1;
+
+        return score;
+}
+
 void part1(llist *ll) {
-        int total = 0;
+        int32 totalScore = 0;
 
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 
-                ivec2 area1;
-                ivec2 area2;
-
-                area1.x = strtol(strtok(str, "-"), (char**)NULL, 10);
-                area1.y = strtol(strtok(NULL, ","), (char**)NULL, 10);
-                area2.x = strtol(strtok(NULL, "-"), (char**)NULL, 10);
-                area2.y = strtol(strtok(NULL, ""), (char**)NULL, 10);
-
-                if (area1.x <= area2.x && area1.y >= area2.y)
-                        total++;
-                else if (area2.x <= area1.x && area2.y >= area1.y)
-                        total++;
+                totalScore += roundScore(str[0], str[2]);
 
                 current = current->next;
         }
-        printf("Part 1: Num pairs with full overlap: %d\n\n", total);
+        printf("Part 1: Total Score: %d\n\n", totalScore);
 }
 
 void part2(llist *ll) {
-        int total = 0;
+        int32 totalScore = 0;
 
         llNode *current = ll->head;
         while(current != NULL) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
 
-                ivec2 area1;
-                ivec2 area2;
-
-                area1.x = strtol(strtok(str, "-"), (char**)NULL, 10);
-                area1.y = strtol(strtok(NULL, ","), (char**)NULL, 10);
-                area2.x = strtol(strtok(NULL, "-"), (char**)NULL, 10);
-                area2.y = strtol(strtok(NULL, ""), (char**)NULL, 10);
-
-                if (area1.x <= area2.x && area1.y >= area2.x)
-                        total++;
-                else if (area2.x <= area1.x && area2.y >= area1.x)
-                        total++;
+                totalScore += roundScore2(str[0], str[2]);
 
                 current = current->next;
         }
-        printf("Part 2: Num pairs with any overlap: %d\n\n", total);
+        printf("Part 2: Total Score: %d\n\n", totalScore);
 }
 
 int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                ll = getInputFile("assets/tests/2022/Day4.txt");
+                ll = getInputFile("assets/tests/2022/Day02.txt");
         } else {
-                ll = getInputFile("assets/inputs/2022/Day4.txt");
+                ll = getInputFile("assets/inputs/2022/Day02.txt");
         }
         // llist_print(ll, printInput);
 

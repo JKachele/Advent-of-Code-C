@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day9.c
+ *File----------Day09.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Wednesday Apr 02, 2025 17:56:44 EDT
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
                 ll = getInputFile("assets/tests/2022/Day9b.txt");
                 Debug = true;
         } else {
-                ll = getInputFile("assets/inputs/2022/Day9.txt");
+                ll = getInputFile("assets/inputs/2022/Day09.txt");
         }
         // llist_print(ll, printInput);
 

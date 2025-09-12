@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day1.c
+ *File----------Day01.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Wednesday Feb 28, 2024 13:20:23 EST
@@ -153,9 +153,9 @@ int main(int argc, char *argv[]) {
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
-                ll = getInputFile("assets/tests/2023/Day1.txt");
+                ll = getInputFile("assets/tests/2023/Day01.txt");
         } else {
-                ll = getInputFile("assets/inputs/2023/Day1.txt");
+                ll = getInputFile("assets/inputs/2023/Day01.txt");
         }
         // llist_print(ll, printInput);
 

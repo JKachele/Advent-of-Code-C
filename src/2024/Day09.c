@@ -1,5 +1,5 @@
 /*************************************************
- *File----------Day9.c
+ *File----------Day09.c
  *Project-------Advent-of-Code-C
  *Author--------Justin Kachele
  *Created-------Monday Dec 23, 2024 16:07:17 EST
@@ -234,10 +234,10 @@ void part2(char *input) {
 int main(int argc, char *argv[]) {
         char *input;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0)
-                input = getInput("assets/tests/2024/Day9.txt");
+                input = getInput("assets/tests/2024/Day09.txt");
                 // char *input = "1313165";
         else
-                input = getInput("assets/inputs/2024/Day9.txt");
+                input = getInput("assets/inputs/2024/Day09.txt");
         // printf("%s\n", input);
 
         part1(input);
