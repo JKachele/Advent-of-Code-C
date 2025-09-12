@@ -8,12 +8,14 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef struct sensor {
         lvec2 pos;

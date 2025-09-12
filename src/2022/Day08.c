@@ -14,6 +14,7 @@
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef struct {
         int8 height;

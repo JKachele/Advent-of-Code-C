@@ -65,5 +65,5 @@ for i in $(seq $lines); do
         printf '\e[A\e[K'
 done
 
-printf "Running Advent of Code %d, Day %d...\n\n" $year $day
+printf "Running Advent of Code %d, Day %d...\n\n" $year ${day#0}
 make -f Makefile FILE=src/$year/Day$day.c -s $1

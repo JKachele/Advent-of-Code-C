@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -102,8 +103,8 @@ void makeEmptyValley(ivec2 size, cell valley[size.y][size.x]) {
 }
 
 ivec2 getMovedPos(ivec2 size, ivec2 pos, dir d, int32 time) {
-        const ivec2 dirs[4] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
-        ivec2 insize = {size.x - 2, size.y - 2}; // Size not including walls
+        const ivec2 dirs[4] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
+        ivec2 insize = {{size.x - 2, size.y - 2}}; // Size not including walls
         ivec2 new = {0};
 
         new.x = (pos.x + (dirs[d].x * time)) - 1;
@@ -125,8 +126,8 @@ void incrementValley(ivec2 size, cell valley[size.y][size.x], int32 time) {
                         if (!valley[y][x].covered) continue;
                         for (int i=0; i<4; i++) {
                                 if (!valley[y][x].dirs[i]) continue;
-                                ivec2 newPos = getMovedPos(size, (ivec2){x, y},
-                                                i, time);
+                                ivec2 newPos = getMovedPos(size,
+                                                (ivec2){{x, y}}, i, time);
                                 temp[newPos.y][newPos.x].covered = true;
                                 temp[newPos.y][newPos.x].dirs[i] = true;
                         }
@@ -172,7 +173,7 @@ void addToQueue(tllstate *queue, state s) {
 
 int findPath(ivec2 size, cell valley[size.y][size.x],
                 ivec2 start, ivec2 end, int32 timeStart) {
-        const ivec2 moves[5] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}, {0, 0}};
+        const ivec2 moves[5] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, 0}}};
         int32 maxTime = lcm(size.x - 2, size.y - 2);
         int32 maxStates = getMaxStates(size, maxTime);
         // printf("%d, %d\n", maxTime, maxStates);
@@ -205,7 +206,7 @@ int findPath(ivec2 size, cell valley[size.y][size.x],
                 for (int i=0; i<5; i++) {
                         state new;
                         new.time = cur.time + 1;
-                        new.pos = addIVec2(cur.pos, moves[i]);
+                        new.pos = ivec2Add(cur.pos, moves[i]);
                         if (new.pos.x >= size.x || new.pos.y >= size.y ||
                                         new.pos.x < 0 || new.pos.y < 0)
                                 continue;
@@ -247,9 +248,9 @@ void solve(llist *ll) {
                         switch (str[x]) {
                         case '.':
                                 if (yindex == 0)
-                                        start = (ivec2){x, yindex};
+                                        start = (ivec2){{x, yindex}};
                                 if (yindex == size.y - 1)
-                                        end = (ivec2){x, yindex};
+                                        end = (ivec2){{x, yindex}};
                                 break;
                         case '#':
                                 valley[yindex][x].wall = true;

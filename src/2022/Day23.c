@@ -8,12 +8,14 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define INPUT_BUFFER_SIZE 4096
 
@@ -29,7 +31,7 @@ typedef struct {
         int32 x2;
         int32 y1;
         int32 y2;
-} ivec4;
+} ivec2x2;
 
 typedef struct {
         ivec2 pos;
@@ -53,8 +55,8 @@ void printElvesPos(int32 numElves, elf *elves) {
         }
 }
 
-void printElves(int32 numElves, elf *elves, ivec4 dim) {
-        ivec2 size = {dim.x2 - dim.x1 + 1, dim.y2 - dim.y1 + 1};
+void printElves(int32 numElves, elf *elves, ivec2x2 dim) {
+        ivec2 size = {{dim.x2 - dim.x1 + 1, dim.y2 - dim.y1 + 1}};
         char grid[size.y][size.x];
         memset(grid, '.', sizeof(char) * (size.x * size.y));
 
@@ -122,7 +124,7 @@ int32 moveElves(int32 numElves, elf *elves) {
 }
 
 int32 stepElves(int32 numElves, elf *elves, int startingDir) {
-        const ivec2 dirs[4] = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+        const ivec2 dirs[4] = {{{0, -1}}, {{0, 1}}, {{-1, 0}}, {{1, 0}}};
 
         int32 numMoved = 0;
         for (int32 i=0; i<numElves; i++) {
@@ -170,8 +172,8 @@ int32 stepElves(int32 numElves, elf *elves, int startingDir) {
         return numMoved;
 }
 
-ivec4 getDimensions(int32 numElves, elf *elves) {
-        ivec4 dimensions = {0};
+ivec2x2 getDimensions(int32 numElves, elf *elves) {
+        ivec2x2 dimensions = {0};
         for (int32 i=0; i<numElves; i++) {
                 ivec2 pos = elves[i].pos;
                 if (pos.x < dimensions.x1) dimensions.x1 = pos.x;
@@ -208,14 +210,14 @@ void part1(llist *ll) {
                 current = current->next;
                 indexy++;
         }
-        // printElves(numElves, elves, (ivec4){-3, 10, -2, 9});
+        // printElves(numElves, elves, (ivec2x2){-3, 10, -2, 9});
 
 
         for (int i=0; i< 10; i++) {
                 stepElves(numElves, elves, i % 4);
-                // printElves(numElves, elves, (ivec4){-3, 10, -2, 9});
+                // printElves(numElves, elves, (ivec2x2){-3, 10, -2, 9});
         }
-        ivec4 dim = getDimensions(numElves, elves);
+        ivec2x2 dim = getDimensions(numElves, elves);
         int32 area = (dim.x2 - dim.x1 + 1) * (dim.y2 - dim.y1 + 1);
         int32 emptyTiles = area - numElves;
 
@@ -248,7 +250,7 @@ void part2(llist *ll) {
                 current = current->next;
                 indexy++;
         }
-        // printElves(numElves, elves, (ivec4){-3, 10, -2, 9});
+        // printElves(numElves, elves, (ivec2x2){-3, 10, -2, 9});
 
         int32 round = 0;
         while(true) {

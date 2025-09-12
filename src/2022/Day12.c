@@ -15,6 +15,7 @@
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef struct {
         int height;
@@ -24,7 +25,7 @@ typedef struct {
 
 typedef tll(ivec2) ivectll;
 
-static const ivec2 DIRS[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+static const ivec2 DIRS[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
 
 static bool Debug = false;
 void debugP(const char *format, ...) {

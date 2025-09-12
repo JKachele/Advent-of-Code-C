@@ -7,12 +7,14 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 void part1(llist *ll) {
         int total = 0;

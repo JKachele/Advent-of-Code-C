@@ -8,16 +8,25 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef tll(ivec2) ivec2tll;
 
-static const ivec2 dirs[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+static const ivec2 dirs[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
+
+typedef enum direction {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+} direction;
 
 static bool Debug = false;
 void debugP(const char *format, ...) {

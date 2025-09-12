@@ -8,29 +8,31 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef tll(ivec3) tllivec3;
 
 const ivec3 Offsets[6] = {
-        {
+        {{
                 0, 0, 1
-        },{
+        }},{{
                 0, 1, 0
-        },{
+        }},{{
                 1, 0, 0
-        },{
+        }},{{
                 0, 0, -1
-        },{
+        }},{{
                 0, -1, 0
-        },{
+        }},{{
                 -1, 0, 0
-        }
+        }}
 };
 
 struct cube {
@@ -60,7 +62,7 @@ int32 getSurfaceArea(ivec3 size, bool drops[size.z][size.y][size.x]) {
                 if (!drops[z][y][x]) continue;
                 // printf("(%d,%d,%d)\n", x, y, z);
                 for (int i=0; i<6; i++) {
-                        ivec3 newPos = addIVec3((ivec3){x, y, z}, Offsets[i]);
+                        ivec3 newPos = ivec3Add((ivec3){{x, y, z}}, Offsets[i]);
                         if (isValidPosition(size, newPos)) {
                                 if (!drops[newPos.z][newPos.y][newPos.x])
                                         surfaceArea++;
@@ -75,7 +77,7 @@ int32 getSurfaceArea(ivec3 size, bool drops[size.z][size.y][size.x]) {
 void fillSpace(ivec3 s, struct cube drops[s.z][s.y][s.x], ivec3 pos) {
         drops[pos.z][pos.y][pos.x].seen = true;
         for (int i=0; i<6; i++) {
-                ivec3 new = addIVec3(pos, Offsets[i]);
+                ivec3 new = ivec3Add(pos, Offsets[i]);
                 if (isValidPosition(s, new) &&
                                 !drops[new.z][new.y][new.x].seen &&
                                 !drops[new.z][new.y][new.x].lava) {
@@ -90,7 +92,7 @@ int32 getSeenSurfaceArea(ivec3 s, struct cube drops[s.z][s.y][s.x]) {
                 if (!drops[z][y][x].seen) continue;
                 // printf("(%d,%d,%d)\n", x, y, z);
                 for (int i=0; i<6; i++) {
-                        ivec3 newPos = addIVec3((ivec3){x, y, z}, Offsets[i]);
+                        ivec3 newPos = ivec3Add((ivec3){{x, y, z}}, Offsets[i]);
                         if (isValidPosition(s, newPos)) {
                                 if (drops[newPos.z][newPos.y][newPos.x].lava)
                                         surfaceArea++;
@@ -119,7 +121,7 @@ void part1(llist *ll) {
 
                 current = current->next;
         }
-        size = addIVec3(size, (ivec3){2, 2, 2});
+        size = ivec3Add(size, (ivec3){{2, 2, 2}});
         // printf("Size: (%d,%d,%d)\n", size.x, size.y, size.z);
         bool droplets[size.z][size.y][size.x];
         memset(droplets, 0, sizeof(droplets));
@@ -152,7 +154,7 @@ void part2(llist *ll) {
 
                 current = current->next;
         }
-        size = addIVec3(size, (ivec3){2, 2, 2});
+        size = ivec3Add(size, (ivec3){{2, 2, 2}});
         // printf("Size: (%d,%d,%d)\n", size.x, size.y, size.z);
         struct cube droplets[size.z][size.y][size.x];
         memset(droplets, 0, sizeof(droplets));
@@ -161,7 +163,7 @@ void part2(llist *ll) {
                 droplets[pos.z][pos.y][pos.x].lava = true;
         }
 
-        fillSpace(size, droplets, (ivec3){0, 0, 0});
+        fillSpace(size, droplets, (ivec3){{0, 0, 0}});
         // Count seen spaces
         int32 surfaceArea = getSeenSurfaceArea(size, droplets);
 

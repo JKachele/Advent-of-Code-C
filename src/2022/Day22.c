@@ -14,6 +14,7 @@
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define INPUT_BUFFER_SIZE 8192
 
@@ -65,47 +66,49 @@ typedef struct {
 
 const edge edgeMap[2][14] = {{
         // Real Input
-        {{1, 0}, UP, {0, 3}, RIGHT},
-        {{1, 0}, LEFT, {0, 2}, RIGHT},
+        {{{1, 0}}, UP, {{0, 3}}, RIGHT},
+        {{{1, 0}}, LEFT, {{0, 2}}, RIGHT},
 
-        {{2, 0}, UP, {0, 3}, UP},
-        {{2, 0}, RIGHT, {1, 2}, LEFT},
-        {{2, 0}, DOWN, {1, 1}, LEFT},
+        {{{2, 0}}, UP, {{0, 3}}, UP},
+        {{{2, 0}}, RIGHT, {{1, 2}}, LEFT},
+        {{{2, 0}}, DOWN, {{1, 1}}, LEFT},
 
-        {{1, 1}, RIGHT, {2, 0}, UP},
-        {{1, 1}, LEFT, {0, 2}, DOWN},
+        {{{1, 1}}, RIGHT, {{2, 0}}, UP},
+        {{{1, 1}}, LEFT, {{0, 2}}, DOWN},
 
-        {{0, 2}, UP, {1, 1}, RIGHT},
-        {{0, 2}, LEFT, {1, 0}, RIGHT},
+        {{{0, 2}}, UP, {{1, 1}}, RIGHT},
+        {{{0, 2}}, LEFT, {{1, 0}}, RIGHT},
 
-        {{1, 2}, RIGHT, {2, 0}, LEFT},
-        {{1, 2}, DOWN, {0, 3}, LEFT},
+        {{{1, 2}}, RIGHT, {{2, 0}}, LEFT},
+        {{{1, 2}}, DOWN, {{0, 3}}, LEFT},
 
-        {{0, 3}, RIGHT, {1, 2}, UP},
-        {{0, 3}, DOWN, {2, 0}, DOWN},
-        {{0, 3}, LEFT, {1, 0}, DOWN},
+        {{{0, 3}}, RIGHT, {{1, 2}}, UP},
+        {{{0, 3}}, DOWN, {{2, 0}}, DOWN},
+        {{{0, 3}}, LEFT, {{1, 0}}, DOWN},
 },{
         // Test Input
-        {{2, 0}, UP, {0, 1}, DOWN},
-        {{2, 0}, RIGHT, {3, 2}, LEFT},
-        {{2, 0}, LEFT, {1, 1}, DOWN},
+        {{{2, 0}}, UP, {{0, 1}}, DOWN},
+        {{{2, 0}}, RIGHT, {{3, 2}}, LEFT},
+        {{{2, 0}}, LEFT, {{1, 1}}, DOWN},
 
-        {{0, 1}, UP, {2, 0}, DOWN},
-        {{0, 1}, LEFT, {3, 2}, UP},
-        {{0, 1}, DOWN, {2, 2}, UP},
+        {{{0, 1}}, UP, {{2, 0}}, DOWN},
+        {{{0, 1}}, LEFT, {{3, 2}}, UP},
+        {{{0, 1}}, DOWN, {{2, 2}}, UP},
 
-        {{1, 1}, UP, {2, 0}, RIGHT},
-        {{1, 1}, DOWN, {2, 2}, RIGHT},
+        {{{1, 1}}, UP, {{2, 0}}, RIGHT},
+        {{{1, 1}}, DOWN, {{2, 2}}, RIGHT},
 
-        {{2, 1}, RIGHT, {3, 2}, DOWN},
+        {{{2, 1}}, RIGHT, {{3, 2}}, DOWN},
 
-        {{2, 2}, LEFT, {1, 1}, UP},
-        {{2, 2}, DOWN, {0, 1}, UP},
+        {{{2, 2}}, LEFT, {{1, 1}}, UP},
+        {{{2, 2}}, DOWN, {{0, 1}}, UP},
 
-        {{3, 2}, UP, {2, 1}, LEFT},
-        {{3, 2}, RIGHT, {2, 0}, LEFT},
-        {{3, 2}, DOWN, {0, 1}, RIGHT},
+        {{{3, 2}}, UP, {{2, 1}}, LEFT},
+        {{{3, 2}}, RIGHT, {{2, 0}}, LEFT},
+        {{{3, 2}}, DOWN, {{0, 1}}, RIGHT},
 }};
+
+static const ivec2 DIRS[4] = {{{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, -1}}};
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -166,18 +169,17 @@ void printMoves(tllmove moves) {
 }
 
 void analyzeCell(ivec2 dim, boardCell board[dim.y][dim.x], int x, int y) {
-        const ivec2 dirs[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
         if (board[y][x].type == EMPTY) return;
 
         for (int i=0; i<4; i++) {
-                position new = {x + dirs[i].x, y + dirs[i].y, NONE};
+                position new = {x + DIRS[i].x, y + DIRS[i].y, NONE};
                 if (board[new.y][new.x].type != EMPTY) {
                         board[y][x].nextCells[i] = new;
                         continue;
                 }
                 // If next cell is empty, travel in the
                 // opposite direction until an empty cell
-                ivec2 opp = dirs[(i+2)%4];
+                ivec2 opp = DIRS[(i+2)%4];
                 position cur = {x, y, NONE};
                 while(board[cur.y+opp.y][cur.x+opp.x].type != EMPTY) {
                         cur.x += opp.x;
@@ -239,7 +241,6 @@ void parseMoves(tllmove *moves, char *input) {
 
 position walkPath(ivec2 dim, boardCell board[dim.y][dim.x],
                 tllmove moves, ivec2 start) {
-        const ivec2 dirs[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
         position cur = {start.x, start.y, RIGHT};
         board[start.y][start.x].lastDir = cur.dir;
 
@@ -293,7 +294,7 @@ exit:
 
 ivec2 getFullPos(position old, position newSide) {
         int32 sideIndex = 0; // Side index is index clockwise from corner
-        ivec2 adjPos = {(old.x - 1) % CubeSize, (old.y - 1) % CubeSize};
+        ivec2 adjPos = {{(old.x - 1) % CubeSize, (old.y - 1) % CubeSize}};
         switch (old.dir) {
         case UP:
                 sideIndex = adjPos.x;
@@ -358,11 +359,10 @@ position getNextPos(int x, int y, facing dir) {
 }
 
 void analyzeCellCube(ivec2 dim, boardCell board[dim.y][dim.x], int x, int y) {
-        const ivec2 dirs[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
         if (board[y][x].type == EMPTY) return;
 
         for (int i=0; i<4; i++) {
-                position new = {x + dirs[i].x, y + dirs[i].y, NONE};
+                position new = {x + DIRS[i].x, y + DIRS[i].y, NONE};
                 if (board[new.y][new.x].type != EMPTY) {
                         board[y][x].nextCells[i] = new;
                         continue;
@@ -390,7 +390,7 @@ void analyzeBoardCube(ivec2 dim, boardCell board[dim.y][dim.x]) {
 }
 
 void part1(llist *ll) {
-        ivec2 mapDim = {0, 0};
+        ivec2 mapDim = {0};
 
         // Get x dimension of map
         llNode *current = ll->head;
@@ -409,7 +409,7 @@ void part1(llist *ll) {
 
         boardCell board[mapDim.y][mapDim.x];
         memset(board, 0, (mapDim.x * mapDim.y) * sizeof(boardCell));
-        ivec2 startPos = {0, 0};
+        ivec2 startPos = {0};
         
         // Populate board
         current = ll->head;
@@ -428,12 +428,12 @@ void part1(llist *ll) {
                         case '.':
                                 board[index][i].type = OPEN;
                                 if (startPos.x == 0 && startPos.y == 0)
-                                        startPos = (ivec2){i, index};
+                                        startPos = (ivec2){{i, index}};
                                 break;
                         case '#':
                                 board[index][i].type = WALL;
                                 if (startPos.x == 0 && startPos.y == 0)
-                                        startPos = (ivec2){i, index};
+                                        startPos = (ivec2){{i, index}};
                                 break;
                         default:
                                 printf("Unknown character at (%d, %d): %c\n",
@@ -460,7 +460,7 @@ void part1(llist *ll) {
 
 // TODO: General Solution
 void part2(llist *ll) {
-        ivec2 mapDim = {0, 0};
+        ivec2 mapDim = {0};
 
         // Get x dimension of map
         llNode *current = ll->head;
@@ -479,7 +479,7 @@ void part2(llist *ll) {
 
         boardCell board[mapDim.y][mapDim.x];
         memset(board, 0, (mapDim.x * mapDim.y) * sizeof(boardCell));
-        ivec2 startPos = {0, 0};
+        ivec2 startPos = {0};
         
         // Populate board
         current = ll->head;
@@ -498,12 +498,12 @@ void part2(llist *ll) {
                         case '.':
                                 board[index][i].type = OPEN;
                                 if (startPos.x == 0 && startPos.y == 0)
-                                        startPos = (ivec2){i, index};
+                                        startPos = (ivec2){{i, index}};
                                 break;
                         case '#':
                                 board[index][i].type = WALL;
                                 if (startPos.x == 0 && startPos.y == 0)
-                                        startPos = (ivec2){i, index};
+                                        startPos = (ivec2){{i, index}};
                                 break;
                         default:
                                 printf("Unknown character at (%d, %d): %c\n",

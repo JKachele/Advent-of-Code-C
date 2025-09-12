@@ -8,11 +8,13 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define Width 7
 #define Total 2022
@@ -65,50 +67,50 @@ struct rock {
 const struct rock Rocks[NumRocks] = {
         {   // H Line
                 4,
-                {4, 1},
+                {{4, 1}},
                 {
-                        {0, 0},
-                        {1, 0},
-                        {2, 0},
-                        {3, 0}
+                        {{0, 0}},
+                        {{1, 0}},
+                        {{2, 0}},
+                        {{3, 0}}
                 }
         },{ // Plus
                 5,
-                {3, 3},
+                {{3, 3}},
                 {
-                        {0, 1},
-                        {1, 0},
-                        {1, 1},
-                        {1, 2},
-                        {2, 1}
+                        {{0, 1}},
+                        {{1, 0}},
+                        {{1, 1}},
+                        {{1, 2}},
+                        {{2, 1}}
                 }
         },{ // J or backwards L
                 5,
-                {3, 3},
+                {{3, 3}},
                 {
-                        {0, 0},
-                        {1, 0},
-                        {2, 0},
-                        {2, 1},
-                        {2, 2}
+                        {{0, 0}},
+                        {{1, 0}},
+                        {{2, 0}},
+                        {{2, 1}},
+                        {{2, 2}}
                 }
         },{ // V Line
                 4,
-                {1, 4},
+                {{1, 4}},
                 {
-                        {0, 0},
-                        {0, 1},
-                        {0, 2},
-                        {0, 3}
+                        {{0, 0}},
+                        {{0, 1}},
+                        {{0, 2}},
+                        {{0, 3}}
                 }
         },{ // Square
                 4,
-                {2, 2},
+                {{2, 2}},
                 {
-                        {0, 0},
-                        {1, 0},
-                        {0, 1},
-                        {1, 1}
+                        {{0, 0}},
+                        {{1, 0}},
+                        {{0, 1}},
+                        {{1, 1}}
                 }
         }
 };
@@ -280,7 +282,7 @@ void setChamber(struct state *state) {
         state->top = tll_length(state->chamber) - 1;
 
         // So print function doesnt print this
-        state->pos = (lvec2){-7, -7};
+        state->pos = (lvec2){{-7, -7}};
 }
 
 void addSeen(struct state *state, int64 target) {
@@ -310,7 +312,7 @@ int64 rockStack(int32 numJets, dir jets[], int64 target) {
         state.numRocks = 0;
         while (state.numRocks < target) {
                 // Place new rock at x=2, y=top+4
-                state.pos = (lvec2){2, state.top + 4};
+                state.pos = (lvec2){{2, state.top + 4}};
                 moveRock(&state, jets, false);
                 setChamber(&state);
                 addSeen(&state, target);
