@@ -47,7 +47,7 @@ void printMem(llist *map) {
 char *getInput(char *fileName) {
         FILE *inputFile = fopen(fileName, "r");     // Open file in read mode
         char *line = malloc(BUFFER_SIZE);
-        ssize_t read;
+        size_t read;
 
         if (inputFile == NULL) {    // If file dosent exist, exit
                 exit(EXIT_FAILURE);
@@ -66,7 +66,7 @@ void part1(char *input) {
         int diskmap[strlen(str)];
 
         int memorySize = 0;
-        for (int i = 0; i < strlen(str); i++) {
+        for (int i = 0; i < (int)strlen(str); i++) {
                 int block = str[i] - '0';
                 memorySize += block;
                 diskmap[i] = block;
@@ -80,7 +80,7 @@ void part1(char *input) {
 
         // Populate memory
         int location = 0;
-        for (int i = 0; i < strlen(str); i++) {
+        for (int i = 0; i < (int)strlen(str); i++) {
                 if (i % 2 != 0) {
                         location += diskmap[i];
                         continue;

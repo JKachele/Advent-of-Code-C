@@ -12,6 +12,7 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef struct {
         bool up;
@@ -55,65 +56,65 @@ ivec2 incrementMap(char map[MAX_Y][MAX_X], ivec2 pos) {
         ivec2 newPos;
         switch (map[pos.y][pos.x]) {
         case '^':
-                newPos = (ivec2){pos.x, pos.y - 1};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x, pos.y - 1}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '^';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '>';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case '>':
-                newPos = (ivec2){pos.x + 1, pos.y};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x + 1, pos.y}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '>';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = 'V';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case 'V':
-                newPos = (ivec2){pos.x, pos.y + 1};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x, pos.y + 1}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = 'V';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '<';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case '<':
-                newPos = (ivec2){pos.x - 1, pos.y};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x - 1, pos.y}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         map[newPos.y][newPos.x] = '<';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '^';
                         return incrementMap(map, pos);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         default:
                 fprintf(stderr, "Error Invalid Position Char \'%c",
                                 map[pos.y][pos.x]);
-                return (ivec2){-1, -1};
+                return (ivec2){{-1, -1}};
         }
 }
 
@@ -159,77 +160,77 @@ ivec2 incrementRecordMap(char map[MAX_Y][MAX_X], ivec2 pos,
         ivec2 newPos;
         switch (map[pos.y][pos.x]) {
         case '^':
-                newPos = (ivec2){pos.x, pos.y - 1};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x, pos.y - 1}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 0) == 1) {
-                                return (ivec2){-2, -2};
+                                return (ivec2){{-2, -2}};
                         }
                         map[newPos.y][newPos.x] = '^';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '>';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case '>':
-                newPos = (ivec2){pos.x + 1, pos.y};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x + 1, pos.y}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 1) == 1) {
-                                return (ivec2){-2, -2};
+                                return (ivec2){{-2, -2}};
                         }
                         map[newPos.y][newPos.x] = '>';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = 'V';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case 'V':
-                newPos = (ivec2){pos.x, pos.y + 1};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x, pos.y + 1}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 2) == 1) {
-                                return (ivec2){-2, -2};
+                                return (ivec2){{-2, -2}};
                         }
                         map[newPos.y][newPos.x] = 'V';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '<';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         case '<':
-                newPos = (ivec2){pos.x - 1, pos.y};
-                valid = validPos(map, (ivec2){newPos.x, newPos.y});
+                newPos = (ivec2){{pos.x - 1, pos.y}};
+                valid = validPos(map, (ivec2){{newPos.x, newPos.y}});
                 if (valid == 0) {
                         map[pos.y][pos.x] = 'X';
                         if (addCell(cells, newPos, 3) == 1) {
-                                return (ivec2){-2, -2};
+                                return (ivec2){{-2, -2}};
                         }
                         map[newPos.y][newPos.x] = '<';
-                        return (ivec2){newPos.x, newPos.y};
+                        return (ivec2){{newPos.x, newPos.y}};
                 } else if (valid == 1) {
                         map[pos.y][pos.x] = '^';
                         return incrementRecordMap(map, pos, cells);
                 } else {
                         map[pos.y][pos.x] = 'X';
-                        return (ivec2){-1, -1};
+                        return (ivec2){{-1, -1}};
                 }
         default:
                 fprintf(stderr, "Error Invalid Position Char \'%c",
                                 map[pos.y][pos.x]);
-                return (ivec2){-1, -1};
+                return (ivec2){{-1, -1}};
         }
 }
 
@@ -237,7 +238,7 @@ void part1(llist *ll) {
         llNode *current = ll->head;
         MAX_Y = ll->length;
         MAX_X = strlen((char*)current->data);
-        ivec2 curPos = {0, 0};
+        ivec2 curPos = {0};
 
         char map[MAX_Y][MAX_X];
         int curLine = 0;
@@ -249,7 +250,7 @@ void part1(llist *ll) {
                 // Look for janator position
                 for (int i = 0; i < MAX_X; i++) {
                         if (map[curLine][i] == '^')
-                                curPos = (ivec2){i, curLine};
+                                curPos = (ivec2){{i, curLine}};
                 }
 
                 current = current->next;
@@ -280,7 +281,7 @@ void part2(llist *ll) {
         llNode *current = ll->head;
         MAX_Y = ll->length;
         MAX_X = strlen((char*)current->data);
-        ivec2 curPos = {0, 0};
+        ivec2 curPos = {0};
 
         char map[MAX_Y][MAX_X];
         int curLine = 0;
@@ -292,7 +293,7 @@ void part2(llist *ll) {
                 // Look for janator position
                 for (int i = 0; i < MAX_X; i++) {
                         if (map[curLine][i] == '^')
-                                curPos = (ivec2){i, curLine};
+                                curPos = (ivec2){{i, curLine}};
                 }
 
                 current = current->next;
@@ -312,7 +313,7 @@ void part2(llist *ll) {
         for (int y = 0; y < MAX_Y; y++) {
                 for (int x = 0; x < MAX_X; x++) {
                         if (map[y][x] == 'X') {
-                                visited[numVisited] = (ivec2){x, y};
+                                visited[numVisited] = (ivec2){{x, y}};
                                 numVisited++;
                         }
                 }

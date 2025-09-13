@@ -6,7 +6,9 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "../util/linkedlist.h"
 #include "../util/util.h"

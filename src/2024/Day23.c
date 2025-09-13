@@ -13,6 +13,7 @@
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/quicksort.h"
 
 #define MAX_VERT_ID 2525
 #define COMP 't'
@@ -131,7 +132,7 @@ tllint16 tllCopy(tllint16 arr) {
         return arr2;
 }
 
-void tllToArr(tllint16 ll, int16 arr[]) {
+void tllToArr(tllint16 ll, int32 arr[]) {
         int i = 0;
         tll_foreach(ll, it) {
                 arr[i] = it->item;
@@ -139,42 +140,9 @@ void tllToArr(tllint16 ll, int16 arr[]) {
         }
 }
 
-void swap(int16 *a, int16 *b) {
-        int16 temp = *a;
-        *a = *b;
-        *b = temp;
-}
-
-void quicksort(int16 arr[], int low, int high) {
-        if (low >= high) return;
-
-        int pivot = arr[low];
-        int i = low;
-        int j = high;
-        while (i < j) {
-                // Find first element greater than the pivot
-                while (arr[i] <= pivot && i <= high - 1)
-                        i++;
-
-                // Find last element smaller than pivot
-                while (arr[j] > pivot && j >= low + 1)
-                        j--;
-
-                // Swap if needed
-                if (i < j)
-                        swap(&arr[i], &arr[j]);
-        }
-        // Put pivot in the middle
-        swap(&arr[low], &arr[j]);
-
-        // Recursive call for left and right sides
-        quicksort(arr, low, j - 1);
-        quicksort(arr, j + 1, high);
-}
-
 tllint16 sortClique(tllint16 clique) {
         int32 len = tll_length(clique);
-        int16 arr[len];
+        int32 arr[len];
         tllToArr(clique, arr);
 
         quicksort(arr, 0, len - 1);
@@ -241,7 +209,7 @@ void bkAlg(tllclique *cliques, tllint16 nodes[],
 
 }
 
-void getClique3s(tllclique3 *clique3s, int16 clique[], int len) {
+void getClique3s(tllclique3 *clique3s, int32 clique[], int len) {
         for (int i = 0; i < len - 2; i++) {
                 for (int j = i + 1; j < len - 1; j++) {
                         for (int k = j + 1; k < len; k++) {
@@ -335,7 +303,7 @@ uint32 findNumCliques(link links[], int16 numLinks) {
                 if (len < 3)
                         continue;
 
-                int16 clique[len];
+                int32 clique[len];
                 tllToArr(it->item, clique);
                 getClique3s(&clique3s, clique, len);
         }

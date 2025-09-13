@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
                 ll = getInputFile("assets/tests/2024/Day04.txt");
         else
                 ll = getInputFile("assets/inputs/2024/Day04.txt");
-        llist_print(ll, printInput);
+        // llist_print(ll, printInput);
 
         part1(ll);
         part2(ll);

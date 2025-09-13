@@ -7,11 +7,13 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define EPSILON 0.00001
 

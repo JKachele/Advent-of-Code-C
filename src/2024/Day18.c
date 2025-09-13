@@ -8,12 +8,14 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 typedef tll(ivec2) ivectll;
 
@@ -66,10 +68,10 @@ ivec2 lowestDist(cell grid[gridSize][gridSize], ivectll *cells) {
 }
 
 int dijkstra(cell grid[gridSize][gridSize]) {
-        ivec2 dirs[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+        ivec2 dirs[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
 
         ivectll openCells = tll_init();
-        ivec2 start = {0, 0};
+        ivec2 start = {0};
         tll_push_back(openCells, start);
 
         while (tll_length(openCells) > 0) {
@@ -122,7 +124,7 @@ void part1(llist *ll) {
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
                 int x = strtol(strtok(str, ","), (char**)NULL, 10);
                 int y = strtol(strtok(NULL, ""), (char**)NULL, 10);
-                ivec2 pos = {x, y};
+                ivec2 pos = {{x, y}};
                 tll_push_back(bytes, pos);
                 current = current->next;
         }
@@ -164,7 +166,7 @@ void part2(llist *ll) {
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
                 int x = strtol(strtok(str, ","), (char**)NULL, 10);
                 int y = strtol(strtok(NULL, ""), (char**)NULL, 10);
-                ivec2 pos = {x, y};
+                ivec2 pos = {{x, y}};
                 tll_push_back(bytes, pos);
                 current = current->next;
         }
@@ -181,7 +183,7 @@ void part2(llist *ll) {
 
         // Drop the 1024 bytes onto the grid
         int count = 0;
-        ivec2 byte = {0, 0};
+        ivec2 byte = {0};
         tll_foreach(bytes, it) {
                 ivec2 pos = it->item;
                 mem[pos.y][pos.x].status = 0;

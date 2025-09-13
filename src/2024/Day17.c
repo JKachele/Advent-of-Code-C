@@ -8,10 +8,10 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
-// #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
@@ -122,7 +122,7 @@ tllint runProgram(uint64_t reg[3], tllint program) {
 }
 
 uint64_t findRegA(tllint prog, int progIndex, uint64_t start) {
-        if (progIndex == tll_length(prog))
+        if (progIndex == (int)tll_length(prog))
                 return start;
 
         int goal = tllintAtIndex(prog, progIndex);
@@ -130,9 +130,9 @@ uint64_t findRegA(tllint prog, int progIndex, uint64_t start) {
                 uint64_t aReg = start + (i << 7);
                 uint64_t reg[] = {aReg, 0, 0};
                 tllint out = runProgram(reg, prog);
-                uint64_t ret = -1;
+                int64_t ret = -1;
                 if (tll_front(out) == goal &&
-                                !(progIndex == tll_length(prog) - 1 &&
+                                !(progIndex == (int)tll_length(prog) - 1 &&
                                 tll_length(out) != 1)) {
                         ret = findRegA(prog, progIndex + 1, aReg >> 3);
                 }
@@ -201,7 +201,7 @@ void part2(llist *ll) {
         for (uint64_t i = 0; i < (1 << 10); i++) {
                 uint64_t reg[] = {i, 0, 0};
                 tllint out = runProgram(reg, program);
-                uint64_t ret = -1;
+                int64_t ret = -1;
                 if (tll_front(out) == tll_front(program)) {
                         ret = findRegA(program, 1, i >> 3);
                 }

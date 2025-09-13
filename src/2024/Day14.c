@@ -8,11 +8,12 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-// #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define SIZE_X 101
 #define SIZE_Y 103

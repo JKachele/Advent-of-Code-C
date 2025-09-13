@@ -7,11 +7,13 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 int MAX_X = 0;
 int MAX_Y = 0;
@@ -53,24 +55,24 @@ int getNode(ivec2 a, ivec2 b, ivec2 *nodeA, ivec2 *nodeB) {
         int diffX = b.x - a.x;
         int diffY = b.y - a.y;
 
-        *nodeA = (ivec2){a.x - diffX, a.y - diffY};
-        *nodeB = (ivec2){b.x + diffX, b.y + diffY};
+        *nodeA = (ivec2){{a.x - diffX, a.y - diffY}};
+        *nodeB = (ivec2){{b.x + diffX, b.y + diffY}};
 
         if (nodeA->x < 0 || nodeA->x >= MAX_X
                         || nodeA->y < 0 || nodeA->y >= MAX_Y) {
-                *nodeA = (ivec2){-1, -1};
+                *nodeA = (ivec2){{-1, -1}};
         }
         if (nodeB->x < 0 || nodeB->x >= MAX_X
                         || nodeB->y < 0 || nodeB->y >= MAX_Y) {
-                *nodeB = (ivec2){-1, -1};
+                *nodeB = (ivec2){{-1, -1}};
         }
 
         return 0;
 }
 
 int getFreqNodes(cell grid[MAX_Y][MAX_X], llist *antennas) {
-        ivec2 nodeA = {-1, -1};
-        ivec2 nodeB = {-1, -1};
+        ivec2 nodeA = {{-1, -1}};
+        ivec2 nodeB = {{-1, -1}};
         for (int i = 0; i < antennas->length; i++) {
                 llNode *llNodeA = llist_get_node(antennas, i);
                 antenna *antennaA = (antenna*)(llNodeA->data);
@@ -92,7 +94,7 @@ int getFreqNodes(cell grid[MAX_Y][MAX_X], llist *antennas) {
 }
 
 int getNodes2(cell grid[MAX_Y][MAX_X], ivec2 a, ivec2 b) {
-        ivec2 slope = {b.x - a.x, b.y - a.y};
+        ivec2 slope = {{b.x - a.x, b.y - a.y}};
 
         // Verify no nodes between antennas
         int slopeGCD = gcd(slope.x, slope.y);
@@ -161,13 +163,13 @@ void part1(llist *ll) {
                         if (str[x] == '.')
                                 continue;
 
-                        if (freqsPresent[str[x]] == 0)
+                        if (freqsPresent[(int)str[x]] == 0)
                                 numFreqs++;
-                        freqsPresent[str[x]] = true;
+                        freqsPresent[(int)str[x]] = true;
 
                         antenna *curAntenna = malloc(sizeof(antenna));
                         curAntenna->freq = str[x];
-                        curAntenna->location = (ivec2){x, lineNum};
+                        curAntenna->location = (ivec2){{x, lineNum}};
                         llist_add(antennas, curAntenna);
                 }
                 current = current->next;
@@ -236,13 +238,13 @@ void part2(llist *ll) {
                         if (str[x] == '.')
                                 continue;
 
-                        if (!freqsPresent[str[x]])
+                        if (freqsPresent[(int)str[x]] == 0)
                                 numFreqs++;
-                        freqsPresent[str[x]] = true;
+                        freqsPresent[(int)str[x]] = true;
 
                         antenna *curAntenna = malloc(sizeof(antenna));
                         curAntenna->freq = str[x];
-                        curAntenna->location = (ivec2){x, lineNum};
+                        curAntenna->location = (ivec2){{x, lineNum}};
                         llist_add(antennas, curAntenna);
                 }
                 current = current->next;

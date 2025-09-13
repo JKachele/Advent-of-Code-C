@@ -61,7 +61,7 @@ int adjacent2(struct data *d, int x, int y,
                 plant field[d->y][d->x], bool adjacent[4]) {
         // Straight line
         if ((adjacent[0] && adjacent[2]) ||
-                        adjacent[1] && adjacent[3]) {
+                        (adjacent[1] && adjacent[3])) {
                 return 0;
         }
 

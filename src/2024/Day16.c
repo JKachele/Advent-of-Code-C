@@ -13,10 +13,18 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 #include "../lib/tllist.h"
 
 #define STRAIGHT 1
 #define TURN 101
+
+typedef enum direction {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+} direction;
 
 typedef struct {
         int sizeX;
@@ -106,7 +114,7 @@ int isOpenCell(data d, cell grid[d.sizeY][d.sizeX], ivec2 cell) {
 
 long dijkstra(data d, cell grid[d.sizeY][d.sizeX],
                 entry start, entry end, bool backtrack) {
-        ivec2 dirs[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+        ivec2 dirs[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
 
         entryTll openCells = tll_init();
 
@@ -143,8 +151,8 @@ long dijkstra(data d, cell grid[d.sizeY][d.sizeX],
                 }
 
                 // Set next cell
-                ivec2 nextPos = {curEntry.x + dirs[dir].x,
-                                 curEntry.y + dirs[dir].y};
+                ivec2 nextPos = {{curEntry.x + dirs[dir].x,
+                                 curEntry.y + dirs[dir].y}};
                 if (isOpenCell(d, grid, nextPos)) {
                         cell *next = &grid[nextPos.y][nextPos.x];
                         if (next->dist[dir] > dist + 1) {

@@ -8,6 +8,7 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
@@ -15,8 +16,16 @@
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 #define RANGE 20
+
+typedef enum direction {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+} direction;
 
 typedef tll(ivec2) ivectll;
 
@@ -81,7 +90,7 @@ ivec2 lowestDist(data d, cell grid[d.y][d.x], ivectll *cells) {
 }
 
 int dijkstra(data d, cell grid[d.y][d.x]) {
-        ivec2 dirs[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+        ivec2 dirs[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
 
         ivectll openCells = tll_init();
         tll_push_back(openCells, d.end);
@@ -116,11 +125,11 @@ int dijkstra(data d, cell grid[d.y][d.x]) {
 }
 
 int timeSaved(data d, cell maze[d.y][d.x], ivec2 pos, direction dir) {
-        ivec2 dirs[4] = {{0,-1},{1,0},{0,1},{-1,0}};
+        ivec2 dirs[4] = {{{0,-1}},{{1,0}},{{0,1}},{{-1,0}}};
         // valid cheat: crosses a wall, ends on open space,
         // Landing cell is at least 3 cells closer to end
-        ivec2 jmp1 = addIVec2(pos, dirs[dir]);
-        ivec2 land = addIVec2(jmp1, dirs[dir]);
+        ivec2 jmp1 = ivec2Add(pos, dirs[dir]);
+        ivec2 land = ivec2Add(jmp1, dirs[dir]);
         if (!isValid(d, jmp1) || !isValid(d, land))
                 return -1;
 
@@ -165,7 +174,7 @@ int getCellsInRange(data d, ivec2 pos, cheatll *inRange) {
         int numInRange = 0;
         for (int y = 0; y < d.y; y++) {
                 for (int x = 0; x < d.x; x++) {
-                        ivec2 test = {x, y};
+                        ivec2 test = {{x, y}};
                         int mDist = manhattanDist(pos, test);
                         cheat testC = {x, y, mDist};
                         if (mDist <= RANGE) {

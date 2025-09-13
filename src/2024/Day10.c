@@ -12,6 +12,7 @@
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../util/util.h"
+#include "../util/vector.h"
 
 int SIZE_X = 0;
 int SIZE_Y = 0;
@@ -109,7 +110,7 @@ int findTrails(node map[SIZE_Y][SIZE_X], ivec2 pos) {
 
         int trailCount = 0;
         int next = map[pos.y][pos.x].elev + 1;
-        ivec2 nextpos = {-1, -1};
+        ivec2 nextpos = {{-1, -1}};
 
         if (getNextPos(pos, &nextpos, UP) == 0
                         && map[nextpos.y][nextpos.x].elev == next)
@@ -133,7 +134,7 @@ int findTrails2(node map[SIZE_Y][SIZE_X], ivec2 pos) {
 
         int trailCount = 0;
         int next = map[pos.y][pos.x].elev + 1;
-        ivec2 nextpos = {-1, -1};
+        ivec2 nextpos = {{-1, -1}};
 
         if (getNextPos(pos, &nextpos, UP) == 0
                         && map[nextpos.y][nextpos.x].elev == next)
@@ -173,7 +174,7 @@ void part1(llist *ll) {
         for (int y = 0; y < SIZE_Y; y++) {
                 for (int x = 0; x < SIZE_X; x++) {
                         if (map[y][x].elev == 0) {
-                                int trails = findTrails(map, (ivec2){x, y});
+                                int trails = findTrails(map, (ivec2){{x, y}});
                                 totalTrails += trails;
                                 // printf("(%d, %d): %d\n", x, y, trails);
                                 resetMap(map);
@@ -207,7 +208,7 @@ void part2(llist *ll) {
         for (int y = 0; y < SIZE_Y; y++) {
                 for (int x = 0; x < SIZE_X; x++) {
                         if (map[y][x].elev == 0) {
-                                int trails = findTrails2(map, (ivec2){x, y});
+                                int trails = findTrails2(map, (ivec2){{x, y}});
                                 totalTrails += trails;
                                 // printf("(%d, %d): %d\n", x, y, trails);
                                 resetMap(map);
