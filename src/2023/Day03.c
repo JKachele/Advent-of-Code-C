@@ -73,7 +73,7 @@ void part1(llist *ll) {
         for(int y = 0; current != NULL; y++) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
-                for (int x = 0; x < strlen(str); x++) {
+                for (int x = 0; x < (int)strlen(str); x++) {
                         schematic[y][x] = str[x];
                 }
                 current = current->next;
@@ -142,7 +142,7 @@ void part2(llist *ll) {
         for(int y = 0; current != NULL; y++) {
                 char str[BUFFER_SIZE];
                 strncpy(str, (char*)current->data, BUFFER_SIZE);
-                for (int x = 0; x < strlen(str); x++) {
+                for (int x = 0; x < (int)strlen(str); x++) {
                         schematic[y][x] = str[x];
                 }
                 current = current->next;

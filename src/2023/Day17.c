@@ -100,7 +100,7 @@ void addCrucible(tllcrucible *queue, crucible c) {
 }
 
 tllcrucible findNext(ivec2 size, uint8 grid[size.y][size.x], crucible cur) {
-        ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
         tllcrucible nextCrucibles = tll_init();
 
         for (int i=0; i<4; i++) {
@@ -114,7 +114,7 @@ tllcrucible findNext(ivec2 size, uint8 grid[size.y][size.x], crucible cur) {
 
                 // Create next crucible
                 crucible next;
-                next.pos = addIVec2(cur.pos, dirs[i]);
+                next.pos = ivec2Add(cur.pos, dirs[i]);
                 // Cannot move out of bounds
                 if (!validPos(size, next.pos))
                         continue;
@@ -132,7 +132,7 @@ tllcrucible findNext(ivec2 size, uint8 grid[size.y][size.x], crucible cur) {
 }
 
 tllcrucible findNextUltra(ivec2 size, uint8 grid[][size.x], crucible cur) {
-        ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
         tllcrucible nextCrucibles = tll_init();
 
         for (int i=0; i<4; i++) {
@@ -150,7 +150,7 @@ tllcrucible findNextUltra(ivec2 size, uint8 grid[][size.x], crucible cur) {
 
                 // Create next crucible
                 crucible next;
-                next.pos = addIVec2(cur.pos, dirs[i]);
+                next.pos = ivec2Add(cur.pos, dirs[i]);
                 // Cannot move out of bounds
                 if (!validPos(size, next.pos))
                         continue;
@@ -168,13 +168,13 @@ tllcrucible findNextUltra(ivec2 size, uint8 grid[][size.x], crucible cur) {
 }
 
 uint32 dijkstra(ivec2 size, uint8 grid[size.y][size.x], bool ultra) {
-        const ivec2 Goal = {size.x-1, size.y-1};
+        const ivec2 Goal = {{size.x-1, size.y-1}};
 
         tllcrucible queue = tll_init();
         bool *seen = calloc((int64)UINT32_MAX + 1, sizeof(bool));
 
-        crucible initRight = {grid[0][1], {1, 0}, 1, RIGHT};
-        crucible initDown = {grid[1][0], {0, 1}, 1, DOWN};
+        crucible initRight = {grid[0][1], {{1, 0}}, 1, RIGHT};
+        crucible initDown = {grid[1][0], {{0, 1}}, 1, DOWN};
         addCrucible(&queue, initRight);
         addCrucible(&queue, initDown);
 
@@ -212,7 +212,7 @@ uint32 dijkstra(ivec2 size, uint8 grid[size.y][size.x], bool ultra) {
 }
 
 void part1(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         uint8 grid[size.y][size.x];
 
         llNode *current = ll->head;
@@ -235,7 +235,7 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         uint8 grid[size.y][size.x];
 
         llNode *current = ll->head;

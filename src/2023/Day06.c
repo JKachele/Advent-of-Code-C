@@ -7,6 +7,7 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -32,7 +33,7 @@ void part1(llist *ll) {
         bool colonFound = false;
         bool numFound = false;
         int numraces = 0;
-        for (int i = 0; i < strlen(timeStr); i++) {
+        for (int i = 0; i < (int)strlen(timeStr); i++) {
                 char c = timeStr[i];
                 if (!colonFound && c == ':') {
                         colonFound = true;

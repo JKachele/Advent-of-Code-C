@@ -138,7 +138,7 @@ int64 calcWeight(ivec2 size, char platform[size.y][size.x]) {
 }
 
 void part1(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         char platform[size.y][size.x];
 
         llNode *current = ll->head;
@@ -161,7 +161,7 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         char platform[size.y+1][size.x]; // +1 to add null terminator for FNV
         platform[size.y][0] = '\0'; // null terminator for FNV
 

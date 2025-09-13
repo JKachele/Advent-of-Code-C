@@ -87,7 +87,7 @@ bool validPos(ivec2 size, ivec2 pos) {
 }
 
 int64 walkField(ivec2 size, plot field[][size.x], ivec2 start, int64 numSteps) {
-        const ivec2 dirs[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        const ivec2 dirs[4] = {{{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, -1}}};
         tllstep queue = tll_init();
         step initStep = {start, 0};
         tll_push_back(queue, initStep);
@@ -98,7 +98,7 @@ int64 walkField(ivec2 size, plot field[][size.x], ivec2 start, int64 numSteps) {
                         continue;
 
                 for (int i=0; i<4; i++) {
-                        ivec2 newPos = addIVec2(curS.pos, dirs[i]);
+                        ivec2 newPos = ivec2Add(curS.pos, dirs[i]);
                         if (!validPos(size, newPos)) continue;
                         plot *newPlot = &field[newPos.y][newPos.x];
                         if (newPlot->open && !newPlot->steps[curS.num+1]) {
@@ -144,7 +144,7 @@ ivec2 getAdjPos(ivec2 size, ivec2 pos) {
 }
 
 tllivec2 stepField(ivec2 size, plot field[][size.x], ivec2 start, tllivec2 steps) {
-        const ivec2 dirs[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        const ivec2 dirs[4] = {{{1, 0}}, {{0, 1}}, {{-1, 0}}, {{0, -1}}};
 
         bool *seen = calloc(UINT32_MAX, sizeof(bool));
         tllivec2 nextSteps = tll_init();
@@ -152,7 +152,7 @@ tllivec2 stepField(ivec2 size, plot field[][size.x], ivec2 start, tllivec2 steps
                 ivec2 pos = it->item;
 
                 for (int i=0; i<4; i++) {
-                        ivec2 newPos = addIVec2(pos, dirs[i]);
+                        ivec2 newPos = ivec2Add(pos, dirs[i]);
                         ivec2 adjPos = getAdjPos(size, newPos);
                         uint32 seenIndex = getSeenIndex(newPos);
                         plot p = field[adjPos.y][adjPos.x];
@@ -243,7 +243,7 @@ void part2(struct input input) {
 }
 
 struct input parseInput(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         plot **fieldPtr = calloc(size.y*size.x, sizeof(plot));
         plot (*field)[size.x] = (plot(*)[size.x])fieldPtr;
         ivec2 start = {0};
@@ -259,7 +259,7 @@ struct input parseInput(llist *ll) {
                                 field[yIndex][x].open = true;
                         } else if (str[x] == 'S') {
                                 field[yIndex][x].open = true;
-                                start = (ivec2){x, yIndex};
+                                start = (ivec2){{x, yIndex}};
                         }
                 }
 

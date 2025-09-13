@@ -160,7 +160,7 @@ tllivec2 getNextPos(ivec2 size, tile map[][size.x], ivec2 pos, ivec2 prev) {
         tile curT = map[pos.y][pos.x];
 
         if (curT.type == SLOPE) {
-                ivec2 next = addIVec2(pos, dirs[curT.dir]);
+                ivec2 next = ivec2Add(pos, dirs[curT.dir]);
                 if (ivec2Eq(next, prev))
                         return nextPoss;
                 tll_push_back(nextPoss, next);
@@ -168,7 +168,7 @@ tllivec2 getNextPos(ivec2 size, tile map[][size.x], ivec2 pos, ivec2 prev) {
         }
 
         for (int i=0; i<4; i++) {
-                ivec2 nextP = addIVec2(pos, dirs[i]);
+                ivec2 nextP = ivec2Add(pos, dirs[i]);
                 if (ivec2Eq(nextP, prev))
                         continue;
                 tile nextT = map[nextP.y][nextP.x];

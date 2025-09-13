@@ -41,7 +41,7 @@ typedef struct {
         int32 x2;
         int32 y1;
         int32 y2;
-} ivec4;
+} ivec2x2;
 
 static bool Debug = false;
 void debugP(const char *format, ...) {
@@ -52,15 +52,15 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
-void printPath(tllivec2 path, ivec4 bounds) {
+void printPath(tllivec2 path, ivec2x2 bounds) {
         if (!Debug) return;
-        ivec2 offset = {-bounds.x1, -bounds.y1};
-        ivec2 size = {bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1};
+        ivec2 offset = {{-bounds.x1, -bounds.y1}};
+        ivec2 size = {{bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1}};
         bool ground[size.y][size.x];
         memset(ground, 0, size.y * size.x * sizeof(bool));
 
         tll_foreach(path, it) {
-                ivec2 pos = addIVec2(offset, it->item);
+                ivec2 pos = ivec2Add(offset, it->item);
                 ground[pos.y][pos.x] = true;
         }
 
@@ -87,23 +87,23 @@ char dirtoc(direction dir) {
 }
 
 tllivec2 digPlan(tllplan plan) {
-        const ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        const ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
         tllivec2 path = tll_init();
 
-        ivec2 cur = {0, 0};
+        ivec2 cur = {0};
         tll_push_back(path, cur);
         tll_foreach(plan, it) {
                 planstep step = it->item;
                 for (int i=0; i<step.length; i++) {
-                        cur = addIVec2(cur, dirs[step.dir]);
+                        cur = ivec2Add(cur, dirs[step.dir]);
                         tll_push_back(path, cur);
                 }
         }
         return path;
 }
 
-ivec4 getDigBounds(tllivec2 path) {
-        ivec4 bounds = {INT32_MAX, INT32_MIN, INT32_MAX, INT32_MIN};
+ivec2x2 getDigBounds(tllivec2 path) {
+        ivec2x2 bounds = {INT32_MAX, INT32_MIN, INT32_MAX, INT32_MIN};
 
         tll_foreach(path, it) {
                 ivec2 pos = it->item;
@@ -116,16 +116,16 @@ ivec4 getDigBounds(tllivec2 path) {
         return bounds;
 }
 
-int32 fillPath(tllivec2 path, ivec4 bounds) {
-        const ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+int32 fillPath(tllivec2 path, ivec2x2 bounds) {
+        const ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
 
         // Create grid
-        ivec2 offset = {-bounds.x1, -bounds.y1};
-        ivec2 size = {bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1};
+        ivec2 offset = {{-bounds.x1, -bounds.y1}};
+        ivec2 size = {{bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1}};
         bool ground[size.y][size.x];
         memset(ground, 0, size.y * size.x * sizeof(bool));
         tll_foreach(path, it) {
-                ivec2 pos = addIVec2(offset, it->item);
+                ivec2 pos = ivec2Add(offset, it->item);
                 ground[pos.y][pos.x] = true;
         }
 
@@ -133,7 +133,7 @@ int32 fillPath(tllivec2 path, ivec4 bounds) {
         ivec2 insideStart = {0};
         for (int y=0; y<size.y; y++) {
                 if (ground[y][0] && !ground[y][1]) {
-                        insideStart = (ivec2){1, y};
+                        insideStart = (ivec2){{1, y}};
                         break;
                 }
         }
@@ -150,7 +150,7 @@ int32 fillPath(tllivec2 path, ivec4 bounds) {
                 // printf("Dug at (%d, %d)\n", cur.x, cur.y);
 
                 for (int i=0; i<4; i++) {
-                        ivec2 next = addIVec2(cur, dirs[i]);
+                        ivec2 next = ivec2Add(cur, dirs[i]);
                         if (!ground[next.y][next.x]) {
                                 ground[next.y][next.x] = true;
                                 tll_push_back(queue, next);
@@ -170,8 +170,8 @@ int32 fillPath(tllivec2 path, ivec4 bounds) {
 }
 
 int64 getVertices(tllplan plan, lvec2 vertices[]) {
-        const ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
-        lvec2 cur = {0, 0};
+        const ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
+        lvec2 cur = {0};
         int32 index = 0;
         int64 points = 0;
         tll_foreach(plan, it) {
@@ -239,8 +239,8 @@ void part1(llist *ll) {
                 current = current->next;
         }
         tllivec2 path = digPlan(plan);
-        ivec4 bounds = getDigBounds(path);
-        ivec2 size = {bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1};
+        ivec2x2 bounds = getDigBounds(path);
+        ivec2 size = {{bounds.x2 - bounds.x1 + 1, bounds.y2 - bounds.y1 + 1}};
         // printf("Size: %dx%d\n", size.x, size.y);
         printPath(path, bounds);
         int32 area = fillPath(path, bounds);

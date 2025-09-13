@@ -7,6 +7,7 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -82,7 +83,7 @@ void quicksortRecursion(hand *arr[], int low, int high) {
         quicksortRecursion(arr, pivotIndex+1, high);
 }
 
-void quicksort(hand *arr[], int length) {
+void quicksortHand(hand *arr[], int length) {
         quicksortRecursion(arr, 0, length-1);
 }
 
@@ -223,7 +224,7 @@ void part1(llist *ll) {
                 nodeNum++;
         }
 
-        quicksort(hands, ll->length);
+        quicksortHand(hands, ll->length);
         // printHands(hands, ll->length);
 
         long totalWinnings = 0;
@@ -250,7 +251,7 @@ void part2(llist *ll) {
                 nodeNum++;
         }
 
-        quicksort(hands, ll->length);
+        quicksortHand(hands, ll->length);
         // printHands(hands, ll->length);
 
         long totalWinnings = 0;

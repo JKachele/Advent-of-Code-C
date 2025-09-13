@@ -247,7 +247,7 @@ uint64 addAccept(ivec2 ranges[]) {
 
 ivec2 adjustRange(ivec2 range, int32 limit, bool greater, bool leftover) {
         if (range.x > limit || range.y < limit)
-                return (ivec2){-1, -1};
+                return (ivec2){{-1, -1}};
 
         ivec2 newRange = range;
         if (greater) {
@@ -274,7 +274,7 @@ uint64 maxPartsAccepted(tllrule rules[]) {
         tllstate queue = tll_init();
         state initState;
         initState.rule = StartWF;
-        for (int i=0; i<4; i++) initState.ranges[i] = (ivec2){1, 4000};
+        for (int i=0; i<4; i++) initState.ranges[i] = (ivec2){{1, 4000}};
         tll_push_back(queue, initState);
 
         while (tll_length(queue) > 0) {

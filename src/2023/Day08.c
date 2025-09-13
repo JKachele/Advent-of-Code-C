@@ -7,6 +7,7 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -124,7 +125,7 @@ void part1(llist *ll) {
                         index = atlas[index]->right;
                 }
                 dirIndex++;
-                if (dirIndex == strlen(dirs)) {
+                if (dirIndex == (int)strlen(dirs)) {
                         dirIndex = 0;
                 }
                 steps++;

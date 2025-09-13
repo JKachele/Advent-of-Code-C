@@ -123,19 +123,19 @@ light reflect(ivec2 pos, direction dir, bool right) {
         switch (dir) {
         case UP:
                 new.dir = RIGHT;
-                new.pos = (ivec2){pos.x+1, pos.y};
+                new.pos = (ivec2){{pos.x+1, pos.y}};
                 break;
         case RIGHT:
                 new.dir = UP;
-                new.pos = (ivec2){pos.x, pos.y-1};
+                new.pos = (ivec2){{pos.x, pos.y-1}};
                 break;
         case DOWN:
                 new.dir = LEFT;
-                new.pos = (ivec2){pos.x-1, pos.y};
+                new.pos = (ivec2){{pos.x-1, pos.y}};
                 break;
         case LEFT:
                 new.dir = DOWN;
-                new.pos = (ivec2){pos.x, pos.y+1};
+                new.pos = (ivec2){{pos.x, pos.y+1}};
                 break;
         }
 
@@ -145,11 +145,11 @@ light reflect(ivec2 pos, direction dir, bool right) {
 lightPair splitV(ivec2 pos) {
         light a;
         a.dir = UP;
-        a.pos = (ivec2){pos.x, pos.y-1};
+        a.pos = (ivec2){{pos.x, pos.y-1}};
 
         light b;
         b.dir = DOWN;
-        b.pos = (ivec2){pos.x, pos.y+1};
+        b.pos = (ivec2){{pos.x, pos.y+1}};
 
         return (lightPair){a, b};
 }
@@ -157,17 +157,17 @@ lightPair splitV(ivec2 pos) {
 lightPair splitH(ivec2 pos) {
         light a;
         a.dir = RIGHT;
-        a.pos = (ivec2){pos.x+1, pos.y};
+        a.pos = (ivec2){{pos.x+1, pos.y}};
 
         light b;
         b.dir = LEFT;
-        b.pos = (ivec2){pos.x-1, pos.y};
+        b.pos = (ivec2){{pos.x-1, pos.y}};
 
         return (lightPair){a, b};
 }
 
 void traceLight(ivec2 size, tile grid[][size.x], ivec2 initP, direction initD) {
-        ivec2 dirs[] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        ivec2 dirs[] = {{{0, -1}}, {{1, 0}}, {{0, 1}}, {{-1, 0}}};
         tlllight queue = tll_init();
 
         light initLight = {initP, initD};
@@ -189,7 +189,7 @@ void traceLight(ivec2 size, tile grid[][size.x], ivec2 initP, direction initD) {
                         }
                         curTile->energized = true;
                         curTile->seen[cur.dir%2] = true;
-                        nextPos = addIVec2(nextPos, dirs[cur.dir]);
+                        nextPos = ivec2Add(nextPos, dirs[cur.dir]);
                 }
 
                 // If seen before in the same dir, move to next light
@@ -253,7 +253,7 @@ void resetGrid(ivec2 size, tile grid[size.y][size.x]) {
 }
 
 void part1(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         tile grid[size.y][size.x];
         memset(grid, 0, size.y * size.x * sizeof(tile));
 
@@ -289,7 +289,7 @@ void part1(llist *ll) {
         }
         // printGrid(size, grid);
 
-        traceLight(size, grid, (ivec2){0, 0}, RIGHT);
+        traceLight(size, grid, (ivec2){0}, RIGHT);
         // printEnergized(size, grid);
 
         int32 energized = numEnergized(size, grid);
@@ -298,7 +298,7 @@ void part1(llist *ll) {
 }
 
 void part2(llist *ll) {
-        ivec2 size = {getLongestLine(ll), ll->length};
+        ivec2 size = {{getLongestLine(ll), ll->length}};
         tile grid[size.y][size.x];
         memset(grid, 0, size.y * size.x * sizeof(tile));
 
@@ -336,14 +336,14 @@ void part2(llist *ll) {
 
         int32 maxEnergized = 0;
         for (int x=0; x<size.x; x++) {
-                ivec2 pos = {x, 0};
+                ivec2 pos = {{x, 0}};
                 traceLight(size, grid, pos, DOWN);
                 int32 energized = numEnergized(size, grid);
                 if (energized > maxEnergized)
                         maxEnergized = energized;
                 resetGrid(size, grid);
 
-                pos = (ivec2){x, size.y-1};
+                pos = (ivec2){{x, size.y-1}};
                 traceLight(size, grid, pos, UP);
                 energized = numEnergized(size, grid);
                 if (energized > maxEnergized)
@@ -351,14 +351,14 @@ void part2(llist *ll) {
                 resetGrid(size, grid);
         }
         for (int y=0; y<size.y; y++) {
-                ivec2 pos = {0, y};
+                ivec2 pos = {{0, y}};
                 traceLight(size, grid, pos, RIGHT);
                 int32 energized = numEnergized(size, grid);
                 if (energized > maxEnergized)
                         maxEnergized = energized;
                 resetGrid(size, grid);
 
-                pos = (ivec2){size.x-1, y};
+                pos = (ivec2){{size.x-1, y}};
                 traceLight(size, grid, pos, LEFT);
                 energized = numEnergized(size, grid);
                 if (energized > maxEnergized)

@@ -312,12 +312,12 @@ void part2(llist *ll) {
                 }
         }
 
-        for (int y = 0; y < cols; y++) {
-                for (int x = 0; x < rows; x++) {
-                        printf("%c", map[y][x]);
-                }
-                printf("\n");
-        }
+        // for (int y = 0; y < cols; y++) {
+        //         for (int x = 0; x < rows; x++) {
+        //                 printf("%c", map[y][x]);
+        //         }
+        //         printf("\n");
+        // }
 
         printf("Part 2: Tiles inside loop: %d\n", tilesInside);
 }

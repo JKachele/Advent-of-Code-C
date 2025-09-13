@@ -142,7 +142,7 @@ ivec2 sendPulse(module modules[], int64 numPress) {
         state initState = {LOW, 0, StartModule};
         tll_push_back(queue, initState);
 
-        ivec2 sigCount = {0, 0};        // HIGH, LOW
+        ivec2 sigCount = {0};        // HIGH, LOW
         while (tll_length(queue) > 0) {
                 state curS = tll_pop_front(queue);
                 module *curM = &modules[curS.dest];
@@ -259,11 +259,11 @@ void part1(llist *ll) {
 
         initConj(modules, moduleIDs);
 
-        ivec2 sigTotal = {0, 0};
+        ivec2 sigTotal = {0};
         for (int i=0; i<1000; i++) {
                 ivec2 sigCount = sendPulse(modules, i);
                 // printf("%d, %d\n", sigCount.x, sigCount.y);
-                sigTotal = addIVec2(sigTotal, sigCount);
+                sigTotal = ivec2Add(sigTotal, sigCount);
         }
         debugP("HIGH: %d, LOW: %d\n", sigTotal.x, sigTotal.y);
 

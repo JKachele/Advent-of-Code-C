@@ -7,6 +7,7 @@
  ************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -16,7 +17,7 @@
 
 int numNumbers(char *str) {
         int num = 0;
-        for (int i = 0; i < strlen(str); i++) {
+        for (int i = 0; i < (int)strlen(str); i++) {
                 if (str[i] == ' ') {
                         num++;
                 }

@@ -8,6 +8,7 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "../util/linkedlist.h"
@@ -28,10 +29,12 @@ typedef struct transformation {
         long len;
 } transformation;
 
-void printLong(void* data) {
-        if (data == NULL) {return;}
-        long *num = (long*)data;
-        printf("%ld", *num);
+long max(long a, long b) {
+        return a > b ? a : b;
+}
+
+long min(long a, long b) {
+        return a < b ? a : b;
 }
 
 void llToArray(llist *ll, long arr[]) {

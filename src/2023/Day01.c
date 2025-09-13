@@ -27,7 +27,7 @@ void replaceSubString(char *str, char *find, char *replace) {
         do {
                 // Check for substring
                 int j = 0;
-                for (int i = 0; i < strlen(str); i++) {
+                for (int i = 0; i < (int)strlen(str); i++) {
                         if (str[i] == find[j]) {
                                 if (!substr) {
                                         start = i;
@@ -61,12 +61,13 @@ void replaceSubString(char *str, char *find, char *replace) {
                                 output[i] = str[i];
                         }
                         // add the replace string
-                        for (j = 0; j < strlen(replace); j++) {
+                        for (j = 0; j < (int)strlen(replace); j++) {
                                 output[i] = replace[j];
                                 i++;
                         }
                         //add the remaining string
-                        for (j = start + strlen(find) - 1; j < strlen(str); j++) {
+                        for (j = start + strlen(find) - 1;
+                                        j < (int)strlen(str); j++) {
                                 output[i] = str[j];
                                 i++;
                         }
@@ -86,7 +87,7 @@ void part1(llist *ll) {
                 int digit1 = 0;
                 int digit2 = 0;
                 // Search from front to back for number, stopping at first number found
-                for (int i = 0; i < strlen(str); i++) {
+                for (int i = 0; i < (int)strlen(str); i++) {
                         int charNum = str[i] - '0';
                         if (charNum >= 0 && charNum <= 9) {
                                 digit1 = charNum;
@@ -126,7 +127,7 @@ void part2(llist *ll) {
                 int digit1 = 0;
                 int digit2 = 0;
                 // Search from front to back for number, stopping at first number found
-                for (int i = 0; i < strlen(str); i++) {
+                for (int i = 0; i < (int)strlen(str); i++) {
                         int charNum = str[i] - '0';
                         if (charNum >= 0 && charNum <= 9) {
                                 digit1 = charNum;
