@@ -19,13 +19,11 @@
 
 #define INPUT_BUFFER_SIZE 4096
 
-typedef tll(bool) tllbool;
-typedef tll(tllbool) tlltllbool;
+typedef tll(u16) tllu16;
 
 struct input {
-        int32 logLen;
-        int32 logWidth;
-        bool **log;
+        int numBits;
+        tllu16 log;
 };
 
 static bool Debug = false;
@@ -48,75 +46,108 @@ void printLog(int len, int width, bool log[][width]) {
         printf("\n");
 }
 
-int32 bintoi(int32 numBits, bool bin[]) {
-        int32 num = 0;
-        for (int i=0; i<numBits; i++) {
-                num = num << 1;
-                if (bin[i])
-                        num += 1;
+tllu16 copyTll(tllu16 tll) {
+        tllu16 cpy = tll_init();
+        tll_foreach(tll, it) {
+                tll_push_back(cpy, it->item);
         }
-        return num;
+        return cpy;
+}
+
+void reduceLog(tllu16 *log, int bit, bool ox) {
+        // Find most common bit in position
+        int numOnes = 0;
+        tll_foreach(*log, it) {
+                u16 mask = 1 << bit;
+                if ((it->item & mask) != 0) {
+                        numOnes++;
+                }
+        }
+        uint16 keepBit = 0;
+        if (ox && numOnes >= (int)tll_length(*log) - numOnes)
+                keepBit = 1;
+        else if (!ox && numOnes < (int)tll_length(*log) - numOnes)
+                keepBit = 1;
+        keepBit = keepBit << bit;
+
+        // Remove entrys without the keep bit
+        tll_foreach(*log, it) {
+                u16 mask = 1 << bit;
+                if ((it->item & mask) != keepBit) {
+                        tll_remove(*log, it);
+                }
+        }
 }
 
 void part1(struct input input) {
-        bool (*log)[input.logWidth] = (bool(*)[input.logWidth])input.log;
-        // printLog(input.logLen, input.logWidth, log);
+        tllu16 log = input.log;
+        int numBits = input.numBits;
 
-        int32 *numOnes = calloc(input.logWidth, sizeof(int32));
-        for (int i=0; i<input.logLen; i++) {
-                for (int j=0; j<input.logWidth; j++) {
-                        if (log[i][j])
-                                numOnes[j]++;
+        int logOnes[numBits];
+        memset(logOnes, 0, numBits * sizeof(int));
+        tll_foreach(log, it) {
+                u16 num = it->item;
+                for (int i=0; i<numBits; i++) {
+                        u16 mask = 1 << i;
+                        if ((num & mask) != 0) {
+                                logOnes[(numBits-i)-1]++;
+                        }
                 }
         }
 
-        bool binGamma[input.logWidth];
-        bool binEpsilon[input.logWidth];
-        for (int i=0; i<input.logWidth; i++) {
-                if (numOnes[i] > input.logLen - numOnes[i]) {
-                        binGamma[i] = true;
-                        binEpsilon[i] = false;
+        u16 gamma = 0;
+        u16 epsilon = 0;
+        for (int i=0; i<numBits; i++) {
+                gamma = gamma << 1;
+                epsilon = epsilon << 1;
+                if (logOnes[i] > (int)tll_length(log) - logOnes[i]) {
+                        gamma++;
                 } else {
-                        binGamma[i] = false;
-                        binEpsilon[i] = true;
+                        epsilon++;
                 }
         }
-
-        int32 gamma = bintoi(input.logWidth, binGamma);
-        int32 epsilon = bintoi(input.logWidth, binEpsilon);
         int64 power = gamma * epsilon;
 
         printf("Part 1: %ld\n\n", power);
 }
 
 void part2(struct input input) {
+        int numBits = input.numBits;
+        tllu16 oxLog = input.log;
+        tllu16 co2Log = copyTll(oxLog);
 
-        printf("Part 2: \n");
+        int i = numBits - 1;
+        while (tll_length(oxLog) > 1 && i >= 0) {
+                reduceLog(&oxLog, i, true);
+                i--;
+        }
+        u16 oxRating = tll_front(oxLog);
+
+        i = numBits - 1;
+        while (tll_length(co2Log) > 1 && i >= 0) {
+                reduceLog(&co2Log, i, false);
+                i--;
+        }
+        u16 co2Rating = tll_front(co2Log);
+
+        u32 lifeSupportRating = oxRating * co2Rating;
+
+        printf("Part 2: %d\n", lifeSupportRating);
 }
 
 struct input parseInput(llist *ll) {
-        struct input input;
-        input.logLen = ll->length;
-        input.logWidth = getLongestLine(ll);
-        input.log = calloc(input.logLen * input.logWidth, sizeof(bool));
-        bool (*log)[input.logWidth] = (bool(*)[input.logWidth])input.log;
+        struct input input = {0};
+        input.numBits = getLongestLine(ll);
 
         llNode *current = ll->head;
-        int i = 0;
         while(current != NULL) {
                 char *str = (char*)current->data;
 
-                for (int j=0; j<input.logWidth; j++) {
-                        if (str[j] == '0')
-                                log[i][j] = false;
-                        else
-                                log[i][j] = true;
-                }
+                u16 logNum = strtol(str, NULL, 2);
+                tll_push_back(input.log, logNum);
 
                 current = current->next;
-                i++;
         }
-        // printLog(input.logLen, input.logWidth, log);
 
         return input;
 }
