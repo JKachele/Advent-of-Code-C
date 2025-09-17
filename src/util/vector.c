@@ -23,6 +23,13 @@ lvec2 lvec2Add(lvec2 a, lvec2 b) {
         return sum;
 }
 
+ivec2 ivec2Sub(ivec2 a, ivec2 b) {
+        ivec2 diff;
+        diff.x = a.x - b.x;
+        diff.y = a.y - b.y;
+        return diff;
+}
+
 ivec3 ivec3Add(ivec3 a, ivec3 b) {
         ivec3 sum;
         sum.x = a.x + b.x;

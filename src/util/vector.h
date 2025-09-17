@@ -94,6 +94,7 @@ typedef union vec4 {
 
 ivec2 ivec2Add(ivec2 a, ivec2 b);
 lvec2 lvec2Add(lvec2 a, lvec2 b);
+ivec2 ivec2Sub(ivec2 a, ivec2 b);
 ivec3 ivec3Add(ivec3 a, ivec3 b);
 lvec3 lvec3Add(lvec3 a, lvec3 b);
 lvec3 lvec3Sub(lvec3 a, lvec3 b);

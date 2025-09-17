@@ -9,28 +9,40 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "lib/tllist.h"
 #include "util/util.h"
 #include "util/vector.h"
 
-#define SEED 0x12345678
+typedef struct line {
+        ivec2 a;
+        ivec2 b;
+} line;
 
-// FNV Hashing Algorithm - H is seed
-u32 FNV(const char *key, u32 h) {
-        h ^= 2166136261UL;
-        const u8 *data = (const u8*)key;
-        for (int i=0; data[i]!='\0'; i++) {
-                h ^= data[i];
-                h *= 16777619;
-        }
-        return h;
+int32 cross(ivec2 a, ivec2 b) {
+        return (a.x * b.y) - (a.y * b.x);
+}
+
+int32 orient(ivec2 a, ivec2 b, ivec2 c) {
+        ivec2 ba = ivec2Sub(b, a);
+        ivec2 ca = ivec2Sub(c, a);
+        return cross(ba, ca);
+}
+
+bool properInter(line a, line b) {
+        int32 oa = orient(b.a, b.b, a.a);
+        int32 ob = orient(b.a, b.b, a.b);
+        int32 oc = orient(a.a, a.b, b.a);
+        int32 od = orient(a.a, a.b, b.b);
+
+        // Proper intersection iff opposite signs
+        return ((oa * ob) < 0 && (oc * od) < 0);
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        printf("%x\n", FNV("bdq", SEED));
-        printf("%x\n", (u16)FNV("bdq", SEED));
-
-
+        line a  = {{{0, 9}}, {{5, 9}}};
+        line b  = {{{0, 9}}, {{2, 9}}};
+        printf("%s\n", properInter(a, b)? "True" : "False");
 }
 
