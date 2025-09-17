@@ -55,3 +55,22 @@ void quicksort(int arr[], int first, int last) {
                 quicksort(arr, p + 1, last);    // Last half
         }
 }
+
+int quickselect(int arr[], int first, int last, int index) {
+        if (first < last) {
+                int p = partition(arr, first, last);
+
+                if (p == index)
+                        return arr[p];
+
+                // Recursivly call quickselect for the side containing index
+                if (p < index)
+                        // Last Section
+                        return quickselect(arr, p + 1, last, index);
+                else
+                        // First Section
+                        return quickselect(arr, first, p - 1, index);
+        } else {
+                return arr[first];
+        }
+}

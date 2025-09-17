@@ -49,7 +49,7 @@ out: $(OBJ)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 test: dirs
-	$(CC) -o $(BIN)/test $(TEST) $(LDFLAGS)
+	$(CC) -o $(BIN)/test $(TEST) $(CFLAGS) $(LDFLAGS)
 
 runTest: test
 	$(BIN)/test

@@ -9,6 +9,7 @@
 #define QUICKSORT_H
 
 void quicksort(int arr[], int first, int last);
+int quickselect(int arr[], int first, int last, int index);
 
 #endif
 
