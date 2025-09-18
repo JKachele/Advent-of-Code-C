@@ -10,6 +10,7 @@
 
 void quicksort(int arr[], int first, int last);
 int quickselect(int arr[], int first, int last, int index);
+void lquicksort(long arr[], long first, long last);
 
 #endif
 

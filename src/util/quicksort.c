@@ -74,3 +74,51 @@ int quickselect(int arr[], int first, int last, int index) {
                 return arr[first];
         }
 }
+
+// Swap 2 integers in an array
+static void lswap(long* a, long* b) {
+        long temp = *a;
+        *a = *b;
+        *b = temp;
+}
+
+// Uses first element in range (first-last) as pivot.
+// Moves elements smaller than pivot to front and larger to the back
+// Moves pivot to middle and returns pivot index
+static long lpartition(long arr[], long first, long last) {
+        // Initalize pivot and index pointers
+        long p = arr[first];
+        long i = first;
+        long j = last;
+
+        while (i < j) {
+                // Find first element larger than pivot starting from the front
+                while (arr[i] <= p && i < last) {
+                        i++;
+                }
+
+                // Find first element smaller than pivot starting from the back
+                while (arr[j] > p && j > first) {
+                        j--;
+                }
+
+                // If larger is before smaller, Swap
+                if (i < j) {
+                        lswap(&arr[i], &arr[j]);
+                }
+        }
+        // Once all elements are moved, move the pivot to middle and return
+        lswap(&arr[first], &arr[j]);
+        return j;
+}
+
+void lquicksort(long arr[], long first, long last) {
+        if (first < last) {
+                long p = lpartition(arr, first, last);
+
+                // Recursivly call quicksort for left and right half
+                // split by the partition index
+                lquicksort(arr, first, p - 1);   // First half
+                lquicksort(arr, p + 1, last);    // Last half
+        }
+}
