@@ -13,7 +13,6 @@
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        for (int i=0; i<5*5; i++)
-                printf("[%d][%d]\n", i/5, i%5);
+        printf("%04x\n", 0x1A);
 }
 
