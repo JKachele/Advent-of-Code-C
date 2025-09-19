@@ -103,17 +103,6 @@ void printParts(tllpart parts) {
         }
 }
 
-// FNV Hashing Algorithm - H is seed
-uint32 FNV(const char *key, uint32 h) {
-        h ^= 2166136261UL;
-        const uint8 *data = (const uint8*)key;
-        for (int i=0; data[i]!='\0'; i++) {
-                h ^= data[i];
-                h *= 16777619;
-        }
-        return h;
-}
-
 rule parseRule(char *str) {
         char ruleStr[10];
         strncpy(ruleStr, str, 10);

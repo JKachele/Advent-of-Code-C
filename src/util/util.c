@@ -7,7 +7,9 @@
  ************************************************/
 
 #include "util.h"
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 bool isDigit(char c) {
         return (c >= '0' && c <= '9');
@@ -50,6 +52,17 @@ uint64 computeHash(char const *input) {
                 pow = (pow * p) % m;
         }
         return hashVal;
+}
+
+// FNV Hashing Algorithm - H is seed
+u32 FNV(const char *key, u32 h) {
+        h ^= 2166136261UL;
+        const u8 *data = (const u8*)key;
+        for (int i=0; data[i]!='\0'; i++) {
+                h ^= data[i];
+                h *= 16777619;
+        }
+        return h;
 }
 
 // Credit to github.com/orlp 

@@ -31,17 +31,6 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
-// FNV Hashing Algorithm - H is seed
-uint32 FNV(const char *key, uint32 h) {
-        h ^= 2166136261UL;
-        const uint8 *data = (const uint8*)key;
-        for (int i=0; data[i]!='\0'; i++) {
-                h ^= data[i];
-                h *= 16777619;
-        }
-        return h;
-}
-
 void printPlatform(ivec2 size, char platform[size.y][size.x]) {
         if (!Debug) return;
         for (int y=0; y<size.y; y++) {

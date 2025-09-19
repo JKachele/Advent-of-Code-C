@@ -54,17 +54,6 @@ void printAdjMatrix(int32 numParts, u16 adjMatrix[numParts][numParts]) {
         printf("\n");
 }
 
-// FNV Hashing Algorithm - H is seed
-u32 FNV(const char *key, u32 h) {
-        h ^= 2166136261UL;
-        const u8 *data = (const u8*)key;
-        for (int i=0; data[i]!='\0'; i++) {
-                h ^= data[i];
-                h *= 16777619;
-        }
-        return h;
-}
-
 void fillAdjMatrix(int numParts, u16 adjMatrix[numParts][numParts],
                    tllu32 *parts, tllu32 partList) {
         for (int i=0; i<numParts; i++) {

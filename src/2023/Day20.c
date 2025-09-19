@@ -65,17 +65,6 @@ void debugP(const char *format, ...) {
         va_end(args);
 }
 
-// FNV Hashing Algorithm - H is seed
-uint16 FNV16(const char *key, uint32 h) {
-        h ^= 2166136261UL;
-        const uint8 *data = (const uint8*)key;
-        for (int i=0; data[i]!='\0'; i++) {
-                h ^= data[i];
-                h *= 16777619;
-        }
-        return (uint16)h;
-}
-
 int64 gcd(int64 a, int64 b) {
         while (b != 0) {
                 int64 tmp = a;
@@ -136,7 +125,7 @@ void evalConjunction(module *m, signalType sig, uint16 src,
 }
 
 ivec2 sendPulse(module modules[], int64 numPress) {
-        const uint16 StartModule = FNV16("broadcaster", SEED);
+        const uint16 StartModule = (uint16)FNV("broadcaster", SEED);
 
         tllstate queue = tll_init();
         state initState = {LOW, 0, StartModule};
@@ -188,7 +177,7 @@ void initConj(module modules[], tlluint16 moduleIDs) {
 }
 
 tlluint16 getRXInputs(module modules[], tlluint16 moduleIDs) {
-        const uint16 rx = FNV16("rx", SEED);
+        const uint16 rx = (uint16)FNV("rx", SEED);
 
         uint16 rxInput = 0;
         tll_foreach(moduleIDs, it) {
@@ -231,13 +220,13 @@ void part1(llist *ll) {
                 if (str[0] == '%' || str[0] == '&') {
                         mt = str[0]=='%' ? FLIP : CONJ;
                         char *name = strtok(str + 1, " ");
-                        moduleID = FNV16(name, SEED);
+                        moduleID = (uint16)FNV(name, SEED);
                         debugP("%s: %u\n", name, moduleID);
                 } else {
                         char *name = strtok(str, " ");
                         if (strcmp(name, "broadcaster") == 0)
                                 mt = BROAD;
-                        moduleID = FNV16(name, SEED);
+                        moduleID = (uint16)FNV(name, SEED);
                         debugP("%s: %u\n", name, moduleID);
                 }
                 if (modules[moduleID].type != NONE)
@@ -248,7 +237,7 @@ void part1(llist *ll) {
                 strtok(NULL, " ");
                 char *out = strtok(NULL, ", ");
                 while (out != NULL) {
-                        uint16 outID = FNV16(out, SEED);
+                        uint16 outID = (uint16)FNV(out, SEED);
                         tll_push_back(modules[moduleID].outputs, outID);
                         out = strtok(NULL, ", ");
                 }
@@ -286,13 +275,13 @@ void part2(llist *ll) {
                 if (str[0] == '%' || str[0] == '&') {
                         mt = str[0]=='%' ? FLIP : CONJ;
                         char *name = strtok(str + 1, " ");
-                        moduleID = FNV16(name, SEED);
+                        moduleID = (uint16)FNV(name, SEED);
                         debugP("%s: %u\n", name, moduleID);
                 } else {
                         char *name = strtok(str, " ");
                         if (strcmp(name, "broadcaster") == 0)
                                 mt = BROAD;
-                        moduleID = FNV16(name, SEED);
+                        moduleID = (uint16)FNV(name, SEED);
                         debugP("%s: %u\n", name, moduleID);
                 }
                 if (modules[moduleID].type != NONE)
@@ -303,7 +292,7 @@ void part2(llist *ll) {
                 strtok(NULL, " ");
                 char *out = strtok(NULL, ", ");
                 while (out != NULL) {
-                        uint16 outID = FNV16(out, SEED);
+                        uint16 outID = (uint16)FNV(out, SEED);
                         tll_push_back(modules[moduleID].outputs, outID);
                         out = strtok(NULL, ", ");
                 }
