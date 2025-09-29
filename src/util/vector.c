@@ -38,6 +38,14 @@ ivec3 ivec3Add(ivec3 a, ivec3 b) {
         return sum;
 }
 
+ivec3 ivec3Sub(ivec3 a, ivec3 b) {
+        ivec3 diff;
+        diff.x = a.x - b.x;
+        diff.y = a.y - b.y;
+        diff.z = a.z - b.z;
+        return diff;
+}
+
 lvec3 lvec3Add(lvec3 a, lvec3 b) {
         lvec3 sum;
         sum.x = a.x + b.x;
