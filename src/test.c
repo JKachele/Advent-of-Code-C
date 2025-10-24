@@ -6,6 +6,7 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,39 +14,59 @@
 
 typedef tal(int) talint;
 
+void binarySearch(talint *list, int n, int s) {
+        int *arr = list->array;
+
+        int low = 0;
+        int high = n - 1;
+        bool found = false;
+        while (low <= high) {
+                int mid = low + (high - low) / 2;
+
+                if (arr[mid] == s) {
+                        found = true;
+                        low = mid;
+                        break;
+                }
+
+                if (arr[mid] < s)
+                        low = mid + 1;
+                else
+                        high = mid - 1;
+        }
+
+        if (found) {
+                printf("\"%d\" Found at %d!\n", s, low);
+                tal_remove(*list, low);
+        } else {
+                printf("\"%d\" Not found. (%d, %d)\n", s, low, high);
+                tal_insert(*list, low, s);
+        }
+}
+
+void printList(talint l) {
+        for (int i = 0; i < (int)l.length; i++) {
+                printf("%2d ", i);
+        }
+        printf("\n");
+        for (int i = 0; i < (int)l.length; i++) {
+                printf("%2d ", l.array[i]);
+        }
+        printf("\n");
+}
+
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
         talint l = tal_init();
-        printf("%lu\n", l.capicity);
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < 99; i+=7) {
                 tal_add(l, i);
         }
-        printf("%lu\n", l.capicity);
+        printList(l);
+        binarySearch(&l, l.length, 56);
+        printList(l);
+        binarySearch(&l, l.length, 47);
+        printList(l);
 
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%d ", l.array[i]);
-        }
-        printf("\n");
-
-        tal_insert(l, 20, 10000);
-
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%d ", tal_get(l, i));
-        }
-        printf("\n");
-        printf("%lu\n", l.capicity);
-
-        printf("%d\n", tal_pop_front(l));
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%d ", l.array[i]);
-        }
-        printf("\n");
-
-        tal_remove(l, 19);
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%d ", l.array[i]);
-        }
-        printf("\n");
 }
 
