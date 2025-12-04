@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
 #include "../lib/tllist.h"
@@ -18,6 +19,7 @@
 #include "../util/util.h"
 
 #define INPUT_BUFFER_SIZE 4096
+// #define VISUALIZE
 
 struct input {
         ivec2 size;
@@ -34,14 +36,43 @@ void debugp(const char *format, ...) {
 }
 
 void printGrid(ivec2 s, u8 **grid) {
+        if (!Debug) return;
         for (int y = 0; y < s.y; y++) {
                 for (int x = 0; x < s.x; x++) {
-                        debugp("%c", grid[y][x] == 255 ? '.' : grid[y][x]+'0');
+                        printf("%c", grid[y][x] == 255 ? '.' : grid[y][x]+'0');
                 }
-                debugp("\n");
+                printf("\n");
         }
-        debugp("\n");
+        printf("\n");
 }
+
+#ifdef VISUALIZE
+void printGridVisual(ivec2 s, u8 **grid, bool flash) {
+        const char *YELLOW = "\x1B[43m\x1B[33m";
+        const char *GREY = "\x1B[100m\x1B[90m";
+        const char *RESET = "\x1B[0m";
+
+        printf("\033[H");       // Home
+        for (int y = 0; y < s.y; y++) {
+                for (int x = 0; x < s.x; x++) {
+                        bool color = false;
+                        if (grid[y][x] == 255) {
+                                printf(" ");
+                        } else if (grid[y][x] == 127) {
+                                if (flash)
+                                        printf(" ");
+                                else
+                                        printf("%s@%s", YELLOW, RESET);
+                        } else {
+                                // printf("@");
+                                printf("%s %s", GREY, RESET);
+                        }
+                }
+                printf("\n");
+        }
+        printf("\n");
+}
+#endif
 
 bool isValidPos(int x, int y, ivec2 size) {
         return x >= 0 && x < size.x && y >= 0 && y < size.y;
@@ -63,7 +94,7 @@ u8 getAdjacent(int xPos, int yPos, ivec2 size, u8 **grid) {
 void updateAdjacent(int xPos, int yPos, ivec2 size, u8 **grid) {
         for (int y = yPos-1; y <= yPos+1; y++) {
                 for (int x = xPos-1; x <= xPos+1; x++) {
-                        if (isValidPos(x, y, size) && grid[y][x] != 255)
+                        if (isValidPos(x, y, size) && grid[y][x] < 9)
                                 grid[y][x]--;
                 }
         }
@@ -85,6 +116,41 @@ int32 removeRolls(ivec2 size, u8 **grid) {
         return rollsRemoved;
 }
 
+#ifdef VISUALIZE
+int32 removeRollsVisual(ivec2 size, u8 **grid) {
+        // Loop over grid and remove rolls that are less than 4 adjacent
+        for (int y = 0; y < size.y; y++) {
+                for (int x = 0; x < size.x; x++) {
+                        if (grid[y][x] < 4) {
+                                grid[y][x] = 127;
+                        }
+                }
+        }
+        printGridVisual(size, grid, false);
+        usleep(500000);
+        // printGridVisual(size, grid, true);
+        // usleep(166000);
+        // printGridVisual(size, grid, false);
+        // usleep(166000);
+
+        // Update surounding rolls
+        int32 rollsRemoved = 0;
+        for (int y = 0; y < size.y; y++) {
+                for (int x = 0; x < size.x; x++) {
+                        if (grid[y][x] == 127) {
+                                grid[y][x] = 255;
+                                updateAdjacent(x, y, size, grid);
+                                rollsRemoved++;
+                        }
+                }
+        }
+        printGridVisual(size, grid, false);
+        usleep(500000);
+
+        return rollsRemoved;
+}
+#endif
+
 void part1(struct input input) {
         ivec2 size = input.size;
         u8 **grid = input.grid;
@@ -98,14 +164,14 @@ void part1(struct input input) {
                         }
                 }
         }
-        printGrid(size, grid);
+        // printGrid(size, grid);
 
         int32 numReachable = 0;
         for (int y = 0; y < size.y; y++) {
                 for (int x = 0; x < size.x; x++) {
                         if (grid[y][x] < 4) {
                                 numReachable++;
-                                debugp("[%d, %d] Reachable\n", x, y);
+                                // debugp("[%d, %d] Reachable\n", x, y);
                         }
                 }
         }
@@ -121,12 +187,18 @@ void part2(struct input input) {
         // Remove rolls until no rolls can be removed
         int32 removed;
         int32 totalRemoved = 0;
+#ifdef VISUALIZE
+        system("clear");
+#endif
         do {
+#ifdef VISUALIZE
+                removed = removeRollsVisual(size, grid);
+#else
                 removed = removeRolls(size, grid);
+#endif
                 totalRemoved += removed;
-                // printGrid(size, grid);
         } while (removed > 0);
-        printGrid(size, grid);
+        // printGrid(size, grid);
 
         printf("Part 2: %d\n", totalRemoved);
 }

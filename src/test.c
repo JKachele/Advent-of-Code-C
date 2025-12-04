@@ -6,67 +6,28 @@
  *License-------GNU GPL-3.0
  ************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "util/talist.h"
-
-typedef tal(int) talint;
-
-void binarySearch(talint *list, int n, int s) {
-        int *arr = list->array;
-
-        int low = 0;
-        int high = n - 1;
-        bool found = false;
-        while (low <= high) {
-                int mid = low + (high - low) / 2;
-
-                if (arr[mid] == s) {
-                        found = true;
-                        low = mid;
-                        break;
-                }
-
-                if (arr[mid] < s)
-                        low = mid + 1;
-                else
-                        high = mid - 1;
-        }
-
-        if (found) {
-                printf("\"%d\" Found at %d!\n", s, low);
-                tal_remove(*list, low);
-        } else {
-                printf("\"%d\" Not found. (%d, %d)\n", s, low, high);
-                tal_insert(*list, low, s);
-        }
-}
-
-void printList(talint l) {
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%2d ", i);
-        }
-        printf("\n");
-        for (int i = 0; i < (int)l.length; i++) {
-                printf("%2d ", l.array[i]);
-        }
-        printf("\n");
-}
+#include <unistd.h>
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
+        // system("clear");
+        // for (int i = 0; i < 10; i++) {
+        //         printf("\033[H");       // Home
+        //         for (int j = 0; j < 10 - i; j++) {
+        //                 printf("%d: %d\n", j, i);
+        //         }
+        //         usleep(500000);
+        // }
 
-        talint l = tal_init();
-        for (int i = 0; i < 99; i+=7) {
-                tal_add(l, i);
+        for (int i = 1; i < 138; i++) {
+                if (i == 1 || i == 137)
+                        printf("********************\n");
+                else
+                        printf("%d\n", i);
         }
-        printList(l);
-        binarySearch(&l, l.length, 56);
-        printList(l);
-        binarySearch(&l, l.length, 47);
-        printList(l);
 
+        return 0;
 }
 
