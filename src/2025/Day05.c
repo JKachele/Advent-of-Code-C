@@ -13,13 +13,13 @@
 #include <time.h>
 #include "../util/linkedlist.h"
 #include "../util/inputFile.h"
-#include "../util/talist.h"
+#include "../lib/tllist.h"
 #include "../util/vector.h"
 #include "../util/util.h"
 
 #define INPUT_BUFFER_SIZE 4096
 
-typedef tal(lvec2) talvec2;
+typedef tll(lvec2) tllvec2;
 
 struct input {
         int numRanges;
@@ -58,7 +58,7 @@ int rangeOverlap( lvec2 a, lvec2 b) {
 
         // a--------a
         //       b--------b
-        if (aXbX && aYbY && bYaX)
+        if (aXbX && aYbY && bXaY)
                 return 1;
 
         //       a--------a
@@ -79,16 +79,57 @@ int rangeOverlap( lvec2 a, lvec2 b) {
         return 0;
 }
 
-void mergeAllRanges(lvec2 *ranges, int numRanges, talvec2 *newRanges) {
-        // Convert ranges to tll
+int mergeRanges(tllvec2 *ranges, tllvec2 *newRanges) {
+        int numMerges = 0;
+        while (tll_length(*ranges) > 0) {
+                lvec2 range = tll_pop_front(*ranges);
+
+                tll_foreach(*ranges, it) {
+                        int overlap = rangeOverlap(range, it->item);
+                        if (overlap == 0) continue;
+                        numMerges++;
+                        lvec2 range2 = it->item;
+                        tll_remove(*ranges, it);
+
+                        switch (overlap) {
+                                case 1:
+                                        range.y = range2.y;
+                                        break;
+                                case 2:
+                                        range.x = range2.x;
+                                        break;
+                                case 3:
+                                        break;
+                                case 4:
+                                        range.x = range2.x;
+                                        range.y = range2.y;
+                                        break;
+                        }
+                }
+
+                tll_push_back(*newRanges, range);
+        }
+        return numMerges;
+}
+
+tllvec2 mergeAllRanges(lvec2 *rangesList, int numRanges) {
+        // Convert ranges to linked list
+        tllvec2 ranges = tll_init();
         for (int i = 0; i < numRanges; i++) {
-                tal_add(*newRanges, ranges[i]);
+                tll_push_back(ranges, rangesList[i]);
         }
 
-        for (u64 i = 0; i < newRanges->length; i++) {
-                lvec2 range = newRanges->array[i];
-                printf("(%ld, %ld)\n", range.x, range.y);
-        }
+        int numMerges = 0;
+        do {
+                tllvec2 newRanges = tll_init();
+                numMerges = mergeRanges(&ranges, &newRanges);
+
+                tll_foreach(newRanges, it)
+                        tll_push_back(ranges, it->item);
+
+        } while (numMerges > 0);
+
+        return ranges;
 }
 
 // Brute force :)
@@ -107,10 +148,16 @@ void part1(struct input input) {
 
 // Range-finding algorithm
 void part2(struct input input) {
-        talvec2 newRanges = tal_init();
-        mergeAllRanges(input.ranges, input.numRanges, &newRanges);
+        tllvec2 range = mergeAllRanges(input.ranges, input.numRanges);
 
-        printf("Part 2: \n");
+        // Add up ranges
+        u64 numIds = 0;
+        tll_foreach(range, it) {
+                lvec2 range = it->item;
+                numIds += (range.y - range.x) + 1;
+        }
+
+        printf("Part 2: %lu\n", numIds);
 }
 
 struct input parseInput(llist *ll) {
