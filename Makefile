@@ -9,7 +9,7 @@ CFLAGS = -std=c2x -g
 CFLAGS += -Wall -Wextra -Wpedantic 
 CFLAGS += -Wno-unused-parameter -Wno-unused-variable
 CFLAGS += -Wno-stringop-truncation
-LDFLAGS = -lm 
+LDFLAGS = -lm -lz3
 
 SRC =  $(FILE)
 SRC += $(wildcard src/util/*.c)# $(wildcard src/util/*/*.c)
