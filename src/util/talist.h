@@ -123,6 +123,5 @@
 #define tal_destroy(list)               \
         do {                            \
                 free((list).array);     \
-                free((list));           \
         } while (0)
 
