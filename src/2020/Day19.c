@@ -70,6 +70,12 @@ void printMsgs(tllstr msgs) {
         printf("\n");
 }
 
+void combineIndexList(bool *list1, bool *list2, int len) {
+        for (int i = 0; i < len; i++) {
+                list1[i] = list1[i] || list2[i];
+        }
+}
+
 bool msgValid(rule rules[], int ruleIndex, char *msg, int *msgIndex) {
         rule curRule = rules[ruleIndex];
 
@@ -102,6 +108,84 @@ bool msgValid(rule rules[], int ruleIndex, char *msg, int *msgIndex) {
         return false;
 }
 
+bool *msgValid2(rule rules[], int ruleIndex, char *msg, int msgIndex) {
+        // Create an array to show which msg indexes are valid after this rule
+        bool *validIndexes = calloc(strlen(msg), sizeof(bool));
+        rule curRule = rules[ruleIndex];
+
+        // If the index is out of bounds, return the empty list of valid indexes
+        if (msgIndex >= (int)strlen(msg))
+                return validIndexes;
+        // If the rule is a char rule, check if msg char matches rule and return the valid indexes
+        if (curRule.isChar) {
+                if (msg[msgIndex] == curRule.c)
+                        validIndexes[msgIndex] = true;
+                return validIndexes;
+        }
+
+        // Check both options for the rule, if rule list is empty, ignore
+        for (int i = 0; i < 2; i++) {
+                tllint rList = curRule.rules[i];
+                if (tll_length(rList) == 0)
+                        break;
+
+                // Loop through the rules in the rule list
+                bool *curValidIndexes = calloc(strlen(msg)+1, sizeof(bool));
+                curValidIndexes[msgIndex] = true;
+                tll_foreach(rList, it) {
+                        int ruleNum = it->item;
+                        bool *newValidIndexes = calloc(strlen(msg), sizeof(bool));
+
+                        // For each valid index after the last rule, check the next rule
+                        for (int j = 0; j < (int)strlen(msg); j++) {
+                                if (!curValidIndexes[j]) continue;
+                                bool *valid = msgValid2(rules, ruleNum, msg, j);
+                                combineIndexList(newValidIndexes, valid, strlen(msg));
+                                free(valid);
+                        }
+
+                        // If the valid list is all false, the rule can't be followed
+                        bool allInvalid = true;
+                        for (int j = 0; j < (int)strlen(msg); j++) {
+                                if (newValidIndexes[j]) {
+                                        allInvalid = false;
+                                        break;
+                                }
+                        }
+                        if (allInvalid) {
+                                memset(curValidIndexes, 0, strlen(msg)+1);
+                                free(newValidIndexes);
+                                break;
+                        }
+
+                        // If rule can be followed, set the current index list to the valid index
+                        // list incremented by one
+                        memcpy(curValidIndexes+1, newValidIndexes, strlen(msg));
+                        curValidIndexes[0] = false;
+                        free(newValidIndexes);
+                }
+                // Undo last shift of indexes
+                memmove(curValidIndexes, curValidIndexes+1, strlen(msg));
+                // Combine the lists from both sides of the rule and return
+                combineIndexList(validIndexes, curValidIndexes, strlen(msg));
+        }
+
+        return validIndexes;
+}
+
+void fixRules(rule rules[]) {
+        // Rule 8 becomes 42 | 42 8
+        tll_free(rules[8].rules[1]);
+        tll_push_back(rules[8].rules[1], 42);
+        tll_push_back(rules[8].rules[1], 8);
+
+        // Rule 11 becomes 42 31 | 42 11 31
+        tll_free(rules[11].rules[1]);
+        tll_push_back(rules[11].rules[1], 42);
+        tll_push_back(rules[11].rules[1], 11);
+        tll_push_back(rules[11].rules[1], 31);
+}
+
 void part1(struct input input) {
         // printRules(input.rules, 6);
         // printMsgs(input.msgs);
@@ -113,7 +197,7 @@ void part1(struct input input) {
                 bool valid = msgValid(input.rules, 0, msg, &index);
                 if ((int)strlen(msg) - 1 != index)
                         valid = false;
-                debugp("%s: %s\n", msg, valid ? "Valid" : "Invalid");
+                debugp("%s %s\n", valid ? "Valid:  " : "Invalid:", msg);
                 if (valid) numValid++;
         }
 
@@ -121,7 +205,23 @@ void part1(struct input input) {
 }
 
 void part2(struct input input) {
-        printf("Part 2: \n");
+        fixRules(input.rules);
+        // printRules(input.rules, 43);
+        // printMsgs(input.msgs);
+
+        int numValid = 0;
+        int i = 0;
+        tll_foreach(input.msgs, it) {
+                char *msg = it->item;
+                int index = 0;
+                bool *validList = msgValid2(input.rules, 0, msg, 0);
+                bool valid = validList[strlen(msg)-1];
+                debugp("%d %s %s\n", i, valid ? "Valid:  " : "Invalid:", msg);
+                if (valid) numValid++;
+                i++;
+        }
+
+        printf("Part 2: %d\n", numValid);
 }
 
 struct input parseInput(llist *ll) {
@@ -200,4 +300,5 @@ int main(int argc, char *argv[]) {
 
         return 0;
 }
+
 
