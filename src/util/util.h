@@ -65,6 +65,7 @@ typedef uint64_t u64;
 bool isDigit(char c);
 void printInt(void *data);
 void printLong(void *data);
+int64 gcd(int64 a, int64 b);
 int64_t ipow(int64_t base, uint8_t exp);
 uint64 computeHash(char const *input);
 u32 FNV(const char *key, u32 h);

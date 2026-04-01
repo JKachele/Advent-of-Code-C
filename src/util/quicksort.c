@@ -7,9 +7,14 @@
  ************************************************/
 
 #include "quicksort.h"
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef size_t u64;
 
 // Swap 2 integers in an array
-static void swap(int* a, int* b) {
+static void swapInt(int* a, int* b) {
         int temp = *a;
         *a = *b;
         *b = temp;
@@ -18,7 +23,7 @@ static void swap(int* a, int* b) {
 // Uses first element in range (first-last) as pivot.
 // Moves elements smaller than pivot to front and larger to the back
 // Moves pivot to middle and returns pivot index
-static int partition(int arr[], int first, int last) {
+static int partitionInt(int arr[], int first, int last) {
         // Initalize pivot and index pointers
         int p = arr[first];
         int i = first;
@@ -37,28 +42,88 @@ static int partition(int arr[], int first, int last) {
 
                 // If larger is before smaller, Swap
                 if (i < j) {
-                        swap(&arr[i], &arr[j]);
+                        swapInt(&arr[i], &arr[j]);
                 }
         }
         // Once all elements are moved, move the pivot to middle and return
-        swap(&arr[first], &arr[j]);
+        swapInt(&arr[first], &arr[j]);
         return j;
 }
 
-void quicksort(int arr[], int first, int last) {
+void quicksortInt(int arr[], int first, int last) {
         if (first < last) {
-                int p = partition(arr, first, last);
+                int p = partitionInt(arr, first, last);
 
                 // Recursivly call quicksort for left and right half
                 // split by the partition index
-                quicksort(arr, first, p - 1);   // First half
-                quicksort(arr, p + 1, last);    // Last half
+                quicksortInt(arr, first, p - 1);   // First half
+                quicksortInt(arr, p + 1, last);    // Last half
+        }
+}
+
+// Swap 2 elements in an array
+static void swap(void *a, void *b, u64 size) {
+        char buffer[size]; // Temporary buffer for swapping
+
+        // Swap bytes using memcpy
+        memcpy(buffer, a, size);
+        memcpy(a, b, size);
+        memcpy(b, buffer, size);
+}
+
+// Uses first element in range (first-last) as pivot.
+// Moves elements smaller than pivot to front and larger to the back
+// Moves pivot to middle and returns pivot index
+// cmp - 1: first > second, 0: first == second, -1: first < second
+static int partition(void *arr, u64 size, int first, int last, int (*cmp)(void*, void*)) {
+        // Initalize pivot and index pointers
+        void *p = malloc(size);
+        memcpy(p, (char*)(arr) + (first * size), size);
+        int i = first;
+        int j = last;
+
+        while (i < j) {
+                void *left = (char*)(arr) + (i * size);
+                void *right = (char*)(arr) + (j * size);
+
+                // Find first element larger than pivot starting from the front
+                while (cmp(left, p) != 1 && i < last) {
+                        i++;
+                        left = (char*)(arr) + (i * size);
+                }
+
+                // Find first element smaller than pivot starting from the back
+                while (cmp(right, p) == 1 && j > first) {
+                        j--;
+                        right = (char*)(arr) + (j * size);
+                }
+
+                // If larger is before smaller, Swap
+                if (i < j) {
+                        swap(left, right, size);
+                }
+        }
+        // Once all elements are moved, move the pivot to middle and return
+        void *piv = (char*)(arr) + (first * size);
+        void *right = (char*)(arr) + (j * size);
+        swap(piv, right, size);
+        return j;
+}
+
+void quicksort(void *arr, u64 size, int first, int last, int (*cmp)(void*, void*)) {
+        if (first < last) {
+                int p = partition(arr, size, first, last, cmp);
+
+                // Recursivly call quicksort for left and right half
+                // split by the partition index
+                quicksort(arr, size, first, p - 1, cmp);   // First half
+                quicksort(arr, size, p + 1, last, cmp);    // Last half
         }
 }
 
 int quickselect(int arr[], int first, int last, int index) {
         if (first < last) {
-                int p = partition(arr, first, last);
+                int p = partitionInt(arr, first, last);
 
                 if (p == index)
                         return arr[p];

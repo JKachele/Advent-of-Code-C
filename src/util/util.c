@@ -9,6 +9,7 @@
 #include "util.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 bool isDigit(char c) {
@@ -27,6 +28,27 @@ void printLong(void *data) {
                 return;
         long *num = (long*)data;
         printf("%ld", *num);
+}
+
+// Euclidean Algorithm to find GCD
+int64 gcd(int64 n1, int64 n2) {
+        int64 a = labs(n1);
+        int64 b = labs(n2);
+
+        // Everything divides zero
+        if (a == 0)
+                return b;
+        if (b == 0)
+                return a;
+
+        // Base case
+        if (a == b)
+                return a;
+
+        if (a > b)
+                return gcd(a - b, b);
+        else
+                return gcd(a, b - a);
 }
 
 int64_t ipow(int64_t base, uint8_t exp) {
