@@ -15,17 +15,11 @@
 #include "../util/inputFile.h"
 #include "../util/util.h"
 #include "../util/talist.h"
+#include "../util/Intcode2019.h"
 // #include "../lib/tllist.h"
 // #include "../util/vector.h"
 
 #define INPUT_BUFFER_SIZE 4096
-
-typedef tal(int64) talint64;
-
-typedef struct haltmode {
-        bool halt; // True: halt, False: Pause for input
-        u32 index;
-} haltmode;
 
 struct input {
         talint64 intcode;
@@ -60,135 +54,6 @@ void MoveListItems(talint64 *dest, talint64 *src) {
         }
 }
 
-int64 getOp(talint64 list, int index) {
-        if ((size_t)index < list.length)
-                return list.array[index];
-        else
-                return -1;
-}
-
-haltmode runIntcode(talint64 intcode, int start, talint64 *inputs, talint64 *outputs) {
-        int index = start;
-        bool halt = false;
-        bool pause = false;
-        for (;;) {
-                int64 instrNum = intcode.array[index];
-
-                // Instruction Opcode and parameter modes. true: Position, false: Immediate
-                int64 opcode = instrNum % 100;
-                bool mode1 = ((instrNum / 100) % 10) == 0;
-                bool mode2 = ((instrNum / 1000) % 10) == 0;
-
-                // Instruction parameters
-                int64 param1 = getOp(intcode, index + 1);
-                int64 param2 = getOp(intcode, index + 2);
-                int64 param3 = getOp(intcode, index + 3);
-
-                // Instruction values. Obtained with parameters and modes
-                int64 op1;
-                int64 op2;
-                int64 op3;
-                int64 nextIndex;
-
-                switch (opcode) {
-                case 1: // Addition
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        op3 = param3; // Destinations are always addresses
-
-                        intcode.array[op3] = op1 + op2;
-                        debugp("(%d) Add: %d %d %d %d: ", index, instrNum, param1, param2, param3);
-                        debugp("%d + %d -> %d\n", op1, op2, op3);
-                        index += 4;
-                        break;
-                case 2: // Multiplication
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        op3 = param3; // Destinations are always addresses
-
-                        intcode.array[op3] = op1 * op2;
-                        debugp("(%d) Mult: %d %d %d %d: ", index, instrNum, param1, param2, param3);
-                        debugp("%d * %d -> %d\n", op1, op2, op3);
-                        index += 4;
-                        break;
-                case 3: // Input
-                        op1 = param1; // Destinations are always addresses
-                        if (inputs->length == 0) {
-                                pause = true;
-                                debugp("(%d) Input: %d %d: PAUSE\n", index, instrNum, param1);
-                                break;
-                        }
-                        intcode.array[op1] = tal_pop_front(*inputs);
-                        debugp("(%d) Input: %d %d: ", index, instrNum, param1);
-                        debugp("%d -> %d\n", intcode.array[op1], op1);
-                        index += 2;
-                        break;
-                case 4: // Output
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        tal_add(*outputs, op1);
-                        debugp("Output: %d %d: %d\n", instrNum, param1, op1);
-                        index += 2;
-                        break;
-                case 5: // Jump-if-True
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        if (op1 != 0)
-                                nextIndex = op2;
-                        else
-                                nextIndex = index + 3;
-                        debugp("(%d) JmpT: %d %d %d: %d -> %d\n",
-                                        index, instrNum, param1, param2, op1, nextIndex);
-                        index = nextIndex;
-                        break;
-                case 6: // Jump-if-False
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        if (op1 == 0)
-                                nextIndex = op2;
-                        else
-                                nextIndex = index + 3;
-                        debugp("(%d) JmpF: %d %d %d: %d -> %d\n",
-                                        index, instrNum, param1, param2, op1, nextIndex);
-                        index = nextIndex;
-                        break;
-                case 7: // Less than
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        op3 = param3; // Destinations are always addresses
-                        int64 lt = 0;
-                        if (op1 < op2)
-                                lt = 1;
-                        intcode.array[op3] = lt;
-                        debugp ("(%d) LT: %d %d %d %d: ", index, instrNum, param1, param2, param3);
-                        debugp("%d < %d: %d -> %d\n", op1, op2, lt, op3);
-                        index += 4;
-                        break;
-                case 8: // Equals
-                        op1 = mode1 ? getOp(intcode, param1) : param1;
-                        op2 = mode2 ? getOp(intcode, param2) : param2;
-                        op3 = param3; // Destinations are always addresses
-                        int64 eq = 0;
-                        if (op1 == op2)
-                                eq = 1;
-                        intcode.array[op3] = eq;
-                        debugp ("(%d) EQ: %d %d %d %d: ", index, instrNum, param1, param2, param3);
-                        debugp("%d == %d: %d -> %d\n", op1, op2, eq, op3);
-                        index += 4;
-                        break;
-                case 99:
-                        halt = true;
-                        debugp("(%d) Halt\n", index);
-                        break;
-                default:
-                        printf("Invalid opcode at index %d: %ld\n", index, opcode);
-                        halt = true;
-                }
-                if (halt || pause) break;
-        }
-        haltmode h = {halt, index};
-        return h;
-}
-
 void swap(int *a, int *b) {
         int tmp = *a;
         *a = *b;
@@ -204,7 +69,7 @@ u64 getThrust(talint64 intcode, int phaseSettings[5]) {
                 tal_add(inputs, currentInput);
 
                 talint64 copy = copyList(intcode);
-                runIntcode(copy, 0, &inputs, &outputs);
+                runIntcode(&copy, (haltmode){0}, &inputs, &outputs);
                 tal_destroy(copy);
                 currentInput = tal_back(outputs);
 
@@ -229,7 +94,7 @@ u64 getThrustLoop(talint64 intcode, int phaseSettings[5]) {
                 bool allHalt = true;
                 for (int i = 0; i < 5; i++) {
                         debugp("**************** AMP %d ****************\n", i);
-                        halts[i] = runIntcode(memory[i], halts[i].index, &inputs[i], &outputs[i]);
+                        halts[i] = runIntcode(&memory[i], halts[i], &inputs[i], &outputs[i]);
                         MoveListItems(&inputs[(i+1)%5], &outputs[i]);
                         if (!halts[i].halt)
                                 allHalt = false;

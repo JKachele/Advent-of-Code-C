@@ -15,15 +15,14 @@
 #include "../util/inputFile.h"
 #include "../util/util.h"
 #include "../util/talist.h"
+#include "../util/Intcode2019.h"
 // #include "../lib/tllist.h"
 // #include "../util/vector.h"
 
 #define INPUT_BUFFER_SIZE 4096
 
-typedef tal(u32) talu32;
-
 struct input {
-        talu32 intcode;
+        talint64 intcode;
 };
 
 static bool Debug = false;
@@ -35,50 +34,25 @@ void debugp(const char *format, ...) {
         va_end(args);
 }
 
-talu32 copyList(talu32 list) {
-        talu32 newList = tal_init();
+talint64 copyList(talint64 list) {
+        talint64 newList = tal_init();
         for (int i = 0; i < (int)list.length; i++) {
                 tal_add(newList, list.array[i]);
         }
         return newList;
 }
 
-u32 runIntcode(talu32 input) {
-        talu32 intcode = copyList(input);
-        int index = 0;
-        while (intcode.array[index] != 99) {
-                if (intcode.array[index] == 1) {
-                        u32 op1 = intcode.array[index + 1];
-                        u32 op2 = intcode.array[index + 2];
-                        u32 dest = intcode.array[index + 3];
-
-                        u32 sum = intcode.array[op1] + intcode.array[op2];
-                        intcode.array[dest] = sum;
-                } else if (intcode.array[index] == 2) {
-                        u32 op1 = intcode.array[index + 1];
-                        u32 op2 = intcode.array[index + 2];
-                        u32 dest = intcode.array[index + 3];
-
-                        u32 prod = intcode.array[op1] * intcode.array[op2];
-                        intcode.array[dest] = prod;
-                } else {
-                        printf("Invalid opcode at index %d: %d\n", index, intcode.array[index]);
-                }
-                index += 4;
-        }
-        u32 output = intcode.array[0];
-        tal_destroy(intcode);
-        return output;
-}
-
 void part1(struct input input) {
-        talu32 intcode = copyList(input.intcode);
+        talint64 intcode = copyList(input.intcode);
 
         // Initial replacements
         intcode.array[1] = 12;
         intcode.array[2] = 2;
 
-        u32 output = runIntcode(intcode);
+        talint64 inputs = tal_init();
+        talint64 outputs = tal_init();
+        runIntcode(&intcode, (haltmode){0}, &inputs, &outputs);
+        u32 output = tal_front(intcode);
         tal_destroy(intcode);
 
         printf("Part 1: %u\n\n", output);
@@ -86,17 +60,21 @@ void part1(struct input input) {
 
 void part2(struct input input) {
         const u32 ExpectedOutput = 19690720;
-        talu32 intcode = input.intcode;
+        talint64 intcode = input.intcode;
 
         u32 ans = 0;
         for (int noun = 0; noun <= 99; noun++) {
                 for (int verb = 0; verb <= 99; verb++) {
-                        intcode.array[1] = noun;
-                        intcode.array[2] = verb;
-                        if (runIntcode(intcode) == ExpectedOutput) {
+                        talint64 intcodeCopy = copyList(intcode);
+                        intcodeCopy.array[1] = noun;
+                        intcodeCopy.array[2] = verb;
+                        runIntcode(&intcodeCopy, (haltmode){0}, NULL, NULL);
+                        int64 output = tal_front(intcodeCopy);
+                        if (output == ExpectedOutput) {
                                 ans = 100 * noun + verb;
                                 goto END;
                         }
+                        tal_destroy(intcodeCopy);
                 }
         }
 END:
@@ -111,7 +89,7 @@ struct input parseInput(llist *ll) {
 
         char *code = strtok(str, ",");
         while (code != NULL) {
-                u32 num = strtoul(code, NULL, 10);
+                int64 num = strtoul(code, NULL, 10);
                 tal_add(input.intcode, num);
                 code = strtok(NULL, ",");
         }
