@@ -51,6 +51,10 @@ int64 gcd(int64 n1, int64 n2) {
                 return gcd(a, b - a);
 }
 
+int64 lcm(int64 n1, int64 n2) {
+        return (n1 / gcd(n1, n2)) * n2;
+}
+
 int64_t ipow(int64_t base, uint8_t exp) {
         int result = 1;
         for(;;) {

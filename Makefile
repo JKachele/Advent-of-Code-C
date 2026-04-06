@@ -36,10 +36,10 @@ dirs:
 	mkdir -p ./$(BIN)
 
 run: all
-	$(BIN)/out | tee $(BIN)/output.log
+	stdbuf -oL $(BIN)/out | tee $(BIN)/output.log
 
 runWithTest: all
-	$(BIN)/out TEST | tee $(BIN)/output.log
+	stdbuf -oL $(BIN)/out TEST | tee $(BIN)/output.log
 
 out: $(OBJ)
 	$(CC) -o $(BIN)/out $^ $(LDFLAGS)
