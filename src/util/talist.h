@@ -122,6 +122,9 @@
 /* Frees the list. */
 #define tal_destroy(list)               \
         do {                            \
+                (list).length = 0;      \
+                (list).capicity = 0;    \
                 free((list).array);     \
+                (list).array = NULL;    \
         } while (0)
 
