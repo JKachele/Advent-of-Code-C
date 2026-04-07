@@ -9,12 +9,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "util/vector.h"
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
         float f = -9826.32185;
         printf("%f\n", f);
+
+        ivec2 size = {{10, 20}};
+        int (*grid)[size.x] = (int(*)[size.x])calloc(size.x * size.y, sizeof(int));
 
         return 0;
 }
