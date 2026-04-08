@@ -113,7 +113,7 @@
 #define tal_pop_back(list) __extension__                                 \
     ({                                                                   \
         __typeof__(*(list).array) __ret = (list).array[(list).length-1]; \
-        tll_remove((list), (list).length - 1);                           \
+        tal_remove((list), (list).length - 1);                           \
         __ret;                                                           \
     })
 
