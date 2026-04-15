@@ -21,6 +21,7 @@ typedef struct haltmode {
 
 
 talint64 copyIntcode(talint64 intcode);
+void copyIntcodePtr(talint64 *dest, talint64 intcode);
 haltmode runIntcode(talint64 *intcode, haltmode state, talint64 *inputs, talint64 *outputs);
 
 #endif

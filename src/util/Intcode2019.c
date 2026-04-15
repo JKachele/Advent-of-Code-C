@@ -72,6 +72,12 @@ talint64 copyIntcode(talint64 intcode) {
         return newList;
 }
 
+void copyIntcodePtr(talint64 *dest, talint64 intcode) {
+        for (int i = 0; i < (int)intcode.length; i++) {
+                tal_add(*dest, intcode.array[i]);
+        }
+}
+
 haltmode runIntcode(talint64 *intcode, haltmode state, talint64 *inputs, talint64 *outputs) {
         u32 index = state.index;
         int64 relBase = state.relBase;
