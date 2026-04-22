@@ -84,6 +84,8 @@ struct input parseInput(llist *ll) {
 
 int main(int argc, char *argv[]) {
         setvbuf(stdout, NULL, _IONBF, 0);
+        printf("*----------------------------------------------------------------*\n");
+        printf("Running Advent of Code 2018/Day01.c\n\n");
         clock_t begin = clock();
         llist *ll;
         if (argc > 1 && strcmp(argv[1], "TEST") == 0) {
