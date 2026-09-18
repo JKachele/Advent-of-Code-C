@@ -117,6 +117,9 @@
         __ret;                                                           \
     })
 
+#define tal_for(list, i)                      \
+        for (size_t i = 0; i < (list).length; i++)
+
 #define tal_clear(list) (list).length = 0;
 
 /* Frees the list. */
