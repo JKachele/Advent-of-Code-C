@@ -9,32 +9,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "util/vector.h"
+#include "util/talist.h"
+
+typedef tal(int) talint;
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        int arr[9100] = {0};
-        int loop[11] = {435, 345,423, 568, 14643, 3457, 6522, 8642, 8536, 75311, 86368};
+        talint a = tal_init();
+        talint b = tal_init();
+        for (int i = 0; i < 10; i++)
+                tal_add(a, i);
+        for (int i = 100; i < 200; i++)
+                tal_add(b, i);
 
-        for (int i = 0; i < 286; i++)
-                arr[i] = i;
-        for (int i = 286; i < 9100; i++)
-                arr[i] = loop[(i - 286) % 11];
+        tal_for(a, i)
+                printf("%d ", a.array[i]);
+        printf("\n");
+        tal_for(b, i)
+                printf("%d ", b.array[i]);
+        printf("\n");
 
-        int t = 1;
-        int h = 2;
-        while (arr[t] != arr[h]) {
-                t++;
-                h += 2;
-        }
-        printf("T= %d, H=%d\n", t, h);
-
-        int finalCycleIndex = (9000 - t) % t;
-        printf("cycle index = %d\n", finalCycleIndex);
-
-        int value = arr[t + finalCycleIndex];
-        printf("Value = %d vs %d\n", value, arr[9000]);
+        printf("%lu\n", a.capicity);
+        tal_append(a, b);
+        printf("%lu\n", a.capicity);
+        tal_for(a, i)
+                printf("%d ", a.array[i]);
+        printf("\n");
 
         return 0;
 }

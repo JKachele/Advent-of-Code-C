@@ -17,6 +17,10 @@ typedef union ivec2 {
                 int32_t x;
                 int32_t y;
         };
+        struct {
+                int32_t a;
+                int32_t b;
+        };
 } ivec2;
 
 typedef union ivec3 {
@@ -25,6 +29,11 @@ typedef union ivec3 {
                 int32_t x;
                 int32_t y;
                 int32_t z;
+        };
+        struct {
+                int32_t a;
+                int32_t b;
+                int32_t c;
         };
 } ivec3;
 
@@ -36,6 +45,12 @@ typedef union ivec4 {
                 int32_t z;
                 int32_t w;
         };
+        struct {
+                int32_t a;
+                int32_t b;
+                int32_t c;
+                int32_t d;
+        };
 } ivec4;
 
 typedef union lvec2 {
@@ -43,6 +58,10 @@ typedef union lvec2 {
         struct {
                 int64_t x;
                 int64_t y;
+        };
+        struct {
+                int64_t a;
+                int64_t b;
         };
 } lvec2;
 
@@ -52,6 +71,11 @@ typedef union lvec3 {
                 int64_t x;
                 int64_t y;
                 int64_t z;
+        };
+        struct {
+                int64_t a;
+                int64_t b;
+                int64_t c;
         };
 } lvec3;
 
@@ -63,6 +87,12 @@ typedef union lvec4 {
                 int64_t z;
                 int64_t w;
         };
+        struct {
+                int64_t a;
+                int64_t b;
+                int64_t c;
+                int64_t d;
+        };
 } lvec4;
 
 typedef union vec2 {
@@ -70,6 +100,10 @@ typedef union vec2 {
         struct {
                 double x;
                 double y;
+        };
+        struct {
+                double a;
+                double b;
         };
 } vec2;
 
@@ -80,6 +114,11 @@ typedef union vec3 {
                 double y;
                 double z;
         };
+        struct {
+                double a;
+                double b;
+                double c;
+        };
 } vec3;
 
 typedef union vec4 {
@@ -89,6 +128,12 @@ typedef union vec4 {
                 double y;
                 double z;
                 double w;
+        };
+        struct {
+                double a;
+                double b;
+                double c;
+                double d;
         };
 } vec4;
 

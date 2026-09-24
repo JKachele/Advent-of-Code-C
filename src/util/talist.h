@@ -30,7 +30,7 @@
 /* Length/size of list: printf("size: %zu\n", tll_length(my_list)); */
 #define tll_length(list) (list).length
 
-/* Adds a new item to the front of the list */
+/* Expands list */
 #define tal_allocate(list, size)                                        \
         do {                                                            \
                 if ((size) > (list).capicity) {                         \
@@ -53,6 +53,27 @@
                 tal_allocate(list, (list).length + 1);          \
                 (list).array[(list).length] = new_item;         \
                 (list).length += 1;                             \
+        } while (0)
+
+/* Appends contents of list onto another list */
+#define tal_append(list1, list2)                                                \
+        do {                                                                    \
+                tal_allocate(list1, (list1).length + (list2).length);           \
+                for (size_t i = 0; i < (list2).length; i++) {                   \
+                        (list1).array[(list1).length] = (list2).array[i];       \
+                        (list1).length++;                                       \
+                }                                                               \
+        } while (0)
+
+/* Copy contents to empty list */
+#define tal_copy(list, copy)                                    \
+        do {                                                    \
+                assert((copy).length == 0);                     \
+                tal_allocate(copy, (list).length);              \
+                for (size_t i = 0; i < (list).length; i++) {    \
+                        (copy).array[i] = (list).array[i];      \
+                        (copy).length++;                        \
+                }                                               \
         } while (0)
 
 /* Insert item at index, shifting the following items by one spot */
