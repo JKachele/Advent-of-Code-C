@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 
+// cmp - 1: first > second, 0: first == second, -1: first < second
 void quicksort(void *arr, size_t size, int first, int last, int (*cmp)(void*, void*));
 void quicksortInt(int arr[], int first, int last);
 int quickselect(int arr[], int first, int last, int index);
