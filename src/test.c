@@ -11,23 +11,12 @@
 #include <unistd.h>
 // #include "util/talist.h"
 
-enum test {
-        TEST1,
-        TEST2,
-        TEST3
-};
-
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        enum test test = TEST1;
-        printf("%d\n", test);
-        test++;
-        printf("%d\n", test);
-        test++;
-        printf("%d\n", test);
-        test++;
-        printf("%d\n", test);
+        int a, b, c = 100;
+
+        printf("%d, %d, %d\n", a, b, c);
 
         return 0;
 }

@@ -75,42 +75,64 @@ static void swap(void *a, void *b, u64 size) {
 // Moves elements smaller than pivot to front and larger to the back
 // Moves pivot to middle and returns pivot index
 // cmp - 1: first > second, 0: first == second, -1: first < second
-static int partition(void *arr, u64 size, int first, int last, int (*cmp)(void*, void*)) {
-        // Initalize pivot and index pointers
-        void *p = malloc(size);
-        memcpy(p, (char*)(arr) + (first * size), size);
-        int i = first;
-        int j = last;
+static int partition(void *arr, size_t size, int first, int last, int (*cmp)(void*, void*)) {
+        int pivot = first;
+        void *pivElement = (char*)arr + (pivot * size);
 
-        while (i < j) {
-                void *left = (char*)(arr) + (i * size);
-                void *right = (char*)(arr) + (j * size);
+        for (int i = first + 1; i <= last; i++) {
+                void *cur = (char*)arr + (i * size);
 
-                // Find first element larger than pivot starting from the front
-                while (cmp(left, p) != 1 && i < last) {
-                        i++;
-                        left = (char*)(arr) + (i * size);
-                }
-
-                // Find first element smaller than pivot starting from the back
-                while (cmp(right, p) == 1 && j > first) {
-                        j--;
-                        right = (char*)(arr) + (j * size);
-                }
-
-                // If larger is before smaller, Swap
-                if (i < j) {
-                        swap(left, right, size);
+                // If cur is less than pivot, move pivot up and swap with cur
+                if (cmp(pivElement, cur) > 0) {
+                        pivot++;
+                        // No need to swap if cur and pivor are the same
+                        if (pivot == i) continue;
+                        void *center = (char*)arr + (pivot * size);
+                        swap(cur, center, size);
                 }
         }
-        // Once all elements are moved, move the pivot to middle and return
-        void *piv = (char*)(arr) + (first * size);
-        void *right = (char*)(arr) + (j * size);
-        swap(piv, right, size);
-        return j;
+        void *center = (char*)arr + (pivot * size);
+        swap(pivElement, center, size);
+
+        return pivot;
 }
 
-void quicksort(void *arr, u64 size, int first, int last, int (*cmp)(void*, void*)) {
+// static int partitionOld(void *arr, size_t size, int first, int last, int (*cmp)(void*, void*)) {
+//         // Initalize pivot and index pointers
+//         void *p = malloc(size);
+//         memcpy(p, (char*)(arr) + (first * size), size);
+//         int i = first;
+//         int j = last;
+//
+//         while (i < j) {
+//                 void *left = (char*)(arr) + (i * size);
+//                 void *right = (char*)(arr) + (j * size);
+//
+//                 // Find first element larger than pivot starting from the front
+//                 while (cmp(left, p) != 1 && i < last) {
+//                         i++;
+//                         left = (char*)(arr) + (i * size);
+//                 }
+//
+//                 // Find first element smaller than pivot starting from the back
+//                 while (cmp(right, p) == 1 && j > first) {
+//                         j--;
+//                         right = (char*)(arr) + (j * size);
+//                 }
+//
+//                 // If larger is before smaller, Swap
+//                 if (i < j) {
+//                         swap(left, right, size);
+//                 }
+//         }
+//         // Once all elements are moved, move the pivot to middle and return
+//         void *piv = (char*)(arr) + (first * size);
+//         void *right = (char*)(arr) + (j * size);
+//         swap(piv, right, size);
+//         return j;
+// }
+
+void quicksort(void *arr, size_t size, int first, int last, int (*cmp)(void*, void*)) {
         if (first < last) {
                 int p = partition(arr, size, first, last, cmp);
 

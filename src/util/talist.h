@@ -152,3 +152,14 @@
                 (list).array = NULL;    \
         } while (0)
 
+#define tal_free_and_destroy(list, free_callback)               \
+        do {                                                    \
+                for (size_t i = 0; i < (list).length; i++) {    \
+                        free_callback((list).array[i]);         \
+                }                                               \
+                (list).length = 0;                              \
+                (list).capicity = 0;                            \
+                free((list).array);                             \
+                (list).array = NULL;                            \
+        } while (0)
+
