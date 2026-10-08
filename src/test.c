@@ -9,14 +9,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-// #include "util/talist.h"
+#include "util/talist.h"
+
+typedef tal(int) talint;
+
+void printList(talint list) {
+        printf("[ ");
+        tal_for(list, i) {
+                printf("%d ", list.array[i]);
+        }
+        printf("]\n");
+}
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        int a, b, c = 100;
+        talint list = tal_init();
+        for (int i = 0; i < 10; i++) {
+                tal_add(list, i);
+        }
+        printList(list);
 
-        printf("%d, %d, %d\n", a, b, c);
+        tal_add_unique(list, 7);
+        printList(list);
+
+        tal_add_unique(list, 14);
+        printList(list);
+
+        tal_add_unique(list, 4);
+        printList(list);
 
         return 0;
 }

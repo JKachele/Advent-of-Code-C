@@ -55,6 +55,19 @@
                 (list).length += 1;                             \
         } while (0)
 
+#define tal_add_unique(list, item)                                              \
+        do {                                                                    \
+                int _found_ = 0;                                                \
+                for (size_t i = 0; i < (list).length; i++) {                    \
+                        if ((list).array[i] == item) {                          \
+                                _found_ = 1;                                    \
+                                break;                                          \
+                        }                                                       \
+                }                                                               \
+                if (_found_ == 1) break;                                        \
+                tal_add(list, item);                                            \
+        } while (0)
+
 /* Appends contents of list onto another list */
 #define tal_append(list1, list2)                                                \
         do {                                                                    \
