@@ -24,7 +24,7 @@ TESTSRC := src/test.c
 TESTOBJ := $(TESTSRC:%=$(BUILD_DIR)/%.o)
 
 LIBSRC := $(wildcard src/util/*.c)# $(wildcard src/util/*/*.c)
-LIBSRC += $(wildcard src/lib/*.c)
+# LIBSRC += $(wildcard src/lib/*.c)
 LIBOBJ := $(LIBSRC:%=$(BUILD_DIR)/%.o)
 
 OUT := $(BIN)/out
@@ -71,5 +71,6 @@ $(BUILD_DIR)/%.c.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
-	rm -rf bin/
+	rm -rf $(BIN)/
+	rm -rf $(BUILD_DIR)/
 

@@ -8,36 +8,39 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include "util/talist.h"
+#include <stdint.h>
+#include <string.h>
+#include "util/util.h"
+#include "util/md5.h"
 
-typedef tal(int) talint;
-
-void printList(talint list) {
-        printf("[ ");
-        tal_for(list, i) {
-                printf("%d ", list.array[i]);
+u16 regHash(const char *name) {
+        u16 hash = 0;
+        for (u64 i = 0; i < strlen(name); i++) {
+                hash *= 27;
+                hash += (name[i] - 'a') + 1;
         }
-        printf("]\n");
+        return hash;
 }
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        talint list = tal_init();
-        for (int i = 0; i < 10; i++) {
-                tal_add(list, i);
+        char *hello = "Hello, World!";
+
+        uint8_t result[16];
+        md5(hello, result);
+
+        for (int i = 0; i < 16; i++) {
+                printf("%02x", result[i]);
         }
-        printList(list);
+        printf("\n");
 
-        tal_add_unique(list, 7);
-        printList(list);
+        uint64_t hash = md5_64(hello);
+        printf("                %016lx\n", hash);
 
-        tal_add_unique(list, 14);
-        printList(list);
-
-        tal_add_unique(list, 4);
-        printList(list);
+        printf("%u\n", regHash("a"));
+        printf("%u\n", regHash("aa"));
+        printf("%u\n", regHash("aaa"));
 
         return 0;
 }
