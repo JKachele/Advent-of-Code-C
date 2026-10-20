@@ -31,7 +31,7 @@ OUT := $(BIN)/out
 UTILS := $(BINLIB)/libutils.a
 TEST := $(BIN)/test
 
-.PHONY: build clean run runTest
+.PHONY: build clean run runTest $(OUT)
 
 build: $(UTILS) $(OUT)
 
