@@ -22,28 +22,18 @@ hashtable ht_create(size_t size) {
         return ht;
 }
 
-size_t hash_fn(const char *key, size_t ht_size, size_t seed) {
-        assert(key != NULL);
-
-        size_t hash = seed ^ 2166136261UL;
-        for (int i = 0; key[i] != '\0'; i++) {
-                hash = (hash ^ key[i]) % ht_size;
-                hash = (hash * 16777619) % ht_size;
-        }
-        return hash;
-}
-
 size_t md5_hash(const char *key, size_t ht_size) {
         return md5_64(key) % ht_size;
 }
 
-void ht_add(hashtable *ht, const char *key, void *item) {
+void ht_add(hashtable *ht, size_t key_size, const void *key, void *item,
+                size_t (*hash_fn)(const void *key, size_t mod)) {
         assert(ht != NULL && key != NULL && item != NULL);
 
-        size_t hash = md5_hash(key, ht->size);
+        size_t hash = hash_fn(key, ht->size);
         ht_entry *entry = malloc(sizeof(ht_entry));
-        entry->key = malloc(strlen(key) + 1);
-        strcpy(entry->key, key);
+        entry->key = malloc(key_size);
+        memcpy(entry->key, key, key_size);
         entry->item = item;
         entry->next = NULL;
 
@@ -53,16 +43,17 @@ void ht_add(hashtable *ht, const char *key, void *item) {
         ht->table[hash] = entry;
 }
 
-bool ht_remove(hashtable *ht, const char *key) {
+bool ht_remove(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
+                size_t (*hash_fn)(const void *key, size_t mod)) {
         assert(ht != NULL && key != NULL);
 
-        size_t hash = md5_hash(key, ht->size);
+        size_t hash = hash_fn(key, ht->size);
         if (ht->table[hash] == NULL) { return false; }
 
         ht_entry *prev = NULL;
         ht_entry *cur = ht->table[hash];
         while (cur != NULL) {
-                if (strcmp(cur->key, key) == 0) {
+                if (cmp(cur->key, key) == 0) {
                         if (prev == NULL) {
                                 ht->table[hash] = cur->next;
                         } else {
@@ -79,15 +70,16 @@ bool ht_remove(hashtable *ht, const char *key) {
         return false;
 }
 
-void *ht_find(hashtable *ht, const char *key) {
+void *ht_find(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
+                size_t (*hash_fn)(const void *key, size_t mod)) {
         assert(ht != NULL && key != NULL);
 
-        size_t hash = md5_hash(key, ht->size);
+        size_t hash = hash_fn(key, ht->size);
         if (ht->table[hash] == NULL) { return NULL; }
 
         ht_entry *cur = ht->table[hash];
         while (cur != NULL) {
-                if (strcmp(cur->key, key) == 0) {
+                if (cmp(cur->key, key) == 0) {
                         return cur;
                 }
                 cur = cur->next;

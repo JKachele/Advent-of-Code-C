@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 typedef struct ht_entry {
-        char *key;
+        void *key;
         void *item;
         struct ht_entry *next;
 } ht_entry;
@@ -24,13 +24,16 @@ typedef struct hashtable {
 
 hashtable ht_create(size_t size);
 
-size_t hash_fn(const char *key, size_t hash_size, size_t seed);
+size_t md5_hash(const char *key, size_t ht_size);
 
-void ht_add(hashtable *ht, const char *key, void *item);
+void ht_add(hashtable *ht, size_t key_size, const void *key, void *item,
+                size_t (*hash_fn)(const void *key, size_t mod));
 
-bool ht_remove(hashtable *ht, const char *key);
+bool ht_remove(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
+                size_t (*hash_fn)(const void *key, size_t mod));
 
-void *ht_find(hashtable *ht, const char *key);
+void *ht_find(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
+                size_t (*hash_fn)(const void *key, size_t mod));
 
 #endif
 
