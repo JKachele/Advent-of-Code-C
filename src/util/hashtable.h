@@ -11,6 +11,15 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+typedef size_t (*ht_hash)(const void *key, size_t mod);
+typedef int (*ht_cmp)(const void*, const void*);
+
+typedef enum {
+        HT_SUCCESS,
+        HT_ENTRY_EXISTS,
+        HT_ENTRY_NOT_FOUND
+} ht_error;
+
 typedef struct ht_entry {
         void *key;
         void *item;
@@ -18,22 +27,24 @@ typedef struct ht_entry {
 } ht_entry;
 
 typedef struct hashtable {
+        size_t capacity;
         size_t size;
+        float load_factor;
+        size_t threshold;
         ht_entry **table;
+        ht_hash hash_fn;
+        ht_cmp cmp_fn;
 } hashtable;
 
-hashtable ht_create(size_t size);
+hashtable ht_create(size_t size, ht_hash hash_fn, ht_cmp cmp_fn);
 
 size_t md5_hash(const char *key, size_t ht_size);
 
-void ht_add(hashtable *ht, size_t key_size, const void *key, void *item,
-                size_t (*hash_fn)(const void *key, size_t mod));
+ht_error ht_add(hashtable *ht, size_t key_size, const void *key, void *item);
 
-bool ht_remove(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
-                size_t (*hash_fn)(const void *key, size_t mod));
+ht_error ht_remove(hashtable *ht, const void *key);
 
-void *ht_find(hashtable *ht, const void *key, int (*cmp)(const void*, const void*),
-                size_t (*hash_fn)(const void *key, size_t mod));
+ht_entry* ht_find(hashtable *ht, const void *key);
 
 #endif
 
