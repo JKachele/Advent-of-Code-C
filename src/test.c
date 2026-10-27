@@ -15,11 +15,20 @@
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        char *test = "12/34";
-        char *end;
-        int testNum = strtol(test, &end, 10);
-        int testNum1 = strtol(end+1, NULL, 10);
-        printf("%d, %d\n", testNum, testNum1);
+        char *test = "(1276x3274)a";
+
+        int i = 0;
+        int len = 0;
+        while (test[++i] != 'x') {
+                len *= 10;
+                len += test[i] - '0';
+        }
+        int times = 0;
+        while (test[++i] != ')') {
+                times *= 10;
+                times += test[i] - '0';
+        }
+        printf("%d, %d - %c\n", len, times, test[i]);
 
         return 0;
 }
