@@ -12,23 +12,26 @@
 #include <string.h>
 #include "util/util.h"
 
+void testFn(char *str) {
+        char *tok = strtok(str, " ");
+        while (tok != NULL) {
+                printf("%s\n", tok);
+                tok = strtok(NULL, " ");
+        }
+        printf("------------------\n");
+}
+
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        char *test = "(1276x3274)a";
+        char test[] = "kjas kbjlaks lkjsbdvl, skjdvblaj laksdvljb, lkjasbvl lkasjdv";
 
-        int i = 0;
-        int len = 0;
-        while (test[++i] != 'x') {
-                len *= 10;
-                len += test[i] - '0';
-        }
-        int times = 0;
-        while (test[++i] != ')') {
-                times *= 10;
-                times += test[i] - '0';
-        }
-        printf("%d, %d - %c\n", len, times, test[i]);
+        char *tok = strtok(test, ",");
+        printf("%s\n", tok);
+        testFn(tok);
+        // tok = strtok(NULL, ",");
+        // printf("%s\n", tok);
+        // testFn(tok);
 
         return 0;
 }

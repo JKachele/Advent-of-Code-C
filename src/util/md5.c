@@ -179,3 +179,15 @@ uint64_t md5_64(const char *input) {
         return hash;
 }
 
+uint32_t md5_32(const char *input) {
+        u8 result[16];
+        md5(input, result);
+
+        u32 hash = 0;
+        for (u32 i = 0; i < 4; i++) {
+                hash <<= 8;
+                hash |= (u32)(result[i+12]);
+        }
+        return hash;
+}
+
