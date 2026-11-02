@@ -52,7 +52,7 @@ runWithTest: $(OUT)
 	stdbuf -oL $(OUT) TEST | tee $(BIN)/output.log
 
 runTest: $(TEST)
-	stdbuf -oL $(TEST)
+	stdbuf -oL $(TEST) | tee $(BIN)/testOutput.log
 
 $(OUT): $(OBJ) $(UTILS)
 	@mkdir -p $(dir $@)

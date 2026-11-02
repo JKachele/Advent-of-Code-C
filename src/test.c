@@ -11,27 +11,26 @@
 #include <stdint.h>
 #include <string.h>
 #include "util/util.h"
-
-void testFn(char *str) {
-        char *tok = strtok(str, " ");
-        while (tok != NULL) {
-                printf("%s\n", tok);
-                tok = strtok(NULL, " ");
-        }
-        printf("------------------\n");
-}
+#include "util/md5.h"
+// #include "util/md5Test.h"
 
 int main(int argc, char *argv[]) {
         printf("Hello, World!\n");
 
-        char test[] = "kjas kbjlaks lkjsbdvl, skjdvblaj laksdvljb, lkjasbvl lkasjdv";
+        char *test = "ihgpwlahDRRULDDULRDLUURLRLDRLRDRUDUURDLDRULUDLRDRUDUDLDU";
 
-        char *tok = strtok(test, ",");
-        printf("%s\n", tok);
-        testFn(tok);
-        // tok = strtok(NULL, ",");
-        // printf("%s\n", tok);
-        // testFn(tok);
+        u8 result[16];
+        md5(test, result);
+        for (int i = 0; i < 16; i++) {
+                printf("%02x", result[i]);
+        }
+        printf("\n");
+
+        // md5String(test, result);
+        // for (int i = 0; i < 16; i++) {
+        //         printf("%02x", result[i]);
+        // }
+        // printf("\n");
 
         return 0;
 }
