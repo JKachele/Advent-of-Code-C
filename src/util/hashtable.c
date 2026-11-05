@@ -16,6 +16,8 @@
 static const hashtable DefaultTable = {
         .capacity = 16,
         .size = 0,
+        .key_size = 0,
+        .item_size = 0,
         .load_factor = 0.75f,
         .threshold = 12,
         .table = NULL,
@@ -23,7 +25,8 @@ static const hashtable DefaultTable = {
         .cmp_fn = NULL
 };
 
-hashtable ht_create(size_t capacity, ht_hash hash_fn, ht_cmp cmp_fn) {
+hashtable ht_create(size_t capacity, size_t key_size, size_t item_size,
+                ht_hash hash_fn, ht_cmp cmp_fn) {
         assert(hash_fn != NULL);
         assert(cmp_fn != NULL);
 
@@ -33,6 +36,8 @@ hashtable ht_create(size_t capacity, ht_hash hash_fn, ht_cmp cmp_fn) {
                 ht.capacity = capacity;
                 ht.threshold = (size_t)(capacity * ht.load_factor);
         }
+        ht.key_size = key_size;
+        ht.item_size = item_size;
         ht.table = calloc(ht.capacity, sizeof(ht_entry*));
         ht.hash_fn = hash_fn;
         ht.cmp_fn = cmp_fn;
@@ -73,13 +78,14 @@ static void ht_rehash(hashtable *ht) {
         *ht = new;
 }
 
-ht_error ht_add(hashtable *ht, size_t key_size, const void *key, void *item) {
+ht_error ht_add(hashtable *ht, const void *key, void *item) {
         assert(ht != NULL && key != NULL && item != NULL);
 
         ht_entry *entry = ht_find(ht, key);
         if (entry != NULL) {
                 free(entry->item);
-                entry->item = item;
+                entry->item = malloc(ht->item_size);
+                memcpy(entry->item, item, ht->item_size);
                 return HT_ENTRY_EXISTS;
         }
 
@@ -89,9 +95,10 @@ ht_error ht_add(hashtable *ht, size_t key_size, const void *key, void *item) {
 
         size_t hash = ht->hash_fn(key, ht->capacity);
         ht_entry *newEntry = malloc(sizeof(ht_entry));
-        newEntry->key = malloc(key_size);
-        memcpy(newEntry->key, key, key_size);
-        newEntry->item = item;
+        newEntry->key = malloc(ht->key_size);
+        memcpy(newEntry->key, key, ht->key_size);
+        newEntry->item = malloc(ht->item_size);
+        memcpy(newEntry->item, item, ht->item_size);
         newEntry->next = NULL;
 
         if (ht->table[hash] != NULL) {
