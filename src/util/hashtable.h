@@ -29,6 +29,8 @@ typedef struct ht_entry {
 typedef struct hashtable {
         size_t capacity;
         size_t size;
+        size_t key_size;
+        size_t item_size;
         float load_factor;
         size_t threshold;
         ht_entry **table;
@@ -36,11 +38,12 @@ typedef struct hashtable {
         ht_cmp cmp_fn;
 } hashtable;
 
-hashtable ht_create(size_t size, ht_hash hash_fn, ht_cmp cmp_fn);
+hashtable ht_create(size_t capacity, size_t key_size, size_t item_size,
+                ht_hash hash_fn, ht_cmp cmp_fn);
 
 size_t md5_hash(const char *key, size_t ht_size);
 
-ht_error ht_add(hashtable *ht, size_t key_size, const void *key, void *item);
+ht_error ht_add(hashtable *ht, const void *key, void *item);
 
 ht_error ht_remove(hashtable *ht, const void *key);
 
