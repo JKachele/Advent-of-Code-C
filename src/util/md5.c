@@ -152,8 +152,8 @@ void md5(const char *input, u8 result[16]) {
                         input_buf[i] = 0x00;
                 }
                 // Add input length to last 8 bytes in little-endian
-                for (u32 i = 0; i < 8; i++) {
-                        input_buf[offset++] = (u8)((input_len * 8) >> (8 * i));
+                for (u32 i = 56; i < 64; i++) {
+                        input_buf[i] = (u8)((input_len * 8) >> (8 * i));
                 }
                 md5_update(input_buf, buffer);
         }
@@ -175,6 +175,18 @@ uint64_t md5_64(const char *input) {
         for (u32 i = 0; i < 8; i++) {
                 hash <<= 8;
                 hash |= (u64)(result[i+8]);
+        }
+        return hash;
+}
+
+uint32_t md5_32(const char *input) {
+        u8 result[16];
+        md5(input, result);
+
+        u32 hash = 0;
+        for (u32 i = 0; i < 4; i++) {
+                hash <<= 8;
+                hash |= (u32)(result[i+12]);
         }
         return hash;
 }
