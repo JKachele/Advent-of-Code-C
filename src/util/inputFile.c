@@ -48,7 +48,10 @@ llist *getInputFileLen(char *fileName, const int BufferSize) {
 
         // set "line" to the line in the file and test for end of file
         while (fgets(line, BufferSize, inputFile)!= NULL) {
-                line[strlen(line) - 1] = '\0';  // Remove newline character from string
+                if (line[strlen(line) - 1] == '\n') {
+                        // Remove newline character from string
+                        line[strlen(line) - 1] = '\0';
+                }
                 char *nodeData = malloc(BufferSize * sizeof(char));
                 strncpy(nodeData, line, BufferSize);
                 llist_add(ll, nodeData);
