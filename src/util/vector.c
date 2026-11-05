@@ -108,6 +108,12 @@ bool ivec3Eq(ivec3 a, ivec3 b) {
 bool lvec3Eq(lvec3 a, lvec3 b) {
         return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
 }
+int32_t ivec3Volume(ivec3 v) {
+        return v.x * v.y * v.z;
+}
+int64_t lvec3Volume(lvec3 v) {
+        return v.x * v.y * v.z;
+}
 
 /************************ 4D ************************/
 ivec4 ivec4Add(ivec4 a, ivec4 b) {

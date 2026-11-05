@@ -168,6 +168,8 @@ ivec3 ivec3Scale(ivec3 vec, int32_t scale);
 lvec3 lvec3Scale(lvec3 vec, int64_t scale);
 bool ivec3Eq(ivec3 a, ivec3 b);
 bool lvec3Eq(lvec3 a, lvec3 b);
+int32_t ivec3Volume(ivec3 v);
+int64_t lvec3Volume(lvec3 v);
 
 ivec4 ivec4Add(ivec4 a, ivec4 b);
 lvec4 lvec4Add(lvec4 a, lvec4 b);
